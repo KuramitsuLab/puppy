@@ -48,11 +48,11 @@ html {
   flex-direction: column;
 }
 
-#canvas{
+#puppy-screen{
     position: center;
     width: calc(100vw/2);
     height: calc(100vw/2);
-    background-color: white;
+    background-color: gray;
     margin: 0 auto;
 }
 #editor{
