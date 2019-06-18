@@ -33,6 +33,7 @@ window['PuppyVMCode'] = {{
 # for label, subtree in t:
 #   print(label, subtree)
 
+renders = {}
 
 def Source(t):
     s = ''
@@ -63,7 +64,8 @@ def KeywordArgument(t):
     if name in option:
         return "'{}' : {{\n{}}},\n".format(name,Indent(value))
     if name in render:
-        return "'render' : {{\n'{}' : {},\n}},\n".format(name, value)  #renderを一回にしたい
+        renders[name] = value
+        return ""
     return "'{}' : {},\n".format(name, value)
       
 
@@ -87,6 +89,18 @@ def Int(t):
 def String(t):
     return "'{}'".format(t.asString())
 
+def Render():
+    s = ""
+    for i in renders:
+        print(i)
+        name = i
+        value = renders[i]
+        s += "'{}' : {},\n".format(name, value)
+    s = Indent(s)
+    renders.clear()    
+    return "'render' : {{\n{}}},".format(s)
+
+
 def Indent(t):
     a = t.splitlines()
     s = ""
@@ -106,7 +120,9 @@ def ApplyExpr(t):
     for label, subtree in t:
         if subtree.tag == "Name":
             continue
-        s += conv(subtree)      
+        s += conv(subtree)
+    if len(renders) != 0:
+        s += Render()
     if name in cheepna:
         if name in option:
             return "{}{{\n{}}}),\n".format(cheepna[name],Indent(s))
