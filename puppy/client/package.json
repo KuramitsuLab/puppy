@@ -1,0 +1,30 @@
+{
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch --devtool source-map",
+    "lint": "tslint './src/*.ts'",
+    "server": "node server.js"
+  },
+  "devDependencies": {
+    "ts-loader": "^4.5.0",
+    "tslint": "^5.15.0",
+    "tslint-loader": "^3.5.4",
+    "typescript": "^3.0.1",
+    "webpack": "^4.16.3",
+    "webpack-cli": "^3.1.0"
+  },
+  "private": true,
+  "dependencies": {
+    "@types/ace": "0.0.42",
+    "@types/jquery": "^3.3.29",
+    "@types/matter-js": "^0.10.2",
+    "@types/node": "^11.13.4",
+    "ace-builds": "^1.4.3",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "install": "^0.12.2",
+    "jquery": "^3.3.1",
+    "matter-js": "^0.14.2",
+    "tslint-config-airbnb": "^5.11.1"
+  }
+}

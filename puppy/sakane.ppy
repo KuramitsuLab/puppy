@@ -1,0 +1,2 @@
+A = Ball(position={"x": 100, "y": 100},width=100,height=100,fillStyle="red",strokeStyle="blue",lineWidth=10)
+print("のぶ")
