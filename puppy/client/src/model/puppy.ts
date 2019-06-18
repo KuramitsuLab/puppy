@@ -20,21 +20,21 @@ export type Code = {
   shapeFuncMap?: { [key: string]: (ctx: Puppy, options: {}) => (x: number, y: number, index: number) => any },
 };
 
-export class PuppyRule{
+export class PuppyRule {
   public matchFunc: (part: any) => boolean;
   public actionFunc: (body: Matter.Body, engine: Matter.Engine) => void;
 }
 
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
-  private width: number;
-  private height: number;
+  //  private width: number;
+  //  private height: number;
   private runner: Matter.Runner;
   private engine: Matter.Engine;
   private render: Matter.Render;
   private canvas: HTMLCanvasElement;
 
-  private debug_mode: boolean;
+  //  private debug_mode: boolean;
 
   private vars: {};
   private main: (Matter, Arare2) => void;
@@ -43,67 +43,7 @@ export class Puppy {
   private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
   public constructor() {
-    this.rules = [];
-    this.width = 500;
-    this.height = 500;
-    // create an engine
-    this.engine = Engine.create();
-    /* engineのアクティブ、非アクティブの制御を行う */
-    this.runner = Runner.create({});
-    this.DefaultRenderOptions = () => {
-      return {
-        /* Matter.js の変な仕様 canvas に 描画領域が追加される */
-        element: document.getElementById('canvas'),
-        engine: this.engine,
-        options: {
-          /* オブジェクトが枠線のみになる */
-          width: this.width,
-          height: this.height,
-          background: 'rgba(0, 0, 0, 0)',
-          wireframes: false,
-          // showDebug: world.debug || false,
-          // showPositions: world.debug || false,
-          // showMousePositions: world.debug || false,
-          // debugString: "hoge\nこまったなあ",
-        },
-      };
-    };
-    this.render = Render.create(this.DefaultRenderOptions());
-    this.canvas = this.render.canvas;
-  }
-
-  public requestFullScreen() {
-    if (this.canvas['webkitRequestFullscreen']) {
-      this.canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
-    } else if (this.canvas['mozRequestFullScreen']) {
-      this.canvas['mozRequestFullScreen'](); // FF10+
-    } else if (this.canvas['msRequestFullscreen']) {
-      this.canvas['msRequestFullscreen'](); // IE11+
-    } else if (this.canvas['requestFullscreen']) {
-      this.canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
-    } else {
-      // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
-      return;
-    }
-  }
-
-  public set_window_size(width: number, height: number) {
-    this.width = width;
-    this.height = height;
-    this.canvas.setAttribute('width', this.width.toString());
-    this.canvas.setAttribute('width', this.height.toString());
-    this.render.options.width = this.width;
-    this.render.options.height = this.height;
-  }
-
-  public ready() {
-    Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
-    Render.run(this.render); /* 描画開始 */
-    this.runner.enabled = false; /*初期位置を描画したら一度止める */
-    const rules: PuppyRule[] = this.rules;
-
-    console.log(rules);
-
+    this.init();
     Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
       const bodies = Matter.Composite.allBodies(this.engine.world);
       for (const rule of this.rules) {
@@ -120,6 +60,31 @@ export class Puppy {
     });
   }
 
+  public requestFullScreen() {
+    if (this.canvas) { // FIXME
+      if (this.canvas['webkitRequestFullscreen']) {
+        this.canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
+      } else if (this.canvas['mozRequestFullScreen']) {
+        this.canvas['mozRequestFullScreen'](); // FF10+
+      } else if (this.canvas['msRequestFullscreen']) {
+        this.canvas['msRequestFullscreen'](); // IE11+
+      } else if (this.canvas['requestFullscreen']) {
+        this.canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
+      } else {
+        // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
+        return;
+      }
+    }
+  }
+
+  public set_window_size(width: number, height: number) {
+
+    // this.canvas.setAttribute('width', this.width.toString());
+    // this.canvas.setAttribute('height', this.height.toString());
+    // this.render.options.width = this.width;
+    // this.render.options.height = this.height;
+  }
+
   public start() {
     // console.log("start");
     this.runner.enabled = true;
@@ -131,80 +96,87 @@ export class Puppy {
     this.runner.enabled = false;
   }
 
-  public dispose() {
-    // create an engine
-    World.clear(this.engine.world, false);
-    Engine.clear(this.engine);
+  public init() {
+    if (this.engine) {
+      World.clear(this.engine.world, false);
+      Engine.clear(this.engine);
+      // this.engine = null;
+    }
     /* engineのアクティブ、非アクティブの制御を行う */
-    Runner.stop(this.runner);
-    Render.stop(this.render);
-    this.render.canvas.remove();
-    this.render.canvas = null;
-    this.render.context = null;
-    this.render.textures = {};
-    this.render = Render.create(this.DefaultRenderOptions());
+    if (this.runner) {
+      Runner.stop(this.runner);
+    }
+    if (this.render) {
+      Render.stop(this.render);
+      this.render.canvas.remove();
+      this.render.canvas = null;
+      this.render.context = null;
+      this.render.textures = {};
+    }
+    // init
+    this.engine = Engine.create();
+    this.runner = Runner.create({});
+    let canvas = document.getElementById('puppy-screen');
+    let width = canvas.clientWidth;
+    let height = canvas.clientHeight;
+    console.log('FIXME', width, height);
+    let render = {
+      /* Matter.js の変な仕様 canvas に 描画領域が追加される */
+      // element: document.getElementById('canvas'),
+      element: canvas,
+      engine: this.engine,
+      options: {
+        /* オブジェクトが枠線のみになる */
+        width,
+        height,
+        background: 'rgba(0, 0, 0, 0)',
+        wireframes: false,
+      },
+    };
+    this.render = Render.create(render);
     this.canvas = this.render.canvas;
+    //
+    this.vars = {};
+    this.rules = [];
+  }
+
+  public ready() {
+    Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
+    Render.run(this.render); /* 描画開始 */
+    this.runner.enabled = false; /*初期位置を描画したら一度止める */
+
+    // FIXME
   }
 
   public debug() {
-    let background = 'rgba(0, 0, 0, 0)';
-    const render = this.render;
-    if (this.debug_mode) {
-      render.options.wireframes = false;
-      render.options['showPositions'] = false;
-      render.options['showMousePositions'] = false;
-      render.options['showVelocity'] = false;
-      render.options['showAngleIndicator'] = false;
-      render.options['showPositions'] = false;
-      render.options['showBounds'] = false;
-      render.options['background'] = background;
-      this.debug_mode = false;
-    } else {
-      render.options.wireframes = true;
-      render.options['showPositions'] = true;
-      render.options['showMousePositions'] = true;
-      render.options['showVelocity'] = true;
-      render.options['showAngleIndicator'] = true;
-      render.options['showPositions'] = true;
-      background = render.options['background'];
-      render.options['background'] = 'rgba(0, 0, 0, 0)';
-      this.debug_mode = true;
-    }
-  }
-
-  public newMatter(shape: string, options: {}) {
-    options['position'] = options['position'] || { x: 500, y: 500 };
-    const shapeFunc = shape in shapeFuncMap ? shapeFuncMap[shape] : shapeFuncMap['unknown'];
-    const body = shapeFunc(this, options)(options['position']['x'], options['position']['y'], -1);
-    World.add(this.engine.world, [body]);
-    return body;
-  }
-
-  public print(text: string) {
-    const x = this.width;
-    const y = Math.random() * this.height;
-    const body = Bodies.rectangle(
-      x, y, 20, 20,
-      { render: { fillStyle: 'rgba(33, 39, 98, 0)' },
-        isStatic: true,
-        isSensor: true,
-      });
-    body['name'] = 'コメント';
-    body['value'] = text;
-    World.add(this.engine.world, [body]);
-    const commentRule = {
-      matchFunc: part => part.name === 'コメント',
-      actionFunc: (body, engine) => {
-        const px = 1000 - 100 * engine.timing.timestamp * 0.003;
-        Matter.Body.setPosition(body, { x: px, y: body.position.y });
-      },
-    };
-    this.rules = [commentRule];
+    // let background = 'rgba(0, 0, 0, 0)';
+    // const render = this.render;
+    // if (this.debug_mode) {
+    //   render.options.wireframes = false;
+    //   render.options['showPositions'] = false;
+    //   render.options['showMousePositions'] = false;
+    //   render.options['showVelocity'] = false;
+    //   render.options['showAngleIndicator'] = false;
+    //   render.options['showPositions'] = false;
+    //   render.options['showBounds'] = false;
+    //   render.options['background'] = background;
+    //   this.debug_mode = false;
+    // } else {
+    //   render.options.wireframes = true;
+    //   render.options['showPositions'] = true;
+    //   render.options['showMousePositions'] = true;
+    //   render.options['showVelocity'] = true;
+    //   render.options['showAngleIndicator'] = true;
+    //   render.options['showPositions'] = true;
+    //   background = render.options['background'];
+    //   render.options['background'] = 'rgba(0, 0, 0, 0)';
+    //   this.debug_mode = true;
+    // }
   }
 
   private loadWorld(world: any) {
-  /* 描画サイズを自動拡大/縮小を設定する */
-    Render['lookAt'](this .render, {
+    /* 描画サイズを自動拡大/縮小を設定する */
+    Render['lookAt'](this.render, {
       min: { x: 0, y: 0 },
       max: {
         x: world.width || 1000,
@@ -278,27 +250,20 @@ export class Puppy {
       });
       */
     }
-
   }
 
   public load(code: Code) {
-    this.dispose();
+    this.init();
     if (code.world) {
-      // 世界の設定を行う
+      // 世界の再設定を行う
       this.loadWorld(code.world);
-    }
-    if (code.errors) {
-      // TODO
-      // editor にエラー情報をフィードバックする
     }
     // 物体の情報をアップデートする
     if (code.bodies) {
       const bodies = [];
-      this.vars = {};
       for (const data of code.bodies) {
         if (data.shape && data.position) {
-          const shape = shapeFunc(code, data)(this, data);
-          const body = shape(data.position.x, data.position.y, -1);
+          const body = newBody(data.shape, data);
           if (data.name) {
             this.vars[data.name] = body;
           }
@@ -315,7 +280,11 @@ export class Puppy {
       }
       World.add(this.engine.world, bodies);
     }
-    this.main = code.main || ((Matter:any, arare: Code) => {});
+    if (code.errors) {
+      // TODO
+      // editor にエラー情報をフィードバックする
+    }
+    this.main = code.main || ((Matter: any, arare: Code) => { });
     this.ready();
   }
 
@@ -324,61 +293,83 @@ export class Puppy {
       this.load(window['PuppyVMCode']);
     });
   }
+
+  // Puppy APIs
+
+  public newMatter(shape: string, options: {}) {
+    const body = newBody(shape, options);
+    World.add(this.engine.world, [body]);
+    return body;
+  }
+
+  public print(text: string) {  // FIXME
+    const x = 1000;
+    const y = Math.random() * 1000;
+    const body = Bodies.rectangle(
+      x, y, 20, 20,
+      {
+        render: { fillStyle: 'rgba(33, 39, 98, 0)' },
+        isStatic: true,
+        isSensor: true,
+      });
+    body['name'] = 'コメント';
+    body['value'] = text;
+    World.add(this.engine.world, [body]);
+    const commentRule = {
+      matchFunc: part => part.name === 'コメント',
+      actionFunc: (body, engine) => {
+        const px = 1000 - 100 * engine.timing.timestamp * 0.003;
+        Matter.Body.setPosition(body, { x: px, y: body.position.y });
+      },
+    };
+    this.rules = [commentRule];
+  }
+
 }
 
 /* shapeFunc 物体の形状から物体を生成する関数 */
 
-// (Arare2, {}) -> (number, number, number) -> any
-
-const shapeFuncMap: { [key: string]: (ctx: Puppy, options: {}) => (x: number, y: number, index: number) => Matter.Body } = {
-  circle(ctx: Puppy, options: {}) {
-    return function (x, y, index) {
-      let radius = options['radius'] || 25;
-      if (options['width']) {
-        radius = options['width'] / 2;
-      }
-      return Bodies.circle(x, y, radius, options);
-    };
+const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
+  circle(options: {}) {
+    let radius = options['radius'] || 25;
+    if (options['width']) {
+      radius = options['width'] / 2;
+    }
+    const x = options['position']['x'] || 500;
+    const y = options['position']['y'] || 500;
+    return Bodies.circle(x, y, radius, options);
   },
-  rectangle(ctx: Puppy, options: {}) {
-    return function (x, y, index) {
-      return Bodies.rectangle(x, y, options['width'] || 100, options['height'] || 100, options);
-    };
+  rectangle(options: {}) {
+    const x = options['position']['x'] || 500;
+    const y = options['position']['y'] || 500;
+    return Bodies.rectangle(x, y, options['width'] || 100, options['height'] || 100, options);
   },
-  polygon(ctx: Puppy, options: {}) {
-    return function (x, y, index) {
-      let radius = options['radius'] || 25;
-      if (options['width']) {
-        radius = options['width'] / 2;
-      }
-      return Matter.Bodies.polygon(x, y, options['sides'] || 5, radius, options);
-    };
+  polygon(options: {}) {
+    const x = options['position']['x'] || 500;
+    const y = options['position']['y'] || 500;
+    let radius = options['radius'] || 25;
+    if (options['width']) {
+      radius = options['width'] / 2;
+    }
+    return Matter.Bodies.polygon(x, y, options['sides'] || 5, radius, options);
   },
-  trapezoid(ctx: Puppy, options: {}) {
-    return function (x, y, index) {
-      return Matter.Bodies.trapezoid(x, y, options['width'] || 100, options['height'] || 100, options['slope'] || 0.5, options);
-    };
+  trapezoid(options: {}) {
+    const x = options['position']['x'] || 500;
+    const y = options['position']['y'] || 500;
+    return Matter.Bodies.trapezoid(x, y, options['width'] || 100, options['height'] || 100, options['slope'] || 0.5, options);
   },
-  unknown(ctx: Puppy, options: {}) {
-    return function (x, y, index) {
-      let radius = options['radius'] || 25;
-      if (options['width']) {
-        radius = options['width'] / 2;
-      }
-      return Bodies.circle(x, y, radius, options);
-    };
+  unknown(options: {}) {
+    let radius = options['radius'] || 25;
+    if (options['width']) {
+      radius = options['width'] / 2;
+    }
+    const x = options['position']['x'] || 500;
+    const y = options['position']['y'] || 500;
+    return Bodies.circle(x, y, radius, options);
   },
 };
 
-const shapeFunc = (code: Code, options: {}) => {
-  const shape = options['shape'] || 'unknown';
-  if (code.shapeFuncMap && code.shapeFuncMap[shape]) {
-    return code.shapeFuncMap[shape];
-  }
-  if (shapeFuncMap[shape]) {
-    return shapeFuncMap[shape];
-  }
-  return shapeFuncMap['unknown'];
-};
+const newBody = (shape: string, options: {}) =>
+  shape in shapeFuncMap ? shapeFuncMap[shape](options) : shapeFuncMap['unknown'](options);
 
 export const puppy: Puppy = new Puppy();
