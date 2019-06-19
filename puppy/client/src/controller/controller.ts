@@ -1,4 +1,3 @@
-import * as $ from 'jquery';
 import { puppy } from '../model/puppy';
 import { getSample } from '../model/api';
 import { editor, fontPlus, fontMinus } from '../view/editor';
@@ -13,16 +12,16 @@ editor.on('change', (cm, obj) => {
   }
   timer = setTimeout(() => {
     puppy.compile(editor.getValue());
-    buttonInactivate('#pause');
-    buttonActivate('#play');
+    buttonInactivate('pause');
+    buttonActivate('play');
   },                 400);
 });
 
 let fullscreen = false;
 
 function resizeMe() {
-  const w = $(window).width();
-  const h = $(window).height();
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   console.log('resizeMe', w, h, fullscreen, getFullscreen());
   if (getFullscreen() != null) {
     fullscreen = true;
@@ -41,49 +40,48 @@ function resizeMe() {
   }
 }
 
-$(window).on('load', resizeMe);
-$(window).on('resize', resizeMe);
+window.onload = resizeMe;
+window.onclick = resizeMe;
 
-$('#play').on('click', () => {
+document.getElementById('play').onclick = () => {
   puppy.start();
-  buttonInactivate('#play');
-  buttonActivate('#pause');
-});
+  buttonInactivate('play');
+  buttonActivate('pause');
+};
 
-$('#pause').on('click', () => {
+document.getElementById('pause').onclick = () => {
   puppy.pause();
-  buttonInactivate('#pause');
-  buttonActivate('#play');
-});
+  buttonInactivate('pause');
+  buttonActivate('play');
+};
 
-$('#reload').on('click', () => {
+document.getElementById('reload').onclick = () => {
   puppy.load(window['PuppyVMCode']);
-  buttonInactivate('#pause');
-  buttonActivate('#play');
-});
+  buttonInactivate('pause');
+  buttonActivate('play');
+};
 
-$('#debug').on('click', () => {
+document.getElementById('debug').onclick = () => {
   puppy.debug();
-});
+};
 
-$('#font-plus').on('click', () => {
+document.getElementById('font-plus').onclick = () => {
   fontPlus();
-});
+};
 
-$('#font-minus').on('click', () => {
+document.getElementById('font-minus').onclick = () => {
   fontMinus();
-});
+};
 
-$(document).on('keydown', (evt) => {
-  // KeyCode 27: ESC button
+document.onkeydown = (evt) => {
   if (evt.keyCode === 27) {
     exitFullscreen();
   }
-});
+};
 
-$('#extend').on('click', () => {
+document.getElementById('extend').onclick = () => {
   puppy.requestFullScreen();
-});
+};
 
 getSample('ppy/sample.ppy').then((sample: string) => {
   editor.setValue(sample);

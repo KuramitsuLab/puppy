@@ -116,11 +116,11 @@ export class Puppy {
     // init
     this.engine = Engine.create();
     this.runner = Runner.create({});
-    let canvas = document.getElementById('puppy-screen');
-    let width = canvas.clientWidth;
-    let height = canvas.clientHeight;
+    const canvas = document.getElementById('puppy-screen');
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
     console.log('FIXME', width, height);
-    let render = {
+    const render = {
       /* Matter.js の変な仕様 canvas に 描画領域が追加される */
       // element: document.getElementById('canvas'),
       element: canvas,
