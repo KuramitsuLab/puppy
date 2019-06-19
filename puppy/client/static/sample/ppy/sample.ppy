@@ -1,2 +1,2 @@
-A = Ball(よく跳ねる, ケーキ色)
-B = Ball(雪だるま)
+A = Ball(position={"x": 100, "y": 100},strokeStyle="blue",lineWidth=10,width=100,height=100,fillStyle="red")
+print("のぶ")
