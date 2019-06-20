@@ -33,20 +33,26 @@ export const myRender = (render) => {
       // handle compound parts
       for (k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
         part = body.parts[k];
+        const renderOption = part.render;
+        Object.keys(renderOption).forEach((key) => {
+          if (!(key in part)) {
+            part[key] = renderOption[key];
+          }
+        });
 
-        if (!part.render.visible) {
+        if (!part.visible) {
           continue;
         }
 
         if (options.showSleeping && body.isSleeping) {
-          c.globalAlpha = 0.5 * part.render.opacity;
-        } else if (part.render.opacity !== 1) {
-          c.globalAlpha = part.render.opacity;
+          c.globalAlpha = 0.5 * part.opacity;
+        } else if (part.opacity !== 1) {
+          c.globalAlpha = part.opacity;
         }
 
-        if (part.render.sprite && part.render.sprite.texture && !options.wireframes) {
+        if (part.sprite && part.sprite.texture && !options.wireframes) {
           // part sprite
-          const sprite = part.render.sprite;
+          const sprite = part.sprite;
           const texture = _getTexture(render, sprite.texture);
 
           c.translate(part.position.x, part.position.y);
@@ -89,11 +95,11 @@ export const myRender = (render) => {
           }
 
           if (!options.wireframes) {
-            c.fillStyle = part.render.fillStyle;
+            c.fillStyle = part.fillStyle;
 
-            if (part.render.lineWidth) {
-              c.lineWidth = part.render.lineWidth;
-              c.strokeStyle = part.render.strokeStyle;
+            if (part.lineWidth) {
+              c.lineWidth = part.lineWidth;
+              c.strokeStyle = part.strokeStyle;
               c.stroke();
             }
 
@@ -108,11 +114,11 @@ export const myRender = (render) => {
         c.globalAlpha = 1;
 
         if (part.value) {
-          c.font = part.render.font || '32px Arial';
+          c.font = part.font || '32px Arial';
           if (part.name === 'コメント') {
             c.fillStyle = 'black';
           } else {
-            c.fillStyle = part.render.fontStyle || 'red';
+            c.fillStyle = part.fontStyle || 'red';
           }
           c.textAlign = 'center';
           c.fillText(`${part.value}`, part.position.x, part.position.y + 10);

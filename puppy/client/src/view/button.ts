@@ -5,7 +5,7 @@ export const buttonActivate = (id: ButtonID) => {
 };
 
 export const buttonInactivate = (id: ButtonID) => {
-  document.getElementById(id).setAttribute('stroke', 'glay');
+  document.getElementById(id).setAttribute('stroke', 'gray');
 };
 
 /* Init */

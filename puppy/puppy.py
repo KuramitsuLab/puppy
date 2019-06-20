@@ -63,9 +63,9 @@ def KeywordArgument(t):
     value = conv(t['value'])
     if name in option:
         return "'{}' : {{\n{}}},\n".format(name,Indent(value))
-    if name in render:
-        renders[name] = value
-        return ""
+    # if name in render:
+    #     renders[name] = value
+    #     return ""
     return "'{}' : {},\n".format(name, value)
     
 

@@ -27,37 +27,23 @@ export class PuppyRule {
 
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
-  //  private width: number;
-  //  private height: number;
+  // private width: number;
+  // private height: number;
   private runner: Matter.Runner;
   private engine: Matter.Engine;
   private render: Matter.Render;
   private canvas: HTMLCanvasElement;
 
-  //  private debug_mode: boolean;
+  // private debug_mode: boolean;
 
   private vars: {};
   private main: (Matter, Arare2) => void;
   private rules: PuppyRule[];
 
-  private DefaultRenderOptions: () => Matter.IRenderDefinition;
+  // private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
   public constructor() {
     this.init();
-    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
-      const bodies = Matter.Composite.allBodies(this.engine.world);
-      for (const rule of this.rules) {
-        for (let i = 0; i < bodies.length; i += 1) {
-          const body: Matter.Body = bodies[i];
-          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
-            const part = body.parts[k];
-            if (rule.matchFunc(part)) {
-              rule.actionFunc(body, this.engine);
-            }
-          }
-        }
-      }
-    });
   }
 
   public requestFullScreen() {
@@ -115,6 +101,20 @@ export class Puppy {
     }
     // init
     this.engine = Engine.create();
+    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
+      const bodies = Matter.Composite.allBodies(this.engine.world);
+      for (const rule of this.rules) {
+        for (let i = 0; i < bodies.length; i += 1) {
+          const body: Matter.Body = bodies[i];
+          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
+            const part = body.parts[k];
+            if (rule.matchFunc(part)) {
+              rule.actionFunc(body, this.engine);
+            }
+          }
+        }
+      }
+    });
     this.runner = Runner.create({});
     const canvas = document.getElementById('puppy-screen');
     const width = canvas.clientWidth;
