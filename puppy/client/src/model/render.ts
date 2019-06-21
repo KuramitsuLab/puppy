@@ -39,6 +39,9 @@ export const myRender = (render) => {
             part[key] = renderOption[key];
           }
         });
+        if ('image' in part) {
+          part['sprite']['texture'] = `./image/${part['image']}`;
+        }
 
         if (!part.visible) {
           continue;
