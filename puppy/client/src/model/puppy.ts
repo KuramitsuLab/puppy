@@ -302,16 +302,10 @@ export class Puppy {
     return body;
   }
 
-  public print(text: string) {  // FIXME
+  public print(text: string, options= {}) {  // FIXME
     const x = 1000;
     const y = Math.random() * 1000;
-    const body = Bodies.rectangle(
-      x, y, 20, 20,
-      {
-        render: { fillStyle: 'rgba(33, 39, 98, 0)' },
-        isStatic: true,
-        isSensor: true,
-      });
+    const body = newBody('ticker', options);
     body['name'] = 'コメント';
     body['value'] = text;
     World.add(this.engine.world, [body]);
@@ -335,16 +329,19 @@ const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
     if (options['width']) {
       radius = options['width'] / 2;
     }
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     return Bodies.circle(x, y, radius, options);
   },
   rectangle(options: {}) {
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     return Bodies.rectangle(x, y, options['width'] || 100, options['height'] || 100, options);
   },
   polygon(options: {}) {
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     let radius = options['radius'] || 25;
@@ -354,9 +351,25 @@ const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
     return Matter.Bodies.polygon(x, y, options['sides'] || 5, radius, options);
   },
   trapezoid(options: {}) {
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     return Matter.Bodies.trapezoid(x, y, options['width'] || 100, options['height'] || 100, options['slope'] || 0.5, options);
+  },
+  ticker(options: {}) {
+    options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
+    const x = options['position']['x'] || 1000;
+    const y = options['position']['y'] || Math.random() * 1000;
+    if (!('isStatic' in options)) {
+      options['isStatic'] = true;
+    }
+    if (!('isSensor' in options)) {
+      options['isSensor'] = true;
+    }
+    if (!('render' in options) || !('fillStyle' in options['render'])) {
+      options['render'] = { fillStyle: 'rgba(33, 39, 98, 0)' };
+    }
+    return Bodies.rectangle(x, y, options['width'] || 20, options['height'] || 20, options);
   },
   unknown(options: {}) {
     let radius = options['radius'] || 25;
