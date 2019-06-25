@@ -2,7 +2,6 @@ import * as ace from '../../node_modules/ace-builds/src-min-noconflict/ace.js';
 // import * as solarized_light from '../../node_modules/ace-builds/src-min-noconflict/theme-solarized_light.js';
 import * as python_mode from '../../node_modules/ace-builds/src-min-noconflict/mode-python.js';
 // import * as js_mode from '../../node_modules/ace-builds/src-min-noconflict/mode-javascript.js';
-import * as $ from 'jquery';
 
 const editorState = {
   fontSize: 20,
@@ -29,4 +28,4 @@ editor.getSession().setMode(new python_mode.Mode());
 editor.getSession().setUseWrapMode(true); /* 折り返しあり */
 setFontSize(20);
 
-$('.ace_gutter').css({ background: 'rgb(49,48,47)', color: 'white' });
+document.getElementsByClassName('ace_gutter')[0].setAttribute('style', 'background: rgb(49, 48, 47); color: white;');

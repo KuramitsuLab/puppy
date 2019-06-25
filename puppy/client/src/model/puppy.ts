@@ -27,37 +27,23 @@ export class PuppyRule {
 
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
-  //  private width: number;
-  //  private height: number;
+  // private width: number;
+  // private height: number;
   private runner: Matter.Runner;
   private engine: Matter.Engine;
   private render: Matter.Render;
   private canvas: HTMLCanvasElement;
 
-  //  private debug_mode: boolean;
+  // private debug_mode: boolean;
 
   private vars: {};
   private main: (Matter, Arare2) => void;
   private rules: PuppyRule[];
 
-  private DefaultRenderOptions: () => Matter.IRenderDefinition;
+  // private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
   public constructor() {
     this.init();
-    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
-      const bodies = Matter.Composite.allBodies(this.engine.world);
-      for (const rule of this.rules) {
-        for (let i = 0; i < bodies.length; i += 1) {
-          const body: Matter.Body = bodies[i];
-          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
-            const part = body.parts[k];
-            if (rule.matchFunc(part)) {
-              rule.actionFunc(body, this.engine);
-            }
-          }
-        }
-      }
-    });
   }
 
   public requestFullScreen() {
@@ -115,12 +101,26 @@ export class Puppy {
     }
     // init
     this.engine = Engine.create();
+    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
+      const bodies = Matter.Composite.allBodies(this.engine.world);
+      for (const rule of this.rules) {
+        for (let i = 0; i < bodies.length; i += 1) {
+          const body: Matter.Body = bodies[i];
+          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
+            const part = body.parts[k];
+            if (rule.matchFunc(part)) {
+              rule.actionFunc(body, this.engine);
+            }
+          }
+        }
+      }
+    });
     this.runner = Runner.create({});
-    let canvas = document.getElementById('puppy-screen');
-    let width = canvas.clientWidth;
-    let height = canvas.clientHeight;
+    const canvas = document.getElementById('puppy-screen');
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
     console.log('FIXME', width, height);
-    let render = {
+    const render = {
       /* Matter.js の変な仕様 canvas に 描画領域が追加される */
       // element: document.getElementById('canvas'),
       element: canvas,
@@ -302,16 +302,10 @@ export class Puppy {
     return body;
   }
 
-  public print(text: string) {  // FIXME
+  public print(text: string, options= {}) {  // FIXME
     const x = 1000;
     const y = Math.random() * 1000;
-    const body = Bodies.rectangle(
-      x, y, 20, 20,
-      {
-        render: { fillStyle: 'rgba(33, 39, 98, 0)' },
-        isStatic: true,
-        isSensor: true,
-      });
+    const body = newBody('ticker', options);
     body['name'] = 'コメント';
     body['value'] = text;
     World.add(this.engine.world, [body]);
@@ -335,16 +329,19 @@ const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
     if (options['width']) {
       radius = options['width'] / 2;
     }
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     return Bodies.circle(x, y, radius, options);
   },
   rectangle(options: {}) {
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     return Bodies.rectangle(x, y, options['width'] || 100, options['height'] || 100, options);
   },
   polygon(options: {}) {
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     let radius = options['radius'] || 25;
@@ -354,9 +351,25 @@ const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
     return Matter.Bodies.polygon(x, y, options['sides'] || 5, radius, options);
   },
   trapezoid(options: {}) {
+    options['position'] = options['position'] || { x: 500, y: 500 };
     const x = options['position']['x'] || 500;
     const y = options['position']['y'] || 500;
     return Matter.Bodies.trapezoid(x, y, options['width'] || 100, options['height'] || 100, options['slope'] || 0.5, options);
+  },
+  ticker(options: {}) {
+    options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
+    const x = options['position']['x'] || 1000;
+    const y = options['position']['y'] || Math.random() * 1000;
+    if (!('isStatic' in options)) {
+      options['isStatic'] = true;
+    }
+    if (!('isSensor' in options)) {
+      options['isSensor'] = true;
+    }
+    if (!('render' in options) || !('fillStyle' in options['render'])) {
+      options['render'] = { fillStyle: 'rgba(33, 39, 98, 0)' };
+    }
+    return Bodies.rectangle(x, y, options['width'] || 20, options['height'] || 20, options);
   },
   unknown(options: {}) {
     let radius = options['radius'] || 25;

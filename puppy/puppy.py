@@ -63,11 +63,11 @@ def KeywordArgument(t):
     value = conv(t['value'])
     if name in option:
         return "'{}' : {{\n{}}},\n".format(name,Indent(value))
-    if name in render:
-        renders[name] = value
-        return ""
+    # if name in render:
+    #     renders[name] = value
+    #     return ""
     return "'{}' : {},\n".format(name, value)
-      
+    
 
 def Data(t):
     s = ''
@@ -125,8 +125,8 @@ def ApplyExpr(t):
         s += Render()
     if name in cheepna:
         if name in option:
-            return "{}{{\n{}}}),\n".format(cheepna[name],Indent(s))
-        return "{}{}),\n".format(cheepna[name],s)
+            return "{}{{\n{}}});\n".format(cheepna[name],Indent(s))
+        return "{}{});\n".format(cheepna[name],s)
     return s
 
 
