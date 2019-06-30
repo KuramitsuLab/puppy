@@ -44,7 +44,7 @@ window.onload = resizeMe;
 window.onclick = resizeMe;
 
 document.getElementById('play').onclick = () => {
-  puppy.start();
+  puppy.dynamic_start();
   buttonInactivate('play');
   buttonActivate('pause');
 };

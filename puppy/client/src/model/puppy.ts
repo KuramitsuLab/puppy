@@ -14,7 +14,7 @@ const Common = Matter['Common'];
 export type Code = {
   world: any,
   bodies: any[],
-  main: (Matter, Arare2) => void;
+  main: (Matter, puppy: Puppy) => IterableIterator<void>;
   errors?: {}[],
   rules?: any,
   shapeFuncMap?: { [key: string]: (ctx: Puppy, options: {}) => (x: number, y: number, index: number) => any },
@@ -37,7 +37,7 @@ export class Puppy {
   // private debug_mode: boolean;
 
   private vars: {};
-  private main: (Matter, Arare2) => void;
+  private main: (Matter, puppy: Puppy) => IterableIterator<void>;
   private rules: PuppyRule[];
 
   // private DefaultRenderOptions: () => Matter.IRenderDefinition;
@@ -69,6 +69,18 @@ export class Puppy {
     // this.canvas.setAttribute('height', this.height.toString());
     // this.render.options.width = this.width;
     // this.render.options.height = this.height;
+  }
+
+  public async wait(sec) {
+    await new Promise(resolve => setTimeout(resolve, sec * 1000));
+  }
+
+  public async dynamic_start() {
+    this.runner.enabled = true;
+
+    for await (const _ of this.main(Matter, this)) {
+      await this.wait(0.5);
+    }
   }
 
   public start() {
@@ -284,7 +296,7 @@ export class Puppy {
       // TODO
       // editor にエラー情報をフィードバックする
     }
-    this.main = code.main || ((Matter: any, arare: Code) => { });
+    this.main = code.main || (function* (Matter: any, puppy: Puppy) {});
     this.ready();
   }
 

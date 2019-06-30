@@ -53,12 +53,16 @@ window['PuppyVMCode'] = {
       },
     },
   ],
-  main: function(Matter,puppy){
-    console.log("Hi!!!");
-    puppy.vars["A"] = puppy.newMatter('circle', {});
-    puppy.vars["ボール"].value = "のぶちゃん";
-    puppy.print("Hello");
-    puppy.print("Comment");
+  main: function* (Matter,puppy){
+    yield console.log("Hi!!!");
+    yield puppy.vars["A"] = puppy.newMatter('circle', {});
+    yield puppy.vars["B"] = puppy.newMatter('circle', {});
+    yield puppy.vars["C"] = puppy.newMatter('circle', {}); 
+    yield puppy.vars["D"] = puppy.newMatter('circle', {}); 
+    yield puppy.vars["E"] = puppy.newMatter('circle', {}); 
+    yield puppy.vars["ボール"].value = "のぶちゃん";
+    yield puppy.print("Hello");
+    yield puppy.print("Comment");
   },
   errors: [
   ]
