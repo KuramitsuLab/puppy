@@ -92,6 +92,10 @@ export class Puppy {
   public start() {
     // console.log("start");
     this.runner.enabled = true;
+    if (!this.isRestart) {
+      this.isRestart = true;
+      this.execute_main();
+    }
   }
 
   public pause() {
@@ -100,6 +104,7 @@ export class Puppy {
   }
 
   public init() {
+    this.isRestart = false;
     if (this.engine) {
       World.clear(this.engine.world, false);
       Engine.clear(this.engine);
@@ -161,8 +166,6 @@ export class Puppy {
     Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
     Render.run(this.render); /* 描画開始 */
     this.runner.enabled = false; /*初期位置を描画したら一度止める */
-    await this.waitForRun(1);
-    this.execute_main();
     // FIXME
   }
 
