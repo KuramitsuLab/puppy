@@ -261,8 +261,8 @@ export class Puppy {
             && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)) {
             for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j += 1) {
               const part = body.parts[j];
-              if (part['click'] && Vertices.contains(part.vertices, mouse.position)) {
-                part['click']();
+              if (part['clicked'] && Vertices.contains(part.vertices, mouse.position)) {
+                part['clicked']();
                 break;
               }
             }
