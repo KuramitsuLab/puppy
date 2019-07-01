@@ -44,7 +44,7 @@ window.onload = resizeMe;
 window.onclick = resizeMe;
 
 document.getElementById('play').onclick = () => {
-  puppy.dynamic_start();
+  puppy.start();
   buttonInactivate('play');
   buttonActivate('pause');
 };
@@ -85,7 +85,6 @@ document.getElementById('extend').onclick = () => {
 
 getSample('ppy/sample.ppy').then((sample: string) => {
   editor.setValue(sample);
-  puppy.compile(editor.getValue());
 }).catch((msg: string) => {
   console.error(msg);
 });

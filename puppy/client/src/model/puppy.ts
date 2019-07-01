@@ -39,6 +39,7 @@ export class Puppy {
   private vars: {};
   private main: (Matter, puppy: Puppy) => IterableIterator<void>;
   private rules: PuppyRule[];
+  private isRestart: boolean = false;
 
   // private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
@@ -75,18 +76,22 @@ export class Puppy {
     await new Promise(resolve => setTimeout(resolve, sec * 1000));
   }
 
-  public async dynamic_start() {
-    this.runner.enabled = true;
+  public async waitForRun(interval) {
+    while (!this.runner.enabled) {
+      await this.wait(interval);
+    }
+  }
 
+  public async execute_main() {
     for await (const _ of this.main(Matter, this)) {
       await this.wait(0.5);
+      await this.waitForRun(1);
     }
   }
 
   public start() {
     // console.log("start");
     this.runner.enabled = true;
-    this.main(Matter, this);
   }
 
   public pause() {
@@ -152,11 +157,12 @@ export class Puppy {
     this.rules = [];
   }
 
-  public ready() {
+  public async ready() {
     Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
     Render.run(this.render); /* 描画開始 */
     this.runner.enabled = false; /*初期位置を描画したら一度止める */
-
+    await this.waitForRun(1);
+    this.execute_main();
     // FIXME
   }
 
