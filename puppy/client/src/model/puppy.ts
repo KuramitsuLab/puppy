@@ -140,6 +140,42 @@ export class Puppy {
         }
       }
     });
+    Matter.Events.on(this.engine, 'collisionActive', (event) => {
+      const pairs = event.pairs;
+      for (let i = 0; i < pairs.length; i += 1) {
+        const pair = pairs[i];
+        if (pair.bodyA['collisionActive']) {
+          pair.bodyA['collisionActive'](pair.bodyA, pair.bodyB);
+        }
+        if (pair.bodyB['collisionActive']) {
+          pair.bodyB['collisionActive'](pair.bodyB, pair.bodyA);
+        }
+      }
+    });
+    Matter.Events.on(this.engine, 'collisionStart', (event) => {
+      const pairs = event.pairs;
+      for (let i = 0; i < pairs.length; i += 1) {
+        const pair = pairs[i];
+        if (pair.bodyA['collisionStart']) {
+          pair.bodyA['collisionStart'](pair.bodyA, pair.bodyB);
+        }
+        if (pair.bodyB['collisionStart']) {
+          pair.bodyB['collisionStart'](pair.bodyB, pair.bodyA);
+        }
+      }
+    });
+    Matter.Events.on(this.engine, 'collisionEnd', (event) => {
+      const pairs = event.pairs;
+      for (let i = 0; i < pairs.length; i += 1) {
+        const pair = pairs[i];
+        if (pair.bodyA['collisionEnd']) {
+          pair.bodyA['collisionEnd'](pair.bodyA, pair.bodyB);
+        }
+        if (pair.bodyB['collisionEnd']) {
+          pair.bodyB['collisionEnd'](pair.bodyB, pair.bodyA);
+        }
+      }
+    });
     this.runner = Runner.create({});
     const canvas = document.getElementById('puppy-screen');
     const width = canvas.clientWidth;

@@ -61,6 +61,8 @@ window['PuppyVMCode'] = {
     yield puppy.vars["ボール"].value = "のぶちゃん";
     const ball_clicked = () => {puppy.print("Clicked!")};
     yield puppy.vars["ボール"].clicked = ball_clicked;
+    const ball_collision = (me, you) => { puppy.print(you.name) };
+    yield puppy.vars["ボール"].collisionStart = ball_collision;
     yield puppy.print("Hello");
     yield puppy.print("Comment");
   },
