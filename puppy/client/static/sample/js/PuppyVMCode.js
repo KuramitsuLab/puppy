@@ -55,11 +55,9 @@ window['PuppyVMCode'] = {
   ],
   main: function* (Matter,puppy){
     yield console.log("Hi!!!");
-    yield puppy.vars["A"] = puppy.newMatter('circle', {});
-    yield puppy.vars["B"] = puppy.newMatter('circle', {});
-    yield puppy.vars["C"] = puppy.newMatter('circle', {}); 
-    yield puppy.vars["D"] = puppy.newMatter('circle', {}); 
-    yield puppy.vars["E"] = puppy.newMatter('circle', {}); 
+    for (const name of ["A", "B", "C", "D", "E"]) {
+      yield puppy.vars[name] = puppy.newMatter('circle', {});
+    }
     yield puppy.vars["ボール"].value = "のぶちゃん";
     const ball_clicked = () => {puppy.print("Clicked!")};
     yield puppy.vars["ボール"].clicked = ball_clicked;
