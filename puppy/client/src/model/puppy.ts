@@ -9,6 +9,9 @@ const Constraint = Matter.Constraint;
 const MouseConstraint = Matter.MouseConstraint;
 const Mouse = Matter.Mouse;
 const World = Matter.World;
+const Bounds = Matter.Bounds;
+const Vertices = Matter.Vertices;
+const Detector = Matter['Detector'];
 const Common = Matter['Common'];
 
 export type Code = {
@@ -247,12 +250,26 @@ export class Puppy {
       World.add(this.engine.world, mouseConstraint);
       this.render['mouse'] = mouse;
       // an example of using mouse events on a mouse
-      /*
-      Events.on(mouseConstraint, 'mousedown', function(event) {
-        var mousePosition = event.mouse.position;
-        console.log('mousedown at ' + mousePosition.x + ' ' + mousePosition.y);
-        //shakeScene(engine);
+
+      Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
+        const mouse = event.mouse;
+        let body = event.sourcebody;
+        const bodies = Matter.Composite.allBodies(this.engine.world);
+        for (let i = 0; i < bodies.length; i += 1) {
+          body = bodies[i];
+          if (Bounds.contains(body.bounds, mouse.position)
+            && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)) {
+            for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j += 1) {
+              const part = body.parts[j];
+              if (part['click'] && Vertices.contains(part.vertices, mouse.position)) {
+                part['click']();
+                break;
+              }
+            }
+          }
+        }
       });
+      /*
 
       // an example of using mouse events on a mouse
       Events.on(mouseConstraint, 'mouseup', function(event) {
