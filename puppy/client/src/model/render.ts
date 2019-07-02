@@ -118,11 +118,7 @@ export const myRender = (render) => {
 
         if (part.value) {
           c.font = part.font || '32px Arial';
-          if (part.name === 'コメント') {
-            c.fillStyle = 'black';
-          } else {
-            c.fillStyle = part.fontStyle || 'red';
-          }
+          c.fillStyle = part.fontStyle || 'red';
           c.textAlign = 'center';
           c.fillText(`${part.value}`, part.position.x, part.position.y + 10);
         }
