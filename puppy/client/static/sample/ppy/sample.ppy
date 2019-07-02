@@ -1,2 +1,10 @@
-A = Ball(position={"x": 100, "y": 100},strokeStyle="blue",lineWidth=10,width=100,height=100,fillStyle="red")
-print("のぶ")
+A = Circle(100,120,strokeStyle="blue",lineWidth=10,width=100,height=100,fillStyle="red",isStatic=false)
+
+for x in [100,200,300,400]:
+  print('Hello', font='48px Arial',color= 'white')
+
+def cat_clicked(a,cat):
+  if a > 0:
+    print("Meaw")
+
+cat = Circle(500, 500, clicked=cat_clicked)

@@ -52,7 +52,7 @@ html {
     position: center;
     width: calc(100vw/2);
     height: calc(100vw/2);
-    background-color: gray;
+    background-color: white;
     margin: 0 auto;
 }
 #editor{
