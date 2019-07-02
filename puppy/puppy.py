@@ -34,8 +34,6 @@ window['PuppyVMCode'] = {{
 #   print(label, subtree)
 
 
-userwordopt = {}
-
 def Source(t):
     s = ''
     for label, subtree in t:
@@ -48,22 +46,21 @@ def VarDecl(t):
     right = conv(t['right'])
     return '{} = {}'.format(left, right)
 
+
 def ForStmt(t):
     each = conv(t['each'])
     varlist = conv(t['list'])
     body = conv(t['body'])
     return 'for (var {} of {}){}'.format(each,varlist,body)
 
-
 def FuncDecl(t):
     name = conv(t['name'])
     params = conv(t['params'])
     body = ""
-    for label,subtree in t:    #仮
+    for label,subtree in t:
         if subtree.tag == "Block":
             body += conv(subtree)
     return "const {} = ({}) => {}\n".format(name,params,body)
-
 
 def FuncParam(t):
     s = ""
@@ -73,24 +70,10 @@ def FuncParam(t):
         s += conv(subtree) 
     return s
 
-optional = [
-    'position',
-    'Ball',
-]
-
-wordoptional = [
-    'font',
-    'color',
-]
 
 def KeywordArgument(t):
     name = conv(t['name'])
     value = conv(t['value'])
-    if name in optional:
-        return "'{}' : {{\n{}}},\n".format(name,Indent(value))
-    if name in wordoptional:
-        userwordopt[name] = value
-        return ""
     return "'{}' : {},\n".format(name, value)
     
 
@@ -112,10 +95,10 @@ def List(t):
     return l
 
 def TrueExpr(t):
-    return t.asString()
+    return "true"
 
 def FalseExpr(t):
-    return t.asString()
+    return "false"
 
 def Name(t):
     return t.asString()
@@ -128,19 +111,6 @@ def String(t):
 
 def Char(t):
     return "'{}'".format(t.asString())
-
-
-def WordOption():
-    s = ""
-    for i,w in enumerate(userwordopt):
-        name = w
-        value = userwordopt[w]
-        if i != len(userwordopt)-1:
-            s += "'{}' : {},".format(name, value)
-        else:
-            s += "'{}' : {}".format(name, value)
-    userwordopt.clear()
-    return ", {{{}}}".format(s)
 
 
 def Indent(t):
@@ -161,37 +131,32 @@ MatterObjectArgs = [
     lambda subtree : ", 'y': {}}},\n".format(conv(subtree)),
 ]
 
-cheepna = {
-    'print': 'puppy.print(',
-}
-
 def ApplyExpr(t):
     name = conv(t['name'])
     s = ""
+    Str = ""
     for cnt,(label, subtree) in enumerate(t):
         if subtree.tag == "Name":
             continue
         if name in MatterObjectNames and cnt <= 2:
             s += MatterObjectArgs[cnt-1](subtree)
             continue
+        if name == "print" and subtree.tag == "Char" or subtree.tag == "String":
+            Str = conv(subtree)
+            continue
         s += conv(subtree)
-    if name == "print":
-        s += WordOption()
     if name in MatterObjectNames:
         return "{}{{\n{}}});".format(MatterObjectNames[name],Indent(s))
-    else:
-        return "{}{});".format(cheepna[name],s)
-    return s
+    if name == "print":
+        return "puppy.print({},{{\n{}}});".format(Str,Indent(s))
+    return s #ここを通る例はない
 
 
 def IfStmt(t):
-    s = 'if ('
-    s += conv(t['cond'])
-    s += ')'
+    s = 'if ({})'.format(conv(t['cond']))
     s += conv(t['then'])
     if 'else' in t:
-        s += 'else'
-        s += conv(t['else'])
+        s += 'else{}'.format(conv(t['else']))
     return s
 
 
