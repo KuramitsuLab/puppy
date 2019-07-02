@@ -33,7 +33,8 @@ window['PuppyVMCode'] = {{
 # for label, subtree in t:
 #   print(label, subtree)
 
-renders = {}
+
+userwordopt = {}
 
 def Source(t):
     s = ''
@@ -47,25 +48,49 @@ def VarDecl(t):
     right = conv(t['right'])
     return '{} = {}'.format(left, right)
 
-option = [
+def ForStmt(t):
+    each = conv(t['each'])
+    varlist = conv(t['list'])
+    body = conv(t['body'])
+    return 'for (var {} of {}){}'.format(each,varlist,body)
+
+
+def FuncDecl(t):
+    name = conv(t['name'])
+    params = conv(t['params'])
+    body = ""
+    for label,subtree in t:    #仮
+        if subtree.tag == "Block":
+            body += conv(subtree)
+    return "const {} = ({}) => {}\n".format(name,params,body)
+
+
+def FuncParam(t):
+    s = ""
+    for i,(label,subtree) in enumerate(t):
+        if i > 0:
+            s += ","
+        s += conv(subtree) 
+    return s
+
+optional = [
     'position',
     'Ball',
 ]
 
-render = [
-    'fillStyle',
-    'strokeStyle',
-    'lineWidth',
+wordoptional = [
+    'font',
+    'color',
 ]
 
 def KeywordArgument(t):
     name = conv(t['name'])
     value = conv(t['value'])
-    if name in option:
+    if name in optional:
         return "'{}' : {{\n{}}},\n".format(name,Indent(value))
-    # if name in render:
-    #     renders[name] = value
-    #     return ""
+    if name in wordoptional:
+        userwordopt[name] = value
+        return ""
     return "'{}' : {},\n".format(name, value)
     
 
@@ -80,6 +105,18 @@ def KeyValue(t):
     value = conv(t['value'])
     return "{} : {},\n".format(name, value)
 
+def List(t):
+    l = []
+    for label, subtree in t:
+        l.append(int(conv(subtree)))
+    return l
+
+def TrueExpr(t):
+    return t.asString()
+
+def FalseExpr(t):
+    return t.asString()
+
 def Name(t):
     return t.asString()
 
@@ -89,16 +126,21 @@ def Int(t):
 def String(t):
     return "'{}'".format(t.asString())
 
-def Render():
+def Char(t):
+    return "'{}'".format(t.asString())
+
+
+def WordOption():
     s = ""
-    for i in renders:
-        print(i)
-        name = i
-        value = renders[i]
-        s += "'{}' : {},\n".format(name, value)
-    s = Indent(s)
-    renders.clear()    
-    return "'render' : {{\n{}}},".format(s)
+    for i,w in enumerate(userwordopt):
+        name = w
+        value = userwordopt[w]
+        if i != len(userwordopt)-1:
+            s += "'{}' : {},".format(name, value)
+        else:
+            s += "'{}' : {}".format(name, value)
+    userwordopt.clear()
+    return ", {{{}}}".format(s)
 
 
 def Indent(t):
@@ -108,25 +150,37 @@ def Indent(t):
         s += "    " + i + "\n"
     return s
 
-cheepna = {
-    'print': 'puppy.print(',
-    'Ball': 'puppy.newMatter("circle", '
+MatterObjectNames = {
+    "Ball" : 'puppy.newMatter("circle", ',
+    "Rectangle" : 'puppy.newMatter("rectangle", ',
+    "Circle" : 'puppy.newMatter("circle", '
 }
 
+MatterObjectArgs = [
+    lambda subtree : "'position' = {{'x' : {}".format(conv(subtree)),
+    lambda subtree : ", 'y': {}}},\n".format(conv(subtree)),
+]
+
+cheepna = {
+    'print': 'puppy.print(',
+}
 
 def ApplyExpr(t):
     name = conv(t['name'])
     s = ""
-    for label, subtree in t:
+    for cnt,(label, subtree) in enumerate(t):
         if subtree.tag == "Name":
             continue
+        if name in MatterObjectNames and cnt <= 2:
+            s += MatterObjectArgs[cnt-1](subtree)
+            continue
         s += conv(subtree)
-    if len(renders) != 0:
-        s += Render()
-    if name in cheepna:
-        if name in option:
-            return "{}{{\n{}}});\n".format(cheepna[name],Indent(s))
-        return "{}{});\n".format(cheepna[name],s)
+    if name == "print":
+        s += WordOption()
+    if name in MatterObjectNames:
+        return "{}{{\n{}}});".format(MatterObjectNames[name],Indent(s))
+    else:
+        return "{}{});".format(cheepna[name],s)
     return s
 
 
@@ -147,11 +201,10 @@ def Infix(t):
 
 
 def Block(t):
-    s = '{' + '\n'
+    s = ''
     for label, subtree in t:
         s += conv(subtree) + '\n'
-    s += '}'
-    return s
+    return '{{\n{}}}'.format(Indent(s))
 
 func = globals()
 
