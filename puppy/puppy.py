@@ -22,7 +22,7 @@ window['PuppyVMCode'] = {{
     'mouse': true,
   }},
   bodies: [],
-  main: function(Matter,puppy){{
+  main: function*(Matter,puppy){{
 {main}
   }},
   errors: []
@@ -44,7 +44,7 @@ def Source(t):
 
 
 def VarDecl(t):
-    left = f"puppy.vars['{conv(t['left'])}']"
+    left = f"yield puppy.vars['{conv(t['left'])}']"
     right = conv(t['right'])
     return '{} = {}'.format(left, right)
 
@@ -157,7 +157,7 @@ MatterObjectNames = {
 }
 
 MatterObjectArgs = [
-    lambda subtree : "'position' = {{'x' : {}".format(conv(subtree)),
+    lambda subtree : "'position' : {{'x' : {}".format(conv(subtree)),
     lambda subtree : ", 'y': {}}},\n".format(conv(subtree)),
 ]
 

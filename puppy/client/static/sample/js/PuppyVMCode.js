@@ -53,12 +53,18 @@ window['PuppyVMCode'] = {
       },
     },
   ],
-  main: function(Matter,puppy){
-    console.log("Hi!!!");
-    puppy.vars["A"] = puppy.newMatter('circle', {});
-    puppy.vars["ボール"].value = "のぶちゃん";
-    puppy.print("Hello");
-    puppy.print("Comment");
+  main: function* (Matter,puppy){
+    yield console.log("Hi!!!");
+    for (const name of ["A", "B", "C", "D", "E"]) {
+      yield puppy.vars[name] = puppy.newMatter('circle', {});
+    }
+    yield puppy.vars["ボール"].value = "のぶちゃん";
+    const ball_clicked = () => {puppy.print("Clicked!")};
+    yield puppy.vars["ボール"].clicked = ball_clicked;
+    const ball_collision = (me, you) => { puppy.print(you.name) };
+    yield puppy.vars["ボール"].collisionStart = ball_collision;
+    yield puppy.print("Hello");
+    yield puppy.print("Comment");
   },
   errors: [
   ]
