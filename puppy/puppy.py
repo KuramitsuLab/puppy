@@ -157,7 +157,7 @@ MatterObjectNames = {
 }
 
 MatterObjectArgs = [
-    lambda subtree : "'position' = {{'x' : {}".format(conv(subtree)),
+    lambda subtree : "'position' : {{'x' : {}".format(conv(subtree)),
     lambda subtree : ", 'y': {}}},\n".format(conv(subtree)),
 ]
 
