@@ -43,6 +43,7 @@ export class Puppy {
   private main: (Matter, puppy: Puppy) => IterableIterator<void>;
   private rules: PuppyRule[];
   private isRestart: boolean = false;
+  private isStep: boolean = false;
 
   // private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
@@ -80,15 +81,24 @@ export class Puppy {
   }
 
   public async waitForRun(interval) {
-    while (!this.runner.enabled) {
+    while (!(this.runner.enabled || this.isStep)) {
       await this.wait(interval);
     }
   }
 
   public async execute_main() {
     for await (const _ of this.main(Matter, this)) {
-      await this.wait(0.5);
+      if (this.isStep) {
+        this.runner.enabled = false;
+        this.isStep = false;
+      }else {
+        await this.wait(0.5);
+      }
       await this.waitForRun(1);
+    }
+    if (this.isStep) {
+      this.runner.enabled = true;
+      this.isStep = false;
     }
   }
 
@@ -104,6 +114,14 @@ export class Puppy {
   public pause() {
     // console.log("pause");
     this.runner.enabled = false;
+  }
+
+  public step() {
+    this.isStep = true;
+    if (!this.isRestart) {
+      this.isRestart = true;
+      this.execute_main();
+    }
   }
 
   public init() {
