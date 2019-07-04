@@ -1,4 +1,6 @@
 
 # Puppy Essay
 
-Please access for https://kuramitsulab.github.io/puppy/.
+This essay is deployed by Github Pages.
+
+Please access https://kuramitsulab.github.io/puppy/.
