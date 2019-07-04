@@ -109,3 +109,7 @@ puppy/client/node_modules/*
 #main js files
 puppy/client/static/js/main.js
 puppy/client/static/js/main.js.map
+
+#live
+doc/live/node_modules
+doc/live/package-lock.json
