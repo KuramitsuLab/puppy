@@ -1,4 +1,4 @@
 
-# Splash2019 - LIVE paper
+# Puppy Paper
 
 Please access for https://kuramitsulab.github.io/puppy/.
