@@ -1,0 +1,7 @@
+{
+  type: 'puppy',
+  list: [
+    ['PlayGround/01', 'Hello World'],
+    ['PlayGround/02', 'Ball'],
+  ]
+}

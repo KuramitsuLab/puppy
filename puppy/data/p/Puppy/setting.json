@@ -1,0 +1,18 @@
+{
+  "type": "puppy",
+  "view": [
+    "problem",
+    "puppy-console",
+    "terminal"
+  ],
+  "list": [
+    "01",
+    "02"
+  ],
+  "01": {
+    "title": "Hello World"
+  },
+  "02": {
+    "title": "Droping Ball"
+  }
+}

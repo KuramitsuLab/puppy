@@ -59,11 +59,9 @@ document.getElementById('pause').onclick = () => {
   // buttonActivate('play');
 };
 
-// document.getElementById('reload').onclick = () => {
-//   puppy.load(window['PuppyVMCode']);
-//   // buttonInactivate('pause');
-//   // buttonActivate('play');
-// };
+document.getElementById('step').onclick = () => {
+  puppy.step();
+};
 
 // document.getElementById('debug').onclick = () => {
 //   puppy.debug();

@@ -61,12 +61,20 @@ export const myRender = (render) => {
           c.translate(part.position.x, part.position.y);
           c.rotate(part.angle);
 
+          if (!part.height) {
+            part.height = part.width;
+          }
+
           c.drawImage(
             texture,
-            texture.width * -sprite.xOffset * sprite.xScale,
-            texture.height * -sprite.yOffset * sprite.yScale,
-            texture.width * sprite.xScale,
-            texture.height * sprite.yScale,
+            // texture.width * -sprite.xOffset * sprite.xScale,
+            // texture.height * -sprite.yOffset * sprite.yScale,
+            // texture.width * sprite.xScale,
+            // texture.height * sprite.yScale,
+            part.width * -sprite.xOffset * sprite.xScale,
+            part.height * -sprite.yOffset * sprite.yScale,
+            part.width * sprite.xScale,
+            part.height * sprite.yScale,
           );
 
           // revert translation, hopefully faster than save / restore

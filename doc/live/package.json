@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "deploy": "gh-pages -d static -o upstream",
+    "local": "node dev-server.js"
+  },
+  "devDependencies": {
+    "gh-pages": "^2.0.1"
+  },
+  "private": true,
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

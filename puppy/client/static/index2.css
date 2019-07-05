@@ -1,0 +1,111 @@
+/* index.css */
+
+@font-face {
+  font-family: "MyYuGothicM";
+  font-weight: normal;
+  src: local("YuGothic-Medium"),
+    local("Yu Gothic Medium"),
+    local("YuGothic-Regular");
+}
+@font-face {
+  font-family: "MyYuGothicM";
+  font-weight: bold;
+  src: local("YuGothic-Bold"),
+    local("Yu Gothic");
+}
+
+/*https://qiita.com/hashrock/items/5c18bf5086f52e4122e5*/
+
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+html {
+  font-family: /*-apple-system, BlinkMacSystemFont,*/ "Hiragino Kaku Gothic ProN", MyYuGothicM, Meiryo, sans-serif;
+  font-size: 16px;
+}
+
+.flex-list {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.flex-item {
+  flex: 0 0 48%;
+  max-width: 48%; /* IE11バグ対応 */
+  background-image: url(./image/puppyLogo.png);
+  background-position: center;
+  text-align: center;
+}
+
+.flex-sub{
+  flex: 0 0 4%;
+  max-width: 4%;
+  background-color: white;
+}
+
+.flex-button{
+  display: flex;
+  flex-direction: column;
+}
+
+#puppy-screen{
+    position: center;
+    width: calc(100vw/2);
+    height: calc(100vw/2);
+    background-color: white;
+    margin: 0 auto;
+}
+
+#editor {
+    position: center;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.7);
+    font-size: calc(100vw / 45);
+    text-align: left;
+    margin: 0 auto;
+}
+
+
+#canvas:-webkit-full-screen{
+	position : absolute ;
+	left     : 0 ;
+	top      : 0 ;
+	width    : 100% ;
+	height   : 100% ;
+}
+#canvas:-moz-full-screen {
+	position : absolute ;
+	left     : 0 ;
+	top      : 0 ;
+	width    : 100% ;
+	height   : 100% ;
+}
+#canvas:-ms-fullscreen {
+	position : absolute ;
+	left     : 0 ;
+	top      : 0 ;
+	width    : 100% ;
+	height   : 100% ;
+}
+#canvas:fullscreen {
+	position : absolute ;
+	left     : 0 ;
+	top      : 0 ;
+	width    : 100% ;
+	height   : 100% ;
+}
+
+svg {
+  margin: 0.4em;
+  overflow: visible;
+}
+
+.i-large div { font-size: 4em; margin: 0 }
+.i-medium div { font-size: 2em; margin: 0 }
+.i-small div { font-size: 1.5em; margin: 0 }
+
+.i-large,
+.i-medium,
+.i-small { max-width: 50em; margin: 0 auto 2em }
