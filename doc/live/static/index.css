@@ -1,0 +1,33 @@
+body {
+  font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-size: 1.6em;
+  font-weight: 300;
+  letter-spacing: .01em;
+  line-height: 1.6;
+}
+
+.all-contents {
+  margin: 0 auto;
+  max-width: 100rem;
+}
+
+#essay .body p {
+  font-family: 'Merriweather', serif;
+}
+
+.authors {
+  text-align: center;
+}
+
+.authors .author {
+  display: inline-block;
+  margin: 0 4em;
+}
+
+.authors .author .institution {
+  font-size: 80%
+}
+
+.authors .author .e-mail {
+  font-size: 80%
+}

@@ -123,7 +123,8 @@ def Indent(t):
 MatterObjectNames = {
     "Ball" : 'puppy.newMatter("circle", ',
     "Rectangle" : 'puppy.newMatter("rectangle", ',
-    "Circle" : 'puppy.newMatter("circle", '
+    "Circle" : 'puppy.newMatter("circle", ',
+    "Polygon": 'puppy.newMatter("polygon", '
 }
 
 MatterObjectArgs = [
@@ -144,11 +145,16 @@ def ApplyExpr(t):
         if name == "print" and subtree.tag == "Char" or subtree.tag == "String":
             Str = conv(subtree)
             continue
+        if name == "Label" and subtree.tag == "Char" or subtree.tag == "String":
+            Str = conv(subtree)
+            continue
         s += conv(subtree)
     if name in MatterObjectNames:
         return "{}{{\n{}}});".format(MatterObjectNames[name],Indent(s))
     if name == "print":
         return "puppy.print({},{{\n{}}});".format(Str,Indent(s))
+    if name == "Label":
+        return "puppy.newMatter('label', {{ \n  value: {}, \n{}}});".format(Str, Indent(s))
     return s #ここを通る例はない
 
 

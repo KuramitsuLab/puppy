@@ -43,6 +43,7 @@ export class Puppy {
   private main: (Matter, puppy: Puppy) => IterableIterator<void>;
   private rules: PuppyRule[];
   private isRestart: boolean = false;
+  private isStep: boolean = false;
 
   // private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
@@ -80,15 +81,24 @@ export class Puppy {
   }
 
   public async waitForRun(interval) {
-    while (!this.runner.enabled) {
+    while (!(this.runner.enabled || this.isStep)) {
       await this.wait(interval);
     }
   }
 
   public async execute_main() {
     for await (const _ of this.main(Matter, this)) {
-      await this.wait(0.5);
+      if (this.isStep) {
+        this.runner.enabled = false;
+        this.isStep = false;
+      }else {
+        await this.wait(0.5);
+      }
       await this.waitForRun(1);
+    }
+    if (this.isStep) {
+      this.runner.enabled = true;
+      this.isStep = false;
     }
   }
 
@@ -104,6 +114,14 @@ export class Puppy {
   public pause() {
     // console.log("pause");
     this.runner.enabled = false;
+  }
+
+  public step() {
+    this.isStep = true;
+    if (!this.isRestart) {
+      this.isRestart = true;
+      this.execute_main();
+    }
   }
 
   public init() {
@@ -376,11 +394,11 @@ export class Puppy {
     return body;
   }
 
-  public print(text: string, options= {}) {  // FIXME
-    const x = 1000;
-    const y = Math.random() * 1000;
-    const body = newBody('ticker', options);
-    body['name'] = 'コメント';
+  public print(text: string, options= {}) {
+    options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
+    options['position']['x'] = options['position']['x'] || 1000;
+    options['position']['y'] = options['position']['y'] || Math.random() * 1000;
+    const body = newBody('label', options);
     body['value'] = text;
     World.add(this.engine.world, [body]);
     const invokedTime = this.engine.timing.timestamp;
@@ -431,10 +449,10 @@ const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
     const y = options['position']['y'] || 500;
     return Matter.Bodies.trapezoid(x, y, options['width'] || 100, options['height'] || 100, options['slope'] || 0.5, options);
   },
-  ticker(options: {}) {
-    options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
-    const x = options['position']['x'] || 1000;
-    const y = options['position']['y'] || Math.random() * 1000;
+  label(options: {}) {
+    options['position'] = options['position'] || { x: 0, y: 0 };
+    const x = options['position']['x'] || 0;
+    const y = options['position']['y'] || 0;
     if (!('isStatic' in options)) {
       options['isStatic'] = true;
     }

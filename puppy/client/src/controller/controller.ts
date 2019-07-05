@@ -55,6 +55,10 @@ document.getElementById('pause').onclick = () => {
   buttonActivate('play');
 };
 
+document.getElementById('step').onclick = () => {
+  puppy.step();
+};
+
 document.getElementById('reload').onclick = () => {
   puppy.load(window['PuppyVMCode']);
   buttonInactivate('pause');
