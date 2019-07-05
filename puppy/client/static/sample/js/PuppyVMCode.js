@@ -65,6 +65,14 @@ window['PuppyVMCode'] = {
     yield puppy.vars["ボール"].collisionStart = ball_collision;
     yield puppy.print("Hello");
     yield puppy.print("Comment");
+    puppy.vars['x'] = 1
+    const score = (cnt) => 'Score: ' + cnt;
+    yield puppy.vars['score'] = puppy.newMatter('label', { value: score(puppy.vars['x']), position: { x: 60, y: 30 } })
+    yield puppy.vars['score'].value = score(++puppy.vars['x'])
+    yield puppy.vars['score'].value = score(++puppy.vars['x'])
+    yield puppy.vars['score'].value = score(++puppy.vars['x'])
+    yield puppy.vars['score'].value = score(++puppy.vars['x'])
+    yield puppy.newMatter('polygon', {})
   },
   errors: [
   ]
