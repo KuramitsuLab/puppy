@@ -1,6 +1,6 @@
 
 export const compile: (code: string) => Promise<void> = (code) => {
-  return fetch('compile', {
+  return fetch('/compile', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/text; charset=utf-8',

@@ -1,7 +1,5 @@
 import * as ace from '../../node_modules/ace-builds/src-min-noconflict/ace.js';
-// import * as solarized_light from '../../node_modules/ace-builds/src-min-noconflict/theme-solarized_light.js';
 import * as python_mode from '../../node_modules/ace-builds/src-min-noconflict/mode-python.js';
-// import * as js_mode from '../../node_modules/ace-builds/src-min-noconflict/mode-javascript.js';
 
 const editorState = {
   fontSize: 20,
