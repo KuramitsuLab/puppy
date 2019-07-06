@@ -1,6 +1,6 @@
 import { puppy } from '../model/puppy';
 import { getSample } from '../model/api';
-import { editor, fontPlus, fontMinus, addZenkaku } from '../view/editor';
+import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
 import { exitFullscreen, getFullscreen } from '../view/screen';
 // import { buttonActivate, buttonInactivate } from '../view/button';
 import * as marked from 'marked';
@@ -10,7 +10,16 @@ let fullscreen = false;
 function resizeMe() {
   const w = window.innerWidth;
   const h = window.innerHeight;
+  const toph = document.getElementById('top').clientHeight;
   console.log('resizeMe', w, h, fullscreen, getFullscreen());
+  const ed = document.getElementById('editor');
+  ed.style.height = `${(h - toph - 1)}px`;
+  const tm = document.getElementById('terminal');
+  tm.style.height = (h - toph - 1) + 'px';
+  const dc = document.getElementById('problem');
+  dc.style.height = (h - toph - 1) + 'px';
+  editor.resize();
+  terminal.resize();
   if (getFullscreen() != null) {
     fullscreen = true;
   }
@@ -128,15 +137,11 @@ editor.on('change', (cm, obj) => {
     if (page['viewmode'] === 'puppy-view') {
       puppy.compile(editor.getValue());
     }
-    check();
+    checkZenkaku();
     // buttonInactivate('pause');
     // buttonActivate('play');
   },                 400);
 });
-
-const check = () => {
-  addZenkaku(2, 3, 2, 8);
-};
 
 // window.onload = () => {
 resizeMe();
