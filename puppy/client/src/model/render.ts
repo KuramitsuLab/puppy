@@ -40,7 +40,7 @@ export const myRender = (render) => {
           }
         });
         if ('image' in part) {
-          part['sprite']['texture'] = `./image/${part['image']}`;
+          part['sprite']['texture'] = `/image/${part['image']}`;
         }
 
         if (!part.visible) {

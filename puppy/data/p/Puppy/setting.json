@@ -1,18 +1,19 @@
 {
   "type": "puppy",
-  "view": [
-    "problem",
-    "puppy-console",
-    "terminal"
+  "viewlist": [
+    "problem-view",
+    "puppy-view",
+    "terminal-view"
   ],
+  "viewmode": "puppy-view",
   "list": [
-    "01",
-    "02"
+    "/Puppy/01",
+    "/Puppy/02"
   ],
-  "01": {
+  "/Puppy/01": {
     "title": "Hello World"
   },
-  "02": {
+  "/Puppy/02": {
     "title": "Droping Ball"
   }
 }

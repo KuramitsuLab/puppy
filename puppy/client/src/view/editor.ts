@@ -26,4 +26,8 @@ editor.getSession().setMode(new python_mode.Mode());
 editor.getSession().setUseWrapMode(true); /* 折り返しあり */
 setFontSize(20);
 
+export const addZenkaku = (r1: number, c1: number, r2: number, c2: number) => {
+  editor.getSession().addMarker(new ace.Range(r1, c1, r2, c2), 'utf8', 'text');
+};
+
 document.getElementsByClassName('ace_gutter')[0].setAttribute('style', 'background: rgb(49, 48, 47); color: white;');

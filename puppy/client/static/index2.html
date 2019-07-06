@@ -68,7 +68,7 @@
     /* Caption text */
     .text {
       color: #f2f2f2;
-      font-size: 15px;
+      font-size: 12px;
       padding: 8px 12px;
       position: absolute;
       bottom: 8px;
@@ -147,9 +147,14 @@
       width: 100%;
       height: 100%;
       background: rgba(255, 255, 255, 0.7);
-      font-size: calc(100vw / 45);
       text-align: left;
       margin: 0 auto;
+    }
+
+    .utf8 {
+      position: absolute;
+      background: rgba(100, 200, 100, 0.5);
+      z-index: 20
     }
   </style>
 
@@ -159,9 +164,9 @@
   <div class="top" style="padding:8px 0;">
     <button class="btn"><i class="fa fa-paw"></i> Puppy </button>
     <button class="btn"><i class="fa fa-bars"></i></button>
-    <button class="btn"><i class="fa fa-folder"></i> Sample </button>
-    <button class="btn"> &laquo;</button>
-    <button class="btn"> &raquo;</button>
+    <button class="btn"><i class="fa fa-folder"></i> <span id="page-title">Sample</span> </button>
+    <button id="prev-page" class="btn"> &laquo;</button>
+    <button id="next-page" class="btn"> &raquo;</button>
 
     <span style="float:right;">
       <span id="framesize"></span>
@@ -171,30 +176,35 @@
     </span>
   </div>
   <div class="main" style="display: flex; flex-wrap: nowrap;">
-    <div class="main-left" style="width: 50%;">
-      <div class="slideshow-container" style="min-height: 600px;position: relative;">
+    <div class="main-left" style="width: 50%;position: relative;">
+      <div class="slideshow-container" style="min-height: 600px;">
         <!-- Full-width images with number and caption text -->
-        <div class="mySlides fade">
+        <div id="puppy-view" class="mySlides fade">
           <div id="puppy-screen"></div>
           <div class="text">
             <button id="play" class="btn"><i class="fa fa-play"></i> Play </button>
             <button id="pause" class="btn"><i class="fa fa-pause"></i></button>
             <button id="step" class="btn"><i class="fa fa-step-forward"></i></button>
             <button id="extend" class="btn"><i class="fa fa-expand"></i></button>
-            <!-- <button class="btn"><i class="fa fa-compress"></i></button> -->
+            <button class="btn next-prev"></i>&#10094;</button>
+            <button class="btn next-view"></i>&#10095;</button>
           </div>
         </div>
 
-        <div class="mySlides fade">
+        <div id="terminal-view" class="mySlides fade">
           <div id="terminal" class="markdown-body"></div>
           <div class="text">
+            <button class="btn next-prev"></i>&#10094;</button>
+            <button class="btn next-view"></i>&#10095;</button>
           </div>
         </div>
 
-        <div class="mySlides fade">
+        <div id="problem-view" class="mySlides fade">
           <div id="problem"></div>
           <div class="text" class="markdown-body">
             <button class="btn"><i class="fa fa-folder"></i> Submit </button>
+            <button class="btn next-prev"></i>&#10094;</button>
+            <button class="btn next-view"></i>&#10095;</button>
           </div>
         </div>
 
