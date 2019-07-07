@@ -103,6 +103,9 @@ document.getElementById('build').onclick = () => {
     console.log(data);
     const doc = terminal.getValue() + '\n' + data;
     terminal.setValue(doc, -1);
+    terminal.resize(true);
+    // terminal.scrollToLine(50, true, true, function () { });
+    // terminal.gotoLine(50, 10, true);
   }).catch((msg: string) => {
     const doc = terminal.getValue() + '\n' + `${msg}`;
     terminal.setValue(doc, -1);
