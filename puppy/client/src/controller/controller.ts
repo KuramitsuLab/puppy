@@ -5,38 +5,6 @@ import { exitFullscreen, getFullscreen } from '../view/screen';
 // import { buttonActivate, buttonInactivate } from '../view/button';
 import * as marked from 'marked';
 
-let fullscreen = false;
-
-function resizeMe() {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const toph = document.getElementById('top').clientHeight;
-  console.log('resizeMe', w, h, fullscreen, getFullscreen());
-  const ed = document.getElementById('editor');
-  ed.style.height = `${(h - toph - 1)}px`;
-  const tm = document.getElementById('terminal');
-  tm.style.height = (h - toph - 1) + 'px';
-  const dc = document.getElementById('problem');
-  dc.style.height = (h - toph - 1) + 'px';
-  editor.resize();
-  terminal.resize();
-  if (getFullscreen() != null) {
-    fullscreen = true;
-  }
-  if (fullscreen) {
-    const min = Math.min(w, h);
-    puppy.set_window_size(min, min);
-    fullscreen = false;
-  } else {
-    if (w <= 800) {
-      puppy.set_window_size(w, w);
-    } else {
-      const min = Math.min(w / 2, h);
-      puppy.set_window_size(min, min);
-    }
-  }
-}
-
 // window.onload = resizeMe;
 // window.onclick = resizeMe;
 
@@ -57,10 +25,6 @@ document.getElementById('step').onclick = () => {
   puppy.step();
 };
 
-// document.getElementById('debug').onclick = () => {
-//   puppy.debug();
-// };
-
 document.getElementById('font-plus').onclick = () => {
   fontPlus();
 };
@@ -68,14 +32,6 @@ document.getElementById('font-plus').onclick = () => {
 document.getElementById('font-minus').onclick = () => {
   fontMinus();
 };
-
-/**
-document.onkeydown = (evt) => {
-  if (evt.keyCode === 27) {
-    exitFullscreen();
-  }
-};
-*/
 
 document.getElementById('extend').onclick = () => {
   puppy.requestFullScreen();
@@ -125,6 +81,38 @@ const loadProblem: (path: string) => Promise<string> = (path) => {
   });
 };
 
+const submitBuild: (path: string) => Promise<string> = (path) => {
+  return fetch(`/build${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text; charset=utf-8',
+    },
+    body: editor.getValue(),
+  }).then((res: Response) => {
+    if (res.ok) {
+      return res.text();
+    }
+    throw new Error(res.statusText);
+  }).then((output: string) => {
+    return output;
+  });
+};
+
+document.getElementById('build').onclick = () => {
+  submitBuild(path).then((data: string) => {
+    console.log(data);
+    const doc = terminal.getValue() + '\n' + data;
+    terminal.setValue(doc, -1);
+  }).catch((msg: string) => {
+    const doc = terminal.getValue() + '\n' + `${msg}`;
+    terminal.setValue(doc, -1);
+  });
+};
+
+document.getElementById('clear').onclick = () => {
+  terminal.setValue('', 0);
+};
+
 let timer = null;
 
 editor.on('change', (cm, obj) => {
@@ -144,19 +132,52 @@ editor.on('change', (cm, obj) => {
 });
 
 // window.onload = () => {
+
+let fullscreen = false;
+function resizeMe() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const toph = document.getElementById('top').clientHeight;
+  console.log('resizeMe', w, h, fullscreen, getFullscreen());
+  const ed = document.getElementById('editor');
+  ed.style.height = `${(h - toph - 1)}px`;
+  const tm = document.getElementById('terminal');
+  tm.style.height = `${(h - toph - 1)}px`;
+  const dc = document.getElementById('problem');
+  dc.style.height = `${(h - toph - 1)}px`;
+  const pp = document.getElementById('puppy-screen');
+  pp.style.height = `${(h - toph - 1)}px`;
+  editor.resize();
+  terminal.resize();
+  if (getFullscreen() != null) {
+    fullscreen = true;
+  }
+  if (fullscreen) {
+    puppy.resize(w, h);
+    fullscreen = false;
+  } else {
+    puppy.resize(w / 2, (h - toph - 1));
+  }
+}
 resizeMe();
+window.onresize = resizeMe;
 
 loadSetting(path).then((jsonstr: string) => {
   console.log(jsonstr);
   page = JSON.parse(jsonstr);
-  if (page['type']) {
-    console.log(page['type']);
+  if (page['type'] === 'sumomo') {
+    const doc = document.getElementById('name');
+    doc.innerHTML = 'Sumomo';
   }
+  // else {
+  //   const doc = document.getElementById('name');
+  //   doc.innerHTML = 'Puppy';
+  // }
   if (page[path]) {
     const doc = document.getElementById('page-title');
     doc.innerHTML = page[path].title;
   }
-
+  showSilde(page['viewmode']);
 }).catch((msg: string) => {
   console.error(msg);
 });
@@ -176,7 +197,6 @@ loadSample(path).then((sample: string) => {
 }).catch((msg: string) => {
   console.error(msg);
 });
-// };
 
 const showSilde = (mode: string) => {
   const slides = document.getElementsByClassName('mySlides');
@@ -206,7 +226,7 @@ const shiftSlide = (n: number) => {
       index = i;
     }
   }
-  page['viewmode'] = viewlist[(index + n) % viewlist.length];
+  page['viewmode'] = viewlist[(index + viewlist.length + n) % viewlist.length];
 };
 
 const setSlideButtons = () => {
@@ -235,7 +255,16 @@ const getPagePath = (shift: number) => {
       index = i;
     }
   }
-  return pages[index + shift % pages.length];
+  return pages[(index + pages.length + shift) % pages.length] || pages[0];
+};
+
+document.getElementById('base').onclick = () => {
+  if (path.startsWith('/Puppy')) {
+    location.href = '/ITPP/01A';
+  }
+  else {
+    location.href = '/Puppy/01';
+  }
 };
 
 document.getElementById('next-page').onclick = () => {

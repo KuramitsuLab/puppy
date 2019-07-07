@@ -1,7 +1,18 @@
 {
-  type: 'puppy',
-  list: [
-    ['PlayGround/01', 'Hello World'],
-    ['PlayGround/02', 'Ball'],
-  ]
+  "type": "sumomo",
+  "viewlist": [
+    "problem-view",
+    "terminal-view"
+  ],
+  "viewmode": "problem-view",
+  "list": [
+    "/ITPP/01A",
+    "/ITPP/01B"
+  ],
+  "/ITPP/01A": {
+    "title": "Hello World"
+  },
+  "/ITPP/01B": {
+    "title": "Droping Ball"
+  }
 }

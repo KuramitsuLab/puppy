@@ -30,6 +30,11 @@ editor.getSession().setUseWrapMode(true); /* 折り返しあり */
 setFontSize(20);
 
 let markers = [];
+const zenkaku = '！　”＃＄％＆’（）＊＋，－．／：；＜＝＞？＠［＼￥］＾＿‘｛｜｝～￣'
+  + 'ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ'
+  + 'ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ'
+  + '１２３４５６７８９０'
+  + '｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾉﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ';
 
 export const checkZenkaku = () => {
   const lines: [string] = editor.getSession().getDocument().getAllLines();
@@ -43,7 +48,7 @@ export const checkZenkaku = () => {
     const s = lines[i];
     for (let c = 0; c < s.length; c++) {
       const ch = s.charCodeAt(c);
-      if (ch > 127) {
+      if (ch > 127 && zenkaku.search(s[c]) > 0) {
         console.log(`${s}: ${i},${c}, ${ch}`);
         const m = editor.session.addMarker(new Range4(i, c, i + 1, c), 'utf8', 'text');
         markers.push(m);

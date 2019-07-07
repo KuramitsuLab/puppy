@@ -68,12 +68,13 @@ export class Puppy {
     }
   }
 
-  public set_window_size(width: number, height: number) {
-
-    // this.canvas.setAttribute('width', this.width.toString());
-    // this.canvas.setAttribute('height', this.height.toString());
-    // this.render.options.width = this.width;
-    // this.render.options.height = this.height;
+  public resize(width: number, height: number) {
+    const w = Math.min(width, height);
+    const h = Math.max(width, height);
+    this.canvas.setAttribute('width', w.toString());
+    this.canvas.setAttribute('height', h.toString());
+    this.render.options.width = w;
+    this.render.options.height = h;
   }
 
   public async wait(sec) {
@@ -91,7 +92,7 @@ export class Puppy {
       if (this.isStep) {
         this.runner.enabled = false;
         this.isStep = false;
-      }else {
+      } else {
         await this.wait(0.5);
       }
       await this.waitForRun(1);
@@ -376,7 +377,7 @@ export class Puppy {
       // TODO
       // editor にエラー情報をフィードバックする
     }
-    this.main = code.main || (function* (Matter: any, puppy: Puppy) {});
+    this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
     this.ready();
   }
 
@@ -394,7 +395,7 @@ export class Puppy {
     return body;
   }
 
-  public print(text: string, options= {}) {
+  public print(text: string, options = {}) {
     options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
     options['position']['x'] = options['position']['x'] || 1000;
     options['position']['y'] = options['position']['y'] || Math.random() * 1000;
