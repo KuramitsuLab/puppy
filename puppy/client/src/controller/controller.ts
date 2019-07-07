@@ -41,6 +41,20 @@ document.getElementById('extend').onclick = () => {
 
 const path = location.pathname;
 let page: {} = null;
+const gallery = null;
+
+const loadFile: (path: string) => Promise<string> = (path) => {
+  return fetch(path, {
+    method: 'GET',
+  }).then((res: Response) => {
+    if (res.ok) {
+      return res.text();
+    }
+    throw new Error(res.statusText);
+  }).then((sample: string) => {
+    return sample;
+  });
+};
 
 const loadSetting: (path: string) => Promise<string> = (path) => {
   return fetch(`/setting${path}`, {
@@ -150,6 +164,8 @@ function resizeMe() {
   dc.style.height = `${(h - toph - 1)}px`;
   const pp = document.getElementById('puppy-screen');
   pp.style.height = `${(h - toph - 1)}px`;
+  const gl = document.getElementById('gallery');
+  gl.style.height = `${(h - toph - 1)}px`;
   editor.resize();
   terminal.resize();
   if (getFullscreen() != null) {
@@ -171,6 +187,14 @@ loadSetting(path).then((jsonstr: string) => {
   if (page['type'] === 'sumomo') {
     const doc = document.getElementById('name');
     doc.innerHTML = 'Sumomo';
+  }
+  else {
+    loadFile('/gallery').then((data: string) => {
+      const doc = document.getElementById('gallery');
+      doc.innerHTML = data;
+    }).catch((msg: string) => {
+      console.error(msg);
+    });
   }
   // else {
   //   const doc = document.getElementById('name');

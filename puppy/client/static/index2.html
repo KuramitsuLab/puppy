@@ -114,6 +114,23 @@
       }
     }
 
+    /* The flex-wrap Property */
+    .flex-container {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      overflow-y: scroll;
+      background-color: antiquewhite;
+    }
+
+    .flex-container>div {
+      width: 120px;
+      margin: 10px;
+      text-align: center;
+      line-height: 40px;
+      font-size: 12px;
+    }
+
     #puppy-screen {
       position: center;
       /*width: calc(100vw/2);*/
@@ -193,9 +210,18 @@
       </div>
 
       <div id="problem-view" class="mySlides fade">
-        <div id="problem" class="markdown-body"></div>
+        <div id="problem" class="markdown-body" style="overflow-y: scroll"></div>
         <div class="text">
           <button id="judge" class="btn"><i class="fa fa-folder"></i> Judge </button>
+          <button class="btn prev-view">&#10094;</button>
+          <button class="btn next-view">&#10095;</button>
+        </div>
+      </div>
+
+      <div id="image-view" class="mySlides fade">
+        <div id="gallery" class="flex-container">
+        </div>
+        <div class="text">
           <button class="btn prev-view">&#10094;</button>
           <button class="btn next-view">&#10095;</button>
         </div>

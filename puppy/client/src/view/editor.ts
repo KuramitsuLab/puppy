@@ -22,10 +22,7 @@ export const fontMinus = () => {
 const Range4 = ace.require('ace/range').Range;
 
 export const editor = ace.edit('editor');
-
-// editor.setTheme(solarized_light);
 editor.getSession().setMode(new python_mode.Mode());
-// editor.getSession().setMode(new js_mode.Mode());
 editor.getSession().setUseWrapMode(true); /* 折り返しあり */
 setFontSize(20);
 

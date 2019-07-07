@@ -3,6 +3,7 @@
   "viewlist": [
     "problem-view",
     "puppy-view",
+    "image-view",
     "terminal-view"
   ],
   "viewmode": "puppy-view",

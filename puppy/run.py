@@ -1,5 +1,6 @@
 
 
+import os
 from subprocess import STDOUT, check_output
 from pathlib import Path
 from flask import Flask, render_template, send_file, request, Response
@@ -57,6 +58,17 @@ def dist_sample(d):
         return send_file(str(file))
     path = getRootPath() / 'p' / d / ('sample.py')
     return send_file(str(path))
+
+
+@app.route('/gallery')
+def dist_gallery():
+    ls = []
+    for f in os.listdir(getRootPath('client/static/image')):
+        print('@', f)
+        ls.append(
+            f'<div><img style="width: 100%" src="/image/{f}"></img><div class="caption">{f}</div></div>')
+    print('\n'.join(ls))
+    return Response('\n'.join(ls), mimetype='text/html')
 
 
 # judge
