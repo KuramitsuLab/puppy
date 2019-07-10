@@ -130,7 +130,6 @@ export class Puppy {
     if (this.engine) {
       World.clear(this.engine.world, false);
       Engine.clear(this.engine);
-      // this.engine = null;
     }
     /* engineのアクティブ、非アクティブの制御を行う */
     if (this.runner) {
@@ -197,9 +196,8 @@ export class Puppy {
     });
     this.runner = Runner.create({});
     const canvas = document.getElementById('puppy-screen');
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    console.log('FIXME', width, height);
+    const width = Math.min(canvas.clientWidth, canvas.clientHeight);
+    const height = Math.min(canvas.clientWidth, canvas.clientHeight);
     const render = {
       /* Matter.js の変な仕様 canvas に 描画領域が追加される */
       // element: document.getElementById('canvas'),
@@ -225,32 +223,6 @@ export class Puppy {
     Render.run(this.render); /* 描画開始 */
     this.runner.enabled = false; /*初期位置を描画したら一度止める */
     // FIXME
-  }
-
-  public debug() {
-    // let background = 'rgba(0, 0, 0, 0)';
-    // const render = this.render;
-    // if (this.debug_mode) {
-    //   render.options.wireframes = false;
-    //   render.options['showPositions'] = false;
-    //   render.options['showMousePositions'] = false;
-    //   render.options['showVelocity'] = false;
-    //   render.options['showAngleIndicator'] = false;
-    //   render.options['showPositions'] = false;
-    //   render.options['showBounds'] = false;
-    //   render.options['background'] = background;
-    //   this.debug_mode = false;
-    // } else {
-    //   render.options.wireframes = true;
-    //   render.options['showPositions'] = true;
-    //   render.options['showMousePositions'] = true;
-    //   render.options['showVelocity'] = true;
-    //   render.options['showAngleIndicator'] = true;
-    //   render.options['showPositions'] = true;
-    //   background = render.options['background'];
-    //   render.options['background'] = 'rgba(0, 0, 0, 0)';
-    //   this.debug_mode = true;
-    // }
   }
 
   private loadWorld(world: any) {
@@ -304,8 +276,8 @@ export class Puppy {
       });
       World.add(this.engine.world, mouseConstraint);
       this.render['mouse'] = mouse;
-      // an example of using mouse events on a mouse
 
+      // an example of using mouse events on a mouse
       Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
         const mouse = event.mouse;
         let body = event.sourcebody;
@@ -364,18 +336,8 @@ export class Puppy {
             bodies.push(body);
           }
         }
-        /*  else {
-          if(data.x && data.y) {
-            data.deref = data.deref || defaultDeref;
-            vars.push(data);
-          }
-        }*/
       }
       World.add(this.engine.world, bodies);
-    }
-    if (code.errors) {
-      // TODO
-      // editor にエラー情報をフィードバックする
     }
     this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
     this.ready();
@@ -390,6 +352,15 @@ export class Puppy {
   // Puppy APIs
 
   public newMatter(shape: string, options: {}) {
+    const body = newBody(shape, options);
+    World.add(this.engine.world, [body]);
+    return body;
+  }
+
+  public newMatter2(shape: string, xx: number, yy: number, options: {}) {
+    if (!options['position']) {
+      options['position'] = { x: xx, y: yy };
+    }
     const body = newBody(shape, options);
     World.add(this.engine.world, [body]);
     return body;

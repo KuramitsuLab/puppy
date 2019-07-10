@@ -1,8 +1,6 @@
 import { puppy } from '../model/puppy';
-import { getSample } from '../model/api';
 import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
 import { exitFullscreen, getFullscreen } from '../view/screen';
-// import { buttonActivate, buttonInactivate } from '../view/button';
 import * as marked from 'marked';
 
 // window.onload = resizeMe;
