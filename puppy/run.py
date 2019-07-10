@@ -111,7 +111,7 @@ def transcompile():
     #   code = inputText
     # else:
     #   code = compile(inputText)
-    return Response(transpile(inputText.decode('utf-8')), mimetype='application/javascript')
+    return Response(transpile(inputText.decode('utf-8'), []), mimetype='application/javascript')
 
 
 '''

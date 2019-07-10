@@ -343,10 +343,8 @@ export class Puppy {
     this.ready();
   }
 
-  public compile(code: string) {
-    api.compile(code).then(() => {
-      this.load(window['PuppyVMCode']);
-    });
+  public preview() {
+
   }
 
   // Puppy APIs

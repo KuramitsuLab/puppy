@@ -128,6 +128,30 @@ document.getElementById('clear').onclick = () => {
   terminal.setValue('', 0);
 };
 
+const transpile: (code: string) => Promise<void> = (code) => {
+  return fetch('/compile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text; charset=utf-8',
+    },
+    body: code,
+  }).then((res: Response) => {
+    if (res.ok) {
+      return res.text();
+    }
+    throw new Error(res.statusText);
+  }).then((js: string) => {
+    Function(js)(); // Eval javascript code
+    if (!window['PuppyVMCode']) {
+      console.log(window['PuppyVMCode']);
+      throw new Error("Don\'t exist PuppyVMCode in window.");
+    }
+  },
+  ).catch((msg: string) => {
+    console.log(msg);
+  });
+};
+
 let timer = null;
 
 editor.on('change', (cm, obj) => {
@@ -138,7 +162,25 @@ editor.on('change', (cm, obj) => {
   timer = setTimeout(() => {
     console.log(`EDITOR CHANGE ${page['viewmode']}`);
     if (page['viewmode'] === 'puppy-view') {
-      puppy.compile(editor.getValue());
+      editor.getSession().clearAnnotations();
+      transpile(editor.getValue()).then(() => {
+        const errors: [] = window['PuppyVMCode']['errors'];
+        console.log(window['PuppyVMCode']);
+        let error_count = 0;
+        const annos = [];
+        for (const e of errors) {
+          if (e['type'] === 'error') {
+            error_count += 1;
+          }
+          annos.push(e);
+          console.log(e);
+        }
+        editor.getSession().setAnnotations(annos);
+        console.log(`size ${errors.length} ${error_count}`);
+        if (error_count == 0) {
+          puppy.load(window['PuppyVMCode']);
+        }
+      });
     }
     checkZenkaku();
     // buttonInactivate('pause');

@@ -527,13 +527,13 @@ ERROR = []
 def perror(t, msg):
     _, pos, raw, col = t.pos()
     print('@', t.pos(), msg)
-    ERROR.append(('ERR', pos, raw, col, msg))
+    ERROR.append(('error', pos, raw, col, msg))
 
 
 def pwarn(t, msg):
     _, pos, raw, col = t.pos()
     print('@', t.pos(), msg)
-    ERROR.append(('WARN', pos, raw, col, msg))
+    ERROR.append(('warning', pos, raw, col, msg))
 
 
 def puppyVMCode(main):
@@ -543,12 +543,12 @@ def puppyVMCode(main):
         world.append(f"     '{k}': {WORLD[k]},")
     error = []
     for e in ERROR:
+        row = e[2]-2 if e[3] == -1 else e[2]-1
         error.append(f'''
         {{
             'type': '{e[0]}',
-            'raw': {e[2]},
-            'col': {e[3]},
-            'msg': "{e[4]}"
+            'row': {row},
+            'text': "{e[4]}"
         }},''')
     world = '\n'.join(world)
     error = '\n'.join(error)
@@ -586,12 +586,15 @@ def transpile(s, errors=[]):
         'World': VarInfo('World', 'world', False, MatterTypes),
         'Circle': VarInfo('Circle', 'circle', False, MatterTypes),
         'Rectangle': VarInfo('Rectangle', 'rectangle', False, MatterTypes),
+        'Polygon': VarInfo('Polygon', 'polygon', False, MatterTypes),
         'Ball': VarInfo('Ball', 'circle', False, ['matter', 'int', 'int', {'restitution': 1.0}]),
     }
     indent = INDENT  # ''
     out = []
     conv(env, t, indent, out)
-    return puppyVMCode(''.join(out))
+    code = puppyVMCode(''.join(out))
+    print(code)
+    return code
 
 # main スクリプト
 
