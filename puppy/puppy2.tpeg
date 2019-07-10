@@ -75,6 +75,20 @@ FuncParam = {
     #Param
 }
 
+Lambda = {
+    'lambda' S _
+    params: LambdaParams ':' _
+    body: (Block / Statement)
+    #FuncExpr
+}
+
+LambdaParams = {
+    Name? ( "," Name )*
+    #Param
+}
+
+example Lambda lambda x: print(x)
+
 Return = {
     'return' 
     (S _ expr: Expression)?
@@ -192,6 +206,7 @@ ProdExpr =
 
 PROD =
 	/ '/' / '÷' / '／'
+    / '**' / '＊＊'
 	/ '*' / '×' / '＊'
 	/ '%' / '％'
 	/ '^'
@@ -221,7 +236,7 @@ Argument = {
 } / Expression
 
 Expressions = {
-	Expression? ( [,:] Expression )*
+	Expression? ( [,] _ Expression )*
     #Arguments
 }
 
@@ -236,6 +251,7 @@ Primary =
   /	GroupExpr
   / ListExpr
   / DataExpr
+  / Lambda
   / Constant
   / Name
 

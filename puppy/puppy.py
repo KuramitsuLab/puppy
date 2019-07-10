@@ -74,6 +74,25 @@ def Return(env, t, indent, out):
     return None
 
 
+def FuncExpr(env, t, indent, out):
+    out.append("(")
+    lenv = env.copy()
+    types = [None]
+    for _, p in t['params']:
+        pname = p.asString()
+        if(len(types) > 1):
+            out.append(f',{pname}')
+        else:
+            out.append(pname)
+        types.append(None)
+        lenv[pname] = VarInfo(pname, localname(pname), True, None)
+    out.append(") => ")
+    lenv['lambda'] = VarInfo('lambda', '', True, types)
+    lenv['@local'] = 'lambda'
+    conv(lenv, t['body'], indent, out)
+    return types
+
+
 def Yield(env, t, indent, out):
     if '@local' in env:
         pwarn(t, '関数内で yield は使えません')
@@ -600,7 +619,7 @@ def transpile(s, errors=[]):
 
 
 if __name__ == "__main__":
-    source = '''A[1](x, y, "こんにちは、のぶちゃん")\n'''
+    source = '''lambda x,y: print("こんにちは、のぶちゃん")\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
