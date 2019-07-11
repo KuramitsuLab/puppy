@@ -19,11 +19,15 @@
     "@types/jquery": "^3.3.29",
     "@types/matter-js": "^0.10.2",
     "@types/node": "^11.13.4",
+    "@types/marked": "^0.6.5",
+    "@types/mathjax": "^0.0.35",
     "ace-builds": "^1.4.3",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "install": "^0.12.2",
     "matter-js": "^0.14.2",
+    "marked": "^0.6.2",
+    "mathjax": "^2.7.5",
     "tslint-config-airbnb": "^5.11.1"
   }
 }

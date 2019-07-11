@@ -1,0 +1,20 @@
+{
+  "type": "puppy",
+  "viewlist": [
+    "problem-view",
+    "puppy-view",
+    "image-view",
+    "terminal-view"
+  ],
+  "viewmode": "puppy-view",
+  "list": [
+    "/Puppy/01",
+    "/Puppy/02"
+  ],
+  "/Puppy/01": {
+    "title": "Hello World"
+  },
+  "/Puppy/02": {
+    "title": "Droping Ball"
+  }
+}

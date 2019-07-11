@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name = 'arare',
+    name = 'puppy',
     version = '0.1.0',
-    url = 'https://github.com/KuramitsuLab/arare.git',
+    url = 'https://github.com/KuramitsuLab/puppy.git',
     license = 'KuramitsuLab',
     author = 'Kuramitsu Lab',
     description = 'hoge',
