@@ -68,12 +68,13 @@ export class Puppy {
     }
   }
 
-  public set_window_size(width: number, height: number) {
-
-    // this.canvas.setAttribute('width', this.width.toString());
-    // this.canvas.setAttribute('height', this.height.toString());
-    // this.render.options.width = this.width;
-    // this.render.options.height = this.height;
+  public resize(width: number, height: number) {
+    const w = Math.min(width, height);
+    const h = Math.max(width, height);
+    this.canvas.setAttribute('width', w.toString());
+    this.canvas.setAttribute('height', h.toString());
+    this.render.options.width = w;
+    this.render.options.height = h;
   }
 
   public async wait(sec) {
@@ -91,7 +92,7 @@ export class Puppy {
       if (this.isStep) {
         this.runner.enabled = false;
         this.isStep = false;
-      }else {
+      } else {
         await this.wait(0.5);
       }
       await this.waitForRun(1);
@@ -129,7 +130,6 @@ export class Puppy {
     if (this.engine) {
       World.clear(this.engine.world, false);
       Engine.clear(this.engine);
-      // this.engine = null;
     }
     /* engineのアクティブ、非アクティブの制御を行う */
     if (this.runner) {
@@ -196,9 +196,8 @@ export class Puppy {
     });
     this.runner = Runner.create({});
     const canvas = document.getElementById('puppy-screen');
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    console.log('FIXME', width, height);
+    const width = Math.min(canvas.clientWidth, canvas.clientHeight);
+    const height = Math.min(canvas.clientWidth, canvas.clientHeight);
     const render = {
       /* Matter.js の変な仕様 canvas に 描画領域が追加される */
       // element: document.getElementById('canvas'),
@@ -224,32 +223,6 @@ export class Puppy {
     Render.run(this.render); /* 描画開始 */
     this.runner.enabled = false; /*初期位置を描画したら一度止める */
     // FIXME
-  }
-
-  public debug() {
-    // let background = 'rgba(0, 0, 0, 0)';
-    // const render = this.render;
-    // if (this.debug_mode) {
-    //   render.options.wireframes = false;
-    //   render.options['showPositions'] = false;
-    //   render.options['showMousePositions'] = false;
-    //   render.options['showVelocity'] = false;
-    //   render.options['showAngleIndicator'] = false;
-    //   render.options['showPositions'] = false;
-    //   render.options['showBounds'] = false;
-    //   render.options['background'] = background;
-    //   this.debug_mode = false;
-    // } else {
-    //   render.options.wireframes = true;
-    //   render.options['showPositions'] = true;
-    //   render.options['showMousePositions'] = true;
-    //   render.options['showVelocity'] = true;
-    //   render.options['showAngleIndicator'] = true;
-    //   render.options['showPositions'] = true;
-    //   background = render.options['background'];
-    //   render.options['background'] = 'rgba(0, 0, 0, 0)';
-    //   this.debug_mode = true;
-    // }
   }
 
   private loadWorld(world: any) {
@@ -303,8 +276,8 @@ export class Puppy {
       });
       World.add(this.engine.world, mouseConstraint);
       this.render['mouse'] = mouse;
-      // an example of using mouse events on a mouse
 
+      // an example of using mouse events on a mouse
       Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
         const mouse = event.mouse;
         let body = event.sourcebody;
@@ -363,27 +336,15 @@ export class Puppy {
             bodies.push(body);
           }
         }
-        /*  else {
-          if(data.x && data.y) {
-            data.deref = data.deref || defaultDeref;
-            vars.push(data);
-          }
-        }*/
       }
       World.add(this.engine.world, bodies);
     }
-    if (code.errors) {
-      // TODO
-      // editor にエラー情報をフィードバックする
-    }
-    this.main = code.main || (function* (Matter: any, puppy: Puppy) {});
+    this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
     this.ready();
   }
 
-  public compile(code: string) {
-    api.compile(code).then(() => {
-      this.load(window['PuppyVMCode']);
-    });
+  public preview() {
+
   }
 
   // Puppy APIs
@@ -394,7 +355,16 @@ export class Puppy {
     return body;
   }
 
-  public print(text: string, options= {}) {
+  public newMatter2(shape: string, xx: number, yy: number, options: {}) {
+    if (!options['position']) {
+      options['position'] = { x: xx, y: yy };
+    }
+    const body = newBody(shape, options);
+    World.add(this.engine.world, [body]);
+    return body;
+  }
+
+  public print(text: string, options = {}) {
     options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
     options['position']['x'] = options['position']['x'] || 1000;
     options['position']['y'] = options['position']['y'] || Math.random() * 1000;

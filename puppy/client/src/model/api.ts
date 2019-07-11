@@ -1,6 +1,6 @@
 
 export const compile: (code: string) => Promise<void> = (code) => {
-  return fetch('compile', {
+  return fetch('/compile', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/text; charset=utf-8',
@@ -14,12 +14,12 @@ export const compile: (code: string) => Promise<void> = (code) => {
   }).then((js: string) => {
     Function(js)(); // Eval javascript code
     if (!window['PuppyVMCode']) {
-      console.error(window['PuppyVMCode']);
+      console.log(window['PuppyVMCode']);
       throw new Error("Don\'t exist PuppyVMCode in window.");
     }
   },
   ).catch((msg: string) => {
-    console.error(msg);
+    console.log(msg);
   });
 };
 
