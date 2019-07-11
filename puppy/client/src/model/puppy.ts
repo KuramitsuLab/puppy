@@ -386,7 +386,7 @@ export class Puppy {
 
   public print(text: string, options = {}) {
     const _options: ShapeOptions = Common.extend({ shape: 'label', position: { x: 1000, y: Math.random() * 1000 } }, options);
-    const body = this.newMatter(_options);;
+    const body = this.newMatter(_options);
     body['value'] = text;
     World.add(this.engine.world, [body]);
     const invokedTime = this.engine.timing.timestamp;
