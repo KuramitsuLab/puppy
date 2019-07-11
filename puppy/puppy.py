@@ -276,6 +276,8 @@ def ApplyExpr(env, t, indent, out):
     else:
         out.append(name)
         emit_Args(env, t, types, '(', indent, out)
+        if name == 'puppy.print':
+            env['@yield'] = t.pos()[2]  # linenum
     popenv(env, '@context', outter)
     return types[0]
 
@@ -369,7 +371,7 @@ KEYWORDTYPES = {
     'damping': 'int',
     'font': 'str',
     'fontStyle': 'str',
-    'clicked': [None, 'matter'],
+    'clicked': (None, 'matter'),
 }
 
 
@@ -607,6 +609,7 @@ def transpile(s, errors=[]):
         'Rectangle': VarInfo('Rectangle', 'rectangle', False, MatterTypes),
         'Polygon': VarInfo('Polygon', 'polygon', False, MatterTypes),
         'Ball': VarInfo('Ball', 'circle', False, ['matter', 'int', 'int', {'restitution': 1.0}]),
+        'Block': VarInfo('Ball', 'rectangle', False, ['matter', 'int', 'int', {'isStatic': 'true'}]),
     }
     indent = INDENT  # ''
     out = []
