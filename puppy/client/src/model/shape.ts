@@ -73,62 +73,75 @@ export type ShapeOptions = {
   clicked?: ClickedFunc,
 };
 
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-type DefaultOptions = Omit<ShapeOptions, 'position'>;
+export const isShapeOptions = (obj: {}) => ('shape' in obj) && ('position' in obj) && ('x' in obj['position']) && ('y' in obj['position']);
 
-export const defaultOptionsMap: { [key in PuppyShape]: DefaultOptions} = {
-  circle: {
-    shape: 'circle',
-    radius: 25,
-  },
-  rectangle: {
-    shape: 'rectangle',
-    width: 100,
-    height: 100,
-  },
-  polygon: {
-    shape: 'polygon',
-    sides: 5,
-    radius: 25,
-  },
-  trapezoid: {
-    shape: 'trapezoid',
-    width: 100,
-    height: 100,
-    slope: 0.5,
-  },
-  label: {
-    shape: 'label',
-    width: 100,
-    height: 100,
-    isSensor: true,
-    isStatic: true,
-    fillStyle: 'rgba(255, 255, 255, 0)',
-  },
-};
+export class PuppyShapeBase implements ShapeOptions{
+
+  shape: PuppyShape = 'circle';
+  position: {
+    x: number,
+    y: number,
+  };
+
+  constructor(x: number, y: number, options= {}) {
+    Object.assign(this, options);
+    this.position = { x, y };
+  }
+}
+
+export class Circle extends PuppyShapeBase { shape: PuppyShape = 'circle'; }
+
+export class Rectangle extends PuppyShapeBase { shape: PuppyShape = 'rectangle'; }
+
+export class Polygon extends PuppyShapeBase { shape: PuppyShape = 'polygon'; }
+
+export class Trapezoid extends PuppyShapeBase { shape: PuppyShape = 'trapezoid'; }
+
+export class Label extends PuppyShapeBase { shape: PuppyShape = 'label'; }
 
 /* shapeFunc 物体の形状から物体を生成する関数 */
 export const shapeFuncMap: { [key in PuppyShape]: (options: ShapeOptions) => Matter.Body } = {
   circle(_options: ShapeOptions) {
-    const defaultOptions = defaultOptionsMap[_options.shape];
+    const defaultOptions = {
+      radius: 25,
+    };
     const options = Common.extend({}, defaultOptions, { radius: _options.width ? _options.width / 2 : defaultOptions.radius }, _options);
     return Bodies.circle(options.position.x, options.position.y, options.radius, options);
   },
   rectangle(_options: ShapeOptions) {
-    const options = Common.extend({}, defaultOptionsMap[_options.shape], _options);
+    const defaultOptions = {
+      width: 100,
+      height: 100,
+    };
+    const options = Common.extend({}, defaultOptions, _options);
     return Bodies.rectangle(options.position.x, options.position.y, options.width, options.height, options);
   },
   polygon(_options: ShapeOptions) {
-    const defaultOptions = defaultOptionsMap[_options.shape];
+    const defaultOptions = {
+      sides: 5,
+      radius: 25,
+    };
     const options = Common.extend({}, defaultOptions, { radius: _options.width ? _options.width / 2 : defaultOptions.radius }, _options);
     return Bodies.polygon(options.position.x, options.position.y, options.sides, options.radius, options);
   },
   trapezoid(_options: ShapeOptions) {
-    const options = Common.extend({}, defaultOptionsMap[_options.shape], _options);
+    const defaultOptions = {
+      width: 100,
+      height: 100,
+      slope: 0.5,
+    };
+    const options = Common.extend({}, defaultOptions, _options);
     return Bodies.trapezoid(options.position.x, options.position.y, options.width, options.height, options.slope, options);
   },
   label(_options: ShapeOptions) {
-    const options = Common.extend({}, defaultOptionsMap[_options.shape], _options);
+    const defaultOptions = {
+      width: 100,
+      height: 100,
+      isSensor: true,
+      isStatic: true,
+      fillStyle: 'rgba(255, 255, 255, 0)',
+    };
+    const options = Common.extend({}, defaultOptions, _options);
     return Bodies.rectangle(options.position.x, options.position.y, options.width, options.height, options);
   },
 };

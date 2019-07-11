@@ -1,7 +1,7 @@
 import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
-import { shapeFuncMap, ShapeOptions, defaultOptionsMap } from './shape';
+import { shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -218,11 +218,12 @@ export class Puppy {
     this.canvas = this.render.canvas;
     //
     this.vars = {
-      Circle: defaultOptionsMap['circle'],
-      Rectangle: defaultOptionsMap['rectangle'],
-      Label: defaultOptionsMap['label'],
-      Polygon: defaultOptionsMap['polygon'],
-      Trapezoid: defaultOptionsMap['trapezoid'],
+      Circle,
+      Rectangle,
+      Label,
+      Polygon,
+      Trapezoid,
+      PuppyObject: PuppyShapeBase,
     };
     this.rules = [];
   }
@@ -397,13 +398,6 @@ export class Puppy {
 
   // Puppy APIs
 
-  public newObject(options: {}): Matter.Body | {} {
-    if (options['shape']) {
-      return this.newMatter(options);
-    }
-    return options;
-  }
-
   public newBody(_options: {}): Matter.Body {
     const max_x = this.engine.world.bounds['max']['x'];
     const max_y = this.engine.world.bounds['max']['y'];
@@ -417,10 +411,6 @@ export class Puppy {
     const body = this.newBody(options);
     World.add(this.engine.world, [body]);
     return body;
-  }
-
-  public extends(_super: {}[], child: {}) {
-    return Common.extend({}, ..._super, child);
   }
 
   public print(text: string, options= {}) {

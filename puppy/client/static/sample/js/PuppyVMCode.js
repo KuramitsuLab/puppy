@@ -56,7 +56,7 @@ window['PuppyVMCode'] = {
   main: function* (Matter,puppy){
     yield console.log("Hi!!!");
     for (const name of ["A", "B", "C", "D", "E"]) {
-      yield puppy.vars[name] = puppy.newMatter('circle', {});
+      yield puppy.vars[name] = puppy.newMatter({shape: 'circle'});
     }
     yield puppy.vars["ボール"].value = "のぶちゃん";
     const ball_clicked = () => {puppy.print("Clicked!")};
@@ -67,12 +67,12 @@ window['PuppyVMCode'] = {
     yield puppy.print("Comment");
     puppy.vars['x'] = 1
     const score = (cnt) => 'Score: ' + cnt;
-    yield puppy.vars['score'] = puppy.newMatter('label', { value: score(puppy.vars['x']), position: { x: 60, y: 30 } })
+    yield puppy.vars['score'] = puppy.newMatter({shape: 'label', value: score(puppy.vars['x']), position: { x: 60, y: 30 } })
     yield puppy.vars['score'].value = score(++puppy.vars['x'])
     yield puppy.vars['score'].value = score(++puppy.vars['x'])
     yield puppy.vars['score'].value = score(++puppy.vars['x'])
     yield puppy.vars['score'].value = score(++puppy.vars['x'])
-    yield puppy.newMatter('polygon', {})
+    yield puppy.newMatter({shape: 'polygon'})
   },
   errors: [
   ]
