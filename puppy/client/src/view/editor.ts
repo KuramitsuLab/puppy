@@ -41,9 +41,9 @@ export const checkZenkaku = () => {
     }
     markers = [];
   }
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = 0; i < lines.length; i += 1) {
     const s = lines[i];
-    for (let c = 0; c < s.length; c++) {
+    for (let c = 0; c < s.length; c += 1) {
       const ch = s.charCodeAt(c);
       if (ch > 127 && zenkaku.search(s[c]) > 0) {
         console.log(`${s}: ${i},${c}, ${ch}`);

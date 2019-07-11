@@ -113,13 +113,13 @@ const submitBuild: (path: string) => Promise<string> = (path) => {
 document.getElementById('build').onclick = () => {
   submitBuild(path).then((data: string) => {
     console.log(data);
-    const doc = terminal.getValue() + '\n' + data;
+    const doc = `${terminal.getValue()}\n${data}`;
     terminal.setValue(doc, -1);
     terminal.resize(true);
     // terminal.scrollToLine(50, true, true, function () { });
     // terminal.gotoLine(50, 10, true);
   }).catch((msg: string) => {
-    const doc = terminal.getValue() + '\n' + `${msg}`;
+    const doc = `${terminal.getValue()}\n${msg}`;
     terminal.setValue(doc, -1);
   });
 };
@@ -141,6 +141,7 @@ const transpile: (code: string) => Promise<void> = (code) => {
     }
     throw new Error(res.statusText);
   }).then((js: string) => {
+    console.log(js);
     Function(js)(); // Eval javascript code
     if (!window['PuppyVMCode']) {
       console.log(window['PuppyVMCode']);
@@ -177,7 +178,7 @@ editor.on('change', (cm, obj) => {
         }
         editor.getSession().setAnnotations(annos);
         console.log(`size ${errors.length} ${error_count}`);
-        if (error_count == 0) {
+        if (error_count === 0) {
           puppy.load(window['PuppyVMCode']);
         }
       });
@@ -227,8 +228,7 @@ loadSetting(path).then((jsonstr: string) => {
   if (page['type'] === 'sumomo') {
     const doc = document.getElementById('name');
     doc.innerHTML = 'Sumomo';
-  }
-  else {
+  } else {
     loadFile('/gallery').then((data: string) => {
       const doc = document.getElementById('gallery');
       doc.innerHTML = data;
@@ -268,7 +268,7 @@ loadSample(path).then((sample: string) => {
 const showSilde = (mode: string) => {
   const slides = document.getElementsByClassName('mySlides');
   page['viewmode'] = null;
-  for (let i = 0; i < slides.length; i++) {
+  for (let i = 0; i < slides.length; i += 1) {
     console.log(`${i} ${slides[i].id}`);
     if (slides[i].id === mode) {
       slides[i]['style'].display = 'block';
@@ -288,7 +288,7 @@ const shiftSlide = (n: number) => {
   const viewmode = page['viewmode'];
   const viewlist: [string] = page['viewlist'];
   let index = 0;
-  for (let i = 0; i < viewlist.length; i++) {
+  for (let i = 0; i < viewlist.length; i += 1) {
     if (viewlist[i] === viewmode) {
       index = i;
     }
@@ -298,14 +298,14 @@ const shiftSlide = (n: number) => {
 
 const setSlideButtons = () => {
   let slides = document.getElementsByClassName('next-view');
-  for (let i = 0; i < slides.length; i++) {
+  for (let i = 0; i < slides.length; i += 1) {
     slides[i]['onclick'] = () => {
       shiftSlide(+1);
       showSilde(page['viewmode']);
     };
   }
   slides = document.getElementsByClassName('prev-view');
-  for (let i = 0; i < slides.length; i++) {
+  for (let i = 0; i < slides.length; i += 1) {
     slides[i]['onclick'] = () => {
       shiftSlide(-1);
       showSilde(page['viewmode']);
@@ -317,7 +317,7 @@ setSlideButtons();
 const getPagePath = (shift: number) => {
   const pages = page['list'];
   let index = 0;
-  for (let i = 0; i < pages.length; i++) {
+  for (let i = 0; i < pages.length; i += 1) {
     if (pages[i] === path) {
       index = i;
     }
@@ -328,8 +328,7 @@ const getPagePath = (shift: number) => {
 document.getElementById('base').onclick = () => {
   if (path.startsWith('/Puppy')) {
     location.href = '/ITPP/01A';
-  }
-  else {
+  } else {
     location.href = '/Puppy/01';
   }
 };
