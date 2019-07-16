@@ -277,7 +277,12 @@ def popenv(env, key, prev):
 def ApplyExpr(env, t, indent, out):
     name = t['name'].asString()
     if name in env:
-        vari = env[name]
+        aname = name + '@' + str(len(t.subs())-1)
+        if aname in env:
+            vari = env[aname]
+            print(aname, vari)
+        else:
+            vari = env[name]
         name = vari.target
         types = vari.types
     else:
@@ -333,6 +338,7 @@ def emit_Args(env, t, types, prev, indent, out):
         for k in options:
             out.append(f"'{k}': {options[k]},")
         popenv(env, '@options', outter)
+        out.append(f"'linenum': {t.pos()[2]},")
         out.append('}')
     out.append(')')
 
@@ -539,7 +545,6 @@ def set_World(env, t, options):
     for k in options:
         WORLD[k] = options[k]
     for arg in args[3:]:
-        print(arg)
         if arg.tag == 'KeywordArgument':
             k = arg['name'].asString()
             v = static_value(env, arg['value'])
@@ -630,12 +635,18 @@ def transpile(s, errors=[]):
     # start transpile
     env = {
         'print': VarInfo('print', 'puppy.print', False, [None, None, EmptyOption]),
+        # 返値, 引数.. None はなんでもいい
+        'len': VarInfo('len', 'puppy.len', False, ['int', None]),
+        # 可変長引数
+        'range@3': VarInfo('range', 'puppy.range3', False, ['list[int]', 'int', 'int', 'int']),
+        'range@2': VarInfo('range', 'puppy.range2', False, ['list[int]', 'int', 'int']),
+        'range': VarInfo('range', 'puppy.range', False, ['list[int]', 'int']),
         'World': VarInfo('World', 'world', False, MatterTypes),
         'Circle': VarInfo('Circle', 'Circle', False, MatterTypes),
         'Rectangle': VarInfo('Rectangle', 'Rectangle', False, MatterTypes),
         'Polygon': VarInfo('Polygon', 'Polygon', False, MatterTypes),
         'Ball': VarInfo('Ball', 'Circle', False, ['matter', 'int', 'int', {'restitution': 1.0}]),
-        'Block': VarInfo('Ball', 'Rectangle', False, ['matter', 'int', 'int', {'isStatic': 'true'}]),
+        'Block': VarInfo('Block', 'Rectangle', False, ['matter', 'int', 'int', {'isStatic': 'true'}]),
     }
     indent = INDENT  # ''
     out = []
