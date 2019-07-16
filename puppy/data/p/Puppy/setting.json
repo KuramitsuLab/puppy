@@ -6,15 +6,35 @@
     "image-view",
     "terminal-view"
   ],
-  "viewmode": "puppy-view",
+  "viewmode": "problem-view",
   "list": [
-    "/Puppy/01",
-    "/Puppy/02"
+    "/Puppy/Welcome",
+    "/Puppy/Hello",
+    "/Puppy/ManyHello",
+    "/Puppy/Calc",
+    "/Puppy/Var",
+    "/Puppy/Block",
+    "/Puppy/Sumomo"
   ],
-  "/Puppy/01": {
-    "title": "Hello World"
+  "/Puppy/Welcome": {
+    "title": "ようこそ"
   },
-  "/Puppy/02": {
-    "title": "Droping Ball"
+  "/Puppy/Hello": {
+    "title": "HelloWorld"
+  },
+  "/Puppy/ManyHello": {
+    "title": "たくさん表示しよう"
+  },
+  "/Puppy/Calc": {
+    "title": "計算結果を表示してみよう"
+  },
+  "/Puppy/Var": {
+    "title": "変数について学ぶ"
+  },
+  "/Puppy/Block": {
+    "title": "Block"
+  },
+  "/Puppy/Sumomo": {
+    "title": "Sumomoに挑戦"
   }
 }

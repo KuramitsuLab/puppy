@@ -58,7 +58,8 @@ def ClassDecl(env, t, indent, out):
     if 'extends' in t:
         extends = t["extends"].asString()
         argNum += 1
-        out.append(f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
+        out.append(
+            f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
     else:
         out.append(f'puppy.vars["{name}"] = class')
     env['@local'] = name
@@ -295,6 +296,8 @@ def ApplyExpr(env, t, indent, out):
     else:
         out.append(name)
         emit_Args(env, t, types, '(', indent, out)
+        if name == 'puppy.print':
+            env['@yield'] = t.pos()[2]  # linenum
     popenv(env, '@context', outter)
     return types[0]
 
@@ -388,7 +391,7 @@ KEYWORDTYPES = {
     'damping': 'int',
     'font': 'str',
     'fontStyle': 'str',
-    'clicked': [None, 'matter'],
+    'clicked': (None, 'matter'),
 }
 
 
@@ -626,6 +629,7 @@ def transpile(s, errors=[]):
         'Rectangle': VarInfo('Rectangle', 'Rectangle', False, MatterTypes),
         'Polygon': VarInfo('Polygon', 'Polygon', False, MatterTypes),
         'Ball': VarInfo('Ball', 'Circle', False, ['matter', 'int', 'int', {'restitution': 1.0}]),
+        'Block': VarInfo('Ball', 'Rectangle', False, ['matter', 'int', 'int', {'isStatic': 'true'}]),
     }
     indent = INDENT  # ''
     out = []

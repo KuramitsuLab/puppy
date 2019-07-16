@@ -129,6 +129,8 @@ document.getElementById('clear').onclick = () => {
 };
 
 const transpile: (code: string) => Promise<void> = (code) => {
+  const oldCode = window['PuppyVMCode'];
+  window['PuppyVMCode'] = undefined;
   return fetch('/compile', {
     method: 'POST',
     headers: {
@@ -145,6 +147,7 @@ const transpile: (code: string) => Promise<void> = (code) => {
     Function(js)(); // Eval javascript code
     if (!window['PuppyVMCode']) {
       console.log(window['PuppyVMCode']);
+      window['PuppyVMCode'] = oldCode;
       throw new Error("Don\'t exist PuppyVMCode in window.");
     }
   },
@@ -162,7 +165,12 @@ editor.on('change', (cm, obj) => {
   }
   timer = setTimeout(() => {
     console.log(`EDITOR CHANGE ${page['viewmode']}`);
-    if (page['viewmode'] === 'puppy-view') {
+    // if (editor.getValue() === '') {
+    //   loadFile(`/sample${path}`).then((text) => {
+    //     editor.setValue(text);
+    //   });
+    // }
+    if (page['type'] === 'puppy') {
       editor.getSession().clearAnnotations();
       transpile(editor.getValue()).then(() => {
         const errors: [] = window['PuppyVMCode']['errors'];
@@ -328,8 +336,9 @@ const getPagePath = (shift: number) => {
 document.getElementById('base').onclick = () => {
   if (path.startsWith('/Puppy')) {
     location.href = '/ITPP/01A';
-  } else {
-    location.href = '/Puppy/01';
+  }
+  else {
+    location.href = '/Puppy/Welcome';
   }
 };
 
@@ -339,4 +348,13 @@ document.getElementById('next-page').onclick = () => {
 
 document.getElementById('prev-page').onclick = () => {
   location.href = getPagePath(-1);
+};
+
+document.getElementById('run').onclick = () => {
+  console.log(page['type']);
+  if (page['type'] === 'puppy') {
+    showSilde('puppy-view');
+    puppy.load(window['PuppyVMCode']);
+    puppy.start();
+  }
 };

@@ -1,3 +1,8 @@
+// 使えそうな効果
+// punkな吹き出し
+
+// https://ja.stackoverflow.com/questions/4445/matter-jsという物理エンジンライブラリのオブジェクトの結合について
+
 export const myRender = (render) => {
   const _getTexture = function (render, imagePath) {
     let image = render.textures[imagePath];
@@ -14,25 +19,22 @@ export const myRender = (render) => {
 
   render['bodies'] = function (render, bodies, context) {
     const c = context;
-    const engine = render.engine;
+    // const engine = render.engine;
     const options = render.options;
     const showInternalEdges = options.showInternalEdges || !options.wireframes;
 
-    let body;
-    let part;
-    let i;
-    let k;
+    // let body;
+    // let part;
+    // let k;
 
-    for (i = 0; i < bodies.length; i += 1) {
-      body = bodies[i];
-
+    for (let i = 0; i < bodies.length; i += 1) {
+      const body = bodies[i];
       if (!body.render.visible) {
         continue;
       }
-
       // handle compound parts
-      for (k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
-        part = body.parts[k];
+      for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
+        const part = body.parts[k];
         const renderOption = part.render;
         Object.keys(renderOption).forEach((key) => {
           if (!(key in part)) {
@@ -100,7 +102,6 @@ export const myRender = (render) => {
                 c.moveTo(part.vertices[(j + 1) % part.vertices.length].x, part.vertices[(j + 1) % part.vertices.length].y);
               }
             }
-
             c.lineTo(part.vertices[0].x, part.vertices[0].y);
             c.closePath();
           }
@@ -125,8 +126,8 @@ export const myRender = (render) => {
         c.globalAlpha = 1;
 
         if (part.value) {
-          c.font = part.font || '32px Arial';
-          c.fillStyle = part.fontStyle || 'red';
+          c.font = part.font || "bold 48px 'Bangers', cursive";
+          c.fillStyle = part.fontStyle || 'black';
           c.textAlign = 'center';
           c.fillText(`${part.value}`, part.position.x, part.position.y + 10);
         }
