@@ -631,6 +631,8 @@ def transpile(s, errors=[]):
     env = {
         'print': VarInfo('print', 'puppy.print', False, [None, None, EmptyOption]),
         'World': VarInfo('World', 'world', False, MatterTypes),
+        'len': VarInfo('len', 'puppy.len', False, ['int', None]), #返値, 引数.. None はなんでもいい
+        'str': VarInfo('str', 'puppy.str', False, ['str', None]),
         'Circle': VarInfo('Circle', 'Circle', False, MatterTypes),
         'Rectangle': VarInfo('Rectangle', 'Rectangle', False, MatterTypes),
         'Polygon': VarInfo('Polygon', 'Polygon', False, MatterTypes),

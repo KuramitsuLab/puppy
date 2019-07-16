@@ -400,6 +400,10 @@ export class Puppy {
     this.rules.push(commentRule);
   }
 
+  public str(x: any) {
+    return String(x);
+  }
+
 }
 
 export const puppy: Puppy = new Puppy();
