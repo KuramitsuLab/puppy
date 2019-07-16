@@ -1,6 +1,8 @@
 import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
+import { shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
+
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
 const Runner = Matter.Runner;
@@ -214,7 +216,14 @@ export class Puppy {
     this.render = Render.create(render);
     this.canvas = this.render.canvas;
     //
-    this.vars = {};
+    this.vars = {
+      Circle,
+      Rectangle,
+      Label,
+      Polygon,
+      Trapezoid,
+      PuppyObject: PuppyShapeBase,
+    };
     this.rules = [];
   }
 
@@ -226,14 +235,15 @@ export class Puppy {
   }
 
   private loadWorld(world: any) {
-    /* 描画サイズを自動拡大/縮小を設定する */
-    Render['lookAt'](this.render, {
+    this.engine.world.bounds = {
       min: { x: 0, y: 0 },
       max: {
         x: world.width || 1000,
         y: world.height || 1000,
       },
-    });
+    };
+    /* 描画サイズを自動拡大/縮小を設定する */
+    Render['lookAt'](this.render, this.engine.world.bounds);
     /* 重力を設定する */
     const engine = this.engine;
     if (world.gravity) {
@@ -289,7 +299,7 @@ export class Puppy {
             for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j += 1) {
               const part = body.parts[j];
               if (part['clicked'] && Vertices.contains(part.vertices, mouse.position)) {
-                part['clicked']();
+                part['clicked'](part);
                 break;
               }
             }
@@ -328,7 +338,7 @@ export class Puppy {
       const bodies = [];
       for (const data of code.bodies) {
         if (data.shape && data.position) {
-          const body = newBody(data.shape, data);
+          const body = this.newBody(data);
           if (data.name) {
             this.vars[data.name] = body;
           }
@@ -349,8 +359,17 @@ export class Puppy {
 
   // Puppy APIs
 
-  public newMatter(shape: string, options: {}) {
-    const body = newBody(shape, options);
+  public newBody(_options: {}): Matter.Body {
+    const max_x = this.engine.world.bounds['max']['x'];
+    const max_y = this.engine.world.bounds['max']['y'];
+    const options: ShapeOptions = Common.extend({ position: { x: max_x / 2, y: max_y / 2 } }, _options);
+    options.shape = options.shape in shapeFuncMap ? options.shape : 'circle';
+    const body = shapeFuncMap[options.shape](options);
+    return body;
+  }
+
+  public newMatter(options: {}): Matter.Body {
+    const body = this.newBody(options);
     World.add(this.engine.world, [body]);
     return body;
   }
@@ -359,16 +378,15 @@ export class Puppy {
     if (!options['position']) {
       options['position'] = { x: xx, y: yy };
     }
-    const body = newBody(shape, options);
+    options['shape'] = shape;
+    const body = this.newBody(options);
     World.add(this.engine.world, [body]);
     return body;
   }
 
   public print(text: string, options = {}) {
-    options['position'] = options['position'] || { x: 1000, y: Math.random() * 1000 };
-    options['position']['x'] = options['position']['x'] || 1000;
-    options['position']['y'] = options['position']['y'] || Math.random() * 1000;
-    const body = newBody('label', options);
+    const _options: ShapeOptions = Common.extend({ shape: 'label', position: { x: 1000, y: Math.random() * 1000 } }, options);
+    const body = this.newMatter(_options);
     body['value'] = text;
     World.add(this.engine.world, [body]);
     const invokedTime = this.engine.timing.timestamp;
@@ -383,69 +401,5 @@ export class Puppy {
   }
 
 }
-
-/* shapeFunc 物体の形状から物体を生成する関数 */
-
-const shapeFuncMap: { [key: string]: (options: {}) => Matter.Body } = {
-  circle(options: {}) {
-    let radius = options['radius'] || 25;
-    if (options['width']) {
-      radius = options['width'] / 2;
-    }
-    options['position'] = options['position'] || { x: 500, y: 500 };
-    const x = options['position']['x'] || 500;
-    const y = options['position']['y'] || 500;
-    return Bodies.circle(x, y, radius, options);
-  },
-  rectangle(options: {}) {
-    options['position'] = options['position'] || { x: 500, y: 500 };
-    const x = options['position']['x'] || 500;
-    const y = options['position']['y'] || 500;
-    return Bodies.rectangle(x, y, options['width'] || 100, options['height'] || 100, options);
-  },
-  polygon(options: {}) {
-    options['position'] = options['position'] || { x: 500, y: 500 };
-    const x = options['position']['x'] || 500;
-    const y = options['position']['y'] || 500;
-    let radius = options['radius'] || 25;
-    if (options['width']) {
-      radius = options['width'] / 2;
-    }
-    return Matter.Bodies.polygon(x, y, options['sides'] || 5, radius, options);
-  },
-  trapezoid(options: {}) {
-    options['position'] = options['position'] || { x: 500, y: 500 };
-    const x = options['position']['x'] || 500;
-    const y = options['position']['y'] || 500;
-    return Matter.Bodies.trapezoid(x, y, options['width'] || 100, options['height'] || 100, options['slope'] || 0.5, options);
-  },
-  label(options: {}) {
-    options['position'] = options['position'] || { x: 0, y: 0 };
-    const x = options['position']['x'] || 0;
-    const y = options['position']['y'] || 0;
-    if (!('isStatic' in options)) {
-      options['isStatic'] = true;
-    }
-    if (!('isSensor' in options)) {
-      options['isSensor'] = true;
-    }
-    if (!('render' in options) || !('fillStyle' in options['render'])) {
-      options['render'] = { fillStyle: 'rgba(33, 39, 98, 0)' };
-    }
-    return Bodies.rectangle(x, y, options['width'] || 20, options['height'] || 20, options);
-  },
-  unknown(options: {}) {
-    let radius = options['radius'] || 25;
-    if (options['width']) {
-      radius = options['width'] / 2;
-    }
-    const x = options['position']['x'] || 500;
-    const y = options['position']['y'] || 500;
-    return Bodies.circle(x, y, radius, options);
-  },
-};
-
-const newBody = (shape: string, options: {}) =>
-  shape in shapeFuncMap ? shapeFuncMap[shape](options) : shapeFuncMap['unknown'](options);
 
 export const puppy: Puppy = new Puppy();

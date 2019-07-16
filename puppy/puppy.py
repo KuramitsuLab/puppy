@@ -52,6 +52,25 @@ def FuncDecl(env, t, indent, out):
     return None
 
 
+def ClassDecl(env, t, indent, out):
+    name = t['name'].asString()
+    argNum = 1
+    if 'extends' in t:
+        extends = t["extends"].asString()
+        argNum += 1
+        out.append(
+            f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
+    else:
+        out.append(f'puppy.vars["{name}"] = class')
+    env['@local'] = name
+    for i, (_, sub) in enumerate(t.subs()):
+        if i < argNum:
+            continue
+        print(sub)
+        conv(env, sub, indent, out)
+    return 'class'
+
+
 def Return(env, t, indent, out):
     if not '@local' in env:
         pwarn(t, 'ここで return は使えません')
@@ -262,7 +281,7 @@ def ApplyExpr(env, t, indent, out):
         name = vari.target
         types = vari.types
     else:
-        name, types = guess_Matter(env, name, t)
+        _, types = guess_Matter(env, name, t)
 
     if name == 'world':
         set_World(env, t, types[-1])
@@ -270,8 +289,9 @@ def ApplyExpr(env, t, indent, out):
 
     outter = pushenv(env, '@context', name)
     if isMatter(types):
-        out.append(f'puppy.newMatter2("{name}"')
-        emit_Args(env, t, types, ',', indent, out)
+        out.append(f'puppy.newMatter(new puppy.vars["{name}"](')
+        emit_Args(env, t, types, '', indent, out)
+        out.append(')')
         env['@yield'] = t.pos()[2]  # linenum
     else:
         out.append(name)
@@ -283,7 +303,7 @@ def ApplyExpr(env, t, indent, out):
 
 
 def guess_Matter(env, name, t):
-    return ('circle', MatterTypes)
+    return ('Circle', MatterTypes)
 
 
 def emit_Args(env, t, types, prev, indent, out):
@@ -605,11 +625,11 @@ def transpile(s, errors=[]):
     env = {
         'print': VarInfo('print', 'puppy.print', False, [None, None, EmptyOption]),
         'World': VarInfo('World', 'world', False, MatterTypes),
-        'Circle': VarInfo('Circle', 'circle', False, MatterTypes),
-        'Rectangle': VarInfo('Rectangle', 'rectangle', False, MatterTypes),
-        'Polygon': VarInfo('Polygon', 'polygon', False, MatterTypes),
-        'Ball': VarInfo('Ball', 'circle', False, ['matter', 'int', 'int', {'restitution': 1.0}]),
-        'Block': VarInfo('Ball', 'rectangle', False, ['matter', 'int', 'int', {'isStatic': 'true'}]),
+        'Circle': VarInfo('Circle', 'Circle', False, MatterTypes),
+        'Rectangle': VarInfo('Rectangle', 'Rectangle', False, MatterTypes),
+        'Polygon': VarInfo('Polygon', 'Polygon', False, MatterTypes),
+        'Ball': VarInfo('Ball', 'Circle', False, ['matter', 'int', 'int', {'restitution': 1.0}]),
+        'Block': VarInfo('Ball', 'Rectangle', False, ['matter', 'int', 'int', {'isStatic': 'true'}]),
     }
     indent = INDENT  # ''
     out = []
