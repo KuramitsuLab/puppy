@@ -287,7 +287,7 @@ def ApplyExpr(env, t, indent, out):
         set_World(env, t, types[-1])
         return 'matter'
 
-    outter = pushenv(env, '@context', name)
+    outter = pushenv(env, '@funcname', name)
     if isMatter(types):
         out.append(f'puppy.newMatter(new puppy.vars["{name}"](')
         emit_Args(env, t, types, '', indent, out)
@@ -298,7 +298,7 @@ def ApplyExpr(env, t, indent, out):
         emit_Args(env, t, types, '(', indent, out)
         if name == 'puppy.print':
             env['@yield'] = t.pos()[2]  # linenum
-    popenv(env, '@context', outter)
+    popenv(env, '@funcname', outter)
     return types[0]
 
 
@@ -403,6 +403,8 @@ def KeywordArgument(env, t, indent, out):
     if not name in KEYWORDS:
         pwarn(t['name'], f'{name}？ タイプミスしてませんか？')
     else:
+        if name != KEYWORDS[name]:
+            pinfo(t, f'{name} => {KEYWORDS[name]}')
         name = KEYWORDS[name]
     out.append("'" + name + "': ")
     options = env.get('@options', EmptyOption)
@@ -416,9 +418,9 @@ def KeywordArgument(env, t, indent, out):
 
 def NLPSymbol(env, t, indent, out):
     phrase = t.asString()
-    if '@context' in env:
+    if '@funcname' in env:
         k = env.get('@key', '')
-        k, v = nlpKeyVal(env['@context'], k, phrase)
+        k, v = nobuKeyVal(env['@funcname'], k, phrase)
         out.append(f"'{k}': {v},")
         options = env.get('@options', EmptyOption)
         if k in options:
@@ -428,7 +430,7 @@ def NLPSymbol(env, t, indent, out):
         out.append(v)
 
 
-def nlpKeyVal(funcname, key='unknown', phrase='"?"'):
+def nobuKeyVal(funcname, key='unknown', phrase='"?"'):
     return (key, phrase)
 
 
@@ -537,8 +539,9 @@ def set_World(env, t, options):
     for k in options:
         WORLD[k] = options[k]
     for arg in args[3:]:
+        print(arg)
         if arg.tag == 'KeywordArgument':
-            k = arg['key'].asString()
+            k = arg['name'].asString()
             v = static_value(env, arg['value'])
             WORLD[k] = v
     print(WORLD)
@@ -567,14 +570,17 @@ ERROR = []
 
 def perror(t, msg):
     _, pos, raw, col = t.pos()
-    print('@', t.pos(), msg)
     ERROR.append(('error', pos, raw, col, msg))
 
 
 def pwarn(t, msg):
     _, pos, raw, col = t.pos()
-    print('@', t.pos(), msg)
     ERROR.append(('warning', pos, raw, col, msg))
+
+
+def pinfo(t, msg):
+    _, pos, raw, col = t.pos()
+    ERROR.append(('information', pos, raw, col, msg))
 
 
 def puppyVMCode(main):
