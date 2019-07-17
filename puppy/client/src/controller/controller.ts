@@ -1,4 +1,4 @@
-import { puppy } from '../model/puppy';
+import { puppy, loadPuppy } from '../model/puppy';
 import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
 import { exitFullscreen, getFullscreen } from '../view/screen';
 import * as marked from 'marked';
@@ -7,7 +7,7 @@ import * as marked from 'marked';
 // window.onclick = resizeMe;
 
 document.getElementById('play').onclick = () => {
-  puppy.load(window['PuppyVMCode']);
+  loadPuppy('puppy-screen', window['PuppyVMCode']);
   puppy.start();
   // buttonInactivate('play');
   // buttonActivate('pause');
@@ -182,12 +182,12 @@ editor.on('change', (cm, obj) => {
             error_count += 1;
           }
           annos.push(e);
-          console.log(e);
         }
         editor.getSession().setAnnotations(annos);
         console.log(`size ${errors.length} ${error_count}`);
         if (error_count === 0) {
-          puppy.load(window['PuppyVMCode']);
+          loadPuppy('puppy-screen', window['PuppyVMCode']);
+          puppy.start();
         }
       });
     }
@@ -221,10 +221,14 @@ function resizeMe() {
     fullscreen = true;
   }
   if (fullscreen) {
-    puppy.resize(w, h);
+    if (puppy != null) {
+      puppy.resize(w, h);
+    }
     fullscreen = false;
   } else {
-    puppy.resize(w / 2, (h - toph - 1));
+    if (puppy != null) {
+      puppy.resize(w / 2, (h - toph - 1));
+    }
   }
 }
 resizeMe();
@@ -354,7 +358,7 @@ document.getElementById('run').onclick = () => {
   console.log(page['type']);
   if (page['type'] === 'puppy') {
     showSilde('puppy-view');
-    puppy.load(window['PuppyVMCode']);
+    loadPuppy('puppy-screen', window['PuppyVMCode']);
     puppy.start();
   }
 };

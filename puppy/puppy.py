@@ -735,7 +735,7 @@ def transpile(s, errors=[]):
 
 
 if __name__ == "__main__":
-    source = '''A = (1)\n'''
+    source = '''A = Ball(1,1,width=1000)\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
