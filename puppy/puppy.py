@@ -465,14 +465,14 @@ def ApplyExpr(env, t, indent, out):
         args = [y for x, y in t.subs()]
         emit_Args(env, t['name'], args, types, '', indent, out)
         out.append(')')
-        env['@yield'] = t.pos()[2]  # linenum
+        env['@yield'] = trace(env, t)
         popenv(env, '@funcname', outter)
     else:
         out.append(name)
         args = [y for x, y in t.subs()]
         emit_Args(env, t['name'], args, types, '(', indent, out)
         if name == 'puppy.print':
-            env['@yield'] = t.pos()[2]  # linenum
+            env['@yield'] = trace(env, t)
     return types[0]
 
 
@@ -506,7 +506,7 @@ def emit_Args(env, t, args, types, prev, indent, out):
         for k in options:
             out.append(f"'{k}': {options[k]},")
         popenv(env, '@options', outter)
-        out.append(f"'trace': {t.pos()[2]},")
+        out.append(f"'trace': {trace(env, t)},")
         out.append('}')
     out.append(')')
 
@@ -677,6 +677,14 @@ def pinfo(t, msg):
     ERROR.append(('information', pos, raw, col, msg))
 
 
+def trace(env, t):
+    lines = env['@lines']
+    linenum = t.pos()[2]
+    if not linenum in lines:
+        lines.append(linenum)
+    return f'puppy.lines[{lines.index(linenum)}]'
+
+
 def puppyVMCode(env, main):
     global ERROR
     W = env['@world']
@@ -694,6 +702,7 @@ def puppyVMCode(env, main):
         }},''')
     world = '\n'.join(world)
     error = '\n'.join(error)
+    lines = ','.join(map(str, env['@lines']))
     lives = ''
     codehash = hashlib.sha256(world.encode() + main.encode()).hexdigest()
     return f'''
@@ -709,6 +718,7 @@ window['PuppyVMCode'] = {{
   main: function*(Matter,puppy){{
 {main}
   }},
+  lines: [{lines}],
   errors: [
 {error}
   ]
@@ -727,6 +737,7 @@ def transpile(s, errors=[]):
     # start transpile
     env = BUILDIN.copy()
     env['@world'] = WORLD.copy()
+    env['@lines'] = []
     env['@lives'] = []
     out = []
     conv(env, t, INDENT, out)

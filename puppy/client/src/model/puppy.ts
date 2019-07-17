@@ -21,6 +21,7 @@ export type Code = {
   world: any,
   bodies: any[],
   main: (Matter, puppy: Puppy) => IterableIterator<void>;
+  lines: number[],
   errors?: {}[],
   rules?: any,
 };
@@ -37,6 +38,7 @@ export class Puppy {
   private width: number;    /* world.width */
   private height: number;   /* world.height */
   private vars: {};
+  private lines: number[];
   private main: (Matter, puppy: Puppy) => IterableIterator<void>;
   private isRestart: boolean = false;
   private isStep: boolean = false;
@@ -47,6 +49,7 @@ export class Puppy {
   public constructor(canvasid: string, code: Code) {
     this.width = code.world.width || 1000;
     this.height = code.world.height || this.width;
+    this.lines = code.lines;
     this.engine = Engine.create();
 
     if (code.world.gravity) {
@@ -407,7 +410,6 @@ export class Puppy {
       eachUpdate: (body, time: number) => {
         const px = width - 100 * (time - body['created']) * 0.003;
         Matter.Body.setPosition(body, { x: px, y: body.position.y });
-        console.log(px);
         if (px < -1) {
           World.remove(this.engine.world, body);
         }

@@ -289,11 +289,16 @@ editor.on('change', (cm, obj) => {
         }
         editor.getSession().setAnnotations(annos);
         console.log(`PREV ${prevhash}`);
-        console.log(`HASH ${code.hash}`);
-        if (error_count === 0 && code.hash !== prevhash) {
-          loadPuppy('puppy-screen', code);
-          puppy.start(togglePlay);
-          session.setItem(`/sample${path}`, editor.getValue());
+        if (error_count === 0) {
+          if (code.hash === prevhash) {
+            console.log(`HASH ${code.hash}`);
+            puppy['lines'] = code['lines'];
+          }
+          else {
+            loadPuppy('puppy-screen', code);
+            puppy.start(togglePlay);
+            session.setItem(`/sample${path}`, editor.getValue());
+          }
         }
       });
     }
