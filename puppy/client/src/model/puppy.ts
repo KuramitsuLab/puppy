@@ -24,11 +24,6 @@ export type Code = {
   rules?: any,
 };
 
-export class PuppyRule {
-  public matchFunc: (part: any) => boolean;
-  public actionFunc: (body: Matter.Body, engine: Matter.Engine) => void;
-}
-
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
   private runner: Matter.Runner;
@@ -42,7 +37,6 @@ export class Puppy {
   private height: number;   /* world.height */
   private vars: {};
   private main: (Matter, puppy: Puppy) => IterableIterator<void>;
-  private rules: PuppyRule[];
   private isRestart: boolean = false;
   private isStep: boolean = false;
 
@@ -215,7 +209,6 @@ export class Puppy {
         }
       });
     }
-
     //
     this.vars = {
       Circle,
@@ -226,7 +219,6 @@ export class Puppy {
       PuppyObject: PuppyShapeBase,
     };
     this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
-    this.rules = [];
 
     Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
     Render.run(this.render); /* 描画開始 */
@@ -258,26 +250,22 @@ export class Puppy {
     return this.canvas;
   }
 
-  public constructor0() {
-    this.init();
-  }
-
-  public requestFullScreen() {
-    if (this.canvas) { // FIXME
-      if (this.canvas['webkitRequestFullscreen']) {
-        this.canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
-      } else if (this.canvas['mozRequestFullScreen']) {
-        this.canvas['mozRequestFullScreen'](); // FF10+
-      } else if (this.canvas['msRequestFullscreen']) {
-        this.canvas['msRequestFullscreen'](); // IE11+
-      } else if (this.canvas['requestFullscreen']) {
-        this.canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
-      } else {
-        // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
-        return;
-      }
-    }
-  }
+  // public requestFullScreen() {
+  //   if (this.canvas) { // FIXME
+  //     if (this.canvas['webkitRequestFullscreen']) {
+  //       this.canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
+  //     } else if (this.canvas['mozRequestFullScreen']) {
+  //       this.canvas['mozRequestFullScreen'](); // FF10+
+  //     } else if (this.canvas['msRequestFullscreen']) {
+  //       this.canvas['msRequestFullscreen'](); // IE11+
+  //     } else if (this.canvas['requestFullscreen']) {
+  //       this.canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
+  //     } else {
+  //       // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
+  //       return;
+  //     }
+  //   }
+  // }
 
   public resize(width: number, height: number) {
     console.log(`'resize width ${width} ${this.canvas.clientWidth} height ${height} ${this.canvas.clientHeight}`);
@@ -320,8 +308,9 @@ export class Puppy {
     }
   }
 
-  public start() {
+  public start(updateEach = (t: number) => { }) {
     // console.log("start");
+    this.eachUpdate = updateEach;
     this.runner.enabled = true;
     if (!this.isRestart) {
       this.isRestart = true;
