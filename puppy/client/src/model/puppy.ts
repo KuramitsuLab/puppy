@@ -21,6 +21,7 @@ export type Code = {
   bodies: any[],
   main: (Matter, puppy: Puppy) => IterableIterator<void>;
   errors?: {}[],
+  lives?: [number, string, any, any][],
   rules?: any,
   shapeFuncMap?: { [key: string]: (ctx: Puppy, options: {}) => (x: number, y: number, index: number) => any },
 };
@@ -127,6 +128,18 @@ export class Puppy {
     }
   }
 
+  public findUpdate(lives: [number, string, any, any][]) {
+    for (const live of lives) {
+      const liveUpdate = {
+        matchFunc: part => part['trace'] === live[0] && part[live[1]] === live[2],
+        actionFunc: (part, engine) => {
+          part[live[1]] = live[3];
+        },
+      };
+      this.rules.push(liveUpdate);
+    }
+  }
+
   public init() {
     this.isRestart = false;
     if (this.engine) {
@@ -154,7 +167,7 @@ export class Puppy {
           for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
             const part = body.parts[k];
             if (rule.matchFunc(part)) {
-              rule.actionFunc(body, this.engine);
+              rule.actionFunc(part, this.engine);
             }
           }
         }
@@ -348,6 +361,9 @@ export class Puppy {
         }
       }
       World.add(this.engine.world, bodies);
+    }
+    if (code.lives) {
+      this.findUpdate(code.lives);
     }
     this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
     this.ready();
