@@ -46,6 +46,8 @@ export class Puppy {
   private isRestart: boolean = false;
   private isStep: boolean = false;
 
+  private eachUpdate: (time: number) => void;
+
   // new puppy
   public constructor(canvasid: string, code: Code) {
     this.width = code.world.width || 1000;
@@ -80,7 +82,18 @@ export class Puppy {
     }
 
     Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
+      const time = this.engine.timing.timestamp;
+      if (this.eachUpdate) {
+        this.eachUpdate(time);
+      }
       const bodies = Matter.Composite.allBodies(this.engine.world);
+      for (let i = 0; i < bodies.length; i += 1) {
+        const body: Matter.Body = bodies[i];
+        if (body['eachUpdate']) {
+          body['eachUpdate'](body, time);
+        }
+      }
+      /*
       for (const rule of this.rules) {
         for (let i = 0; i < bodies.length; i += 1) {
           const body: Matter.Body = bodies[i];
@@ -92,6 +105,7 @@ export class Puppy {
           }
         }
       }
+      */
     });
     Matter.Events.on(this.engine, 'collisionActive', (event) => {
       const pairs = event.pairs;
@@ -138,7 +152,6 @@ export class Puppy {
       render_height = canvas.clientHeight;
       render_width = canvas.clientHeight * this.width / this.height;
     }
-    console.log(`size ${render_width}x${render_height}`);
     const render = {
       /* Matter.js の変な仕様 canvas に 描画領域が追加される */
       // element: document.getElementById('canvas'),
@@ -154,8 +167,6 @@ export class Puppy {
     };
     this.render = Render.create(render);
     this.canvas = this.render.canvas;
-    console.log(`canvas ${this.canvas.clientWidth}x${this.canvas.clientHeight}`);
-
     //
     this.engine.world.bounds = {
       min: { x: 0, y: 0 },
@@ -243,6 +254,10 @@ export class Puppy {
 
   // private DefaultRenderOptions: () => Matter.IRenderDefinition;
 
+  public getCanvas() {
+    return this.canvas;
+  }
+
   public constructor0() {
     this.init();
   }
@@ -265,7 +280,7 @@ export class Puppy {
   }
 
   public resize(width: number, height: number) {
-    console.log('resize width {width} {this.canvas.clientWidth} height {height} {this.canvas.clientHeight}');
+    console.log(`'resize width ${width} ${this.canvas.clientWidth} height ${height} ${this.canvas.clientHeight}`);
     let w = width;
     let h = width * this.height / this.width;
     if (h > height) {
@@ -344,87 +359,6 @@ export class Puppy {
       this.render.context = null;
       this.render.textures = {};
     }
-    // init
-    this.engine = Engine.create();
-    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
-      const bodies = Matter.Composite.allBodies(this.engine.world);
-      for (const rule of this.rules) {
-        for (let i = 0; i < bodies.length; i += 1) {
-          const body: Matter.Body = bodies[i];
-          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
-            const part = body.parts[k];
-            if (rule.matchFunc(part)) {
-              rule.actionFunc(body, this.engine);
-            }
-          }
-        }
-      }
-    });
-    Matter.Events.on(this.engine, 'collisionActive', (event) => {
-      const pairs = event.pairs;
-      for (let i = 0; i < pairs.length; i += 1) {
-        const pair = pairs[i];
-        if (pair.bodyA['collisionActive']) {
-          pair.bodyA['collisionActive'](pair.bodyA, pair.bodyB);
-        }
-        if (pair.bodyB['collisionActive']) {
-          pair.bodyB['collisionActive'](pair.bodyB, pair.bodyA);
-        }
-      }
-    });
-    Matter.Events.on(this.engine, 'collisionStart', (event) => {
-      const pairs = event.pairs;
-      for (let i = 0; i < pairs.length; i += 1) {
-        const pair = pairs[i];
-        if (pair.bodyA['collisionStart']) {
-          pair.bodyA['collisionStart'](pair.bodyA, pair.bodyB);
-        }
-        if (pair.bodyB['collisionStart']) {
-          pair.bodyB['collisionStart'](pair.bodyB, pair.bodyA);
-        }
-      }
-    });
-    Matter.Events.on(this.engine, 'collisionEnd', (event) => {
-      const pairs = event.pairs;
-      for (let i = 0; i < pairs.length; i += 1) {
-        const pair = pairs[i];
-        if (pair.bodyA['collisionEnd']) {
-          pair.bodyA['collisionEnd'](pair.bodyA, pair.bodyB);
-        }
-        if (pair.bodyB['collisionEnd']) {
-          pair.bodyB['collisionEnd'](pair.bodyB, pair.bodyA);
-        }
-      }
-    });
-    this.runner = Runner.create({});
-    const canvas = document.getElementById('puppy-screen');
-    const width = Math.min(canvas.clientWidth, canvas.clientHeight);
-    const height = Math.min(canvas.clientWidth, canvas.clientHeight);
-    const render = {
-      /* Matter.js の変な仕様 canvas に 描画領域が追加される */
-      // element: document.getElementById('canvas'),
-      element: canvas,
-      engine: this.engine,
-      options: {
-        /* オブジェクトが枠線のみになる */
-        width,
-        height,
-        background: 'rgba(0, 0, 0, 0)',
-        wireframes: false,
-      },
-    };
-    this.render = Render.create(render);
-    this.canvas = this.render.canvas;
-    //
-    this.vars = {
-      Circle,
-      Rectangle,
-      Label,
-      Polygon,
-      Trapezoid,
-      PuppyObject: PuppyShapeBase,
-    };
-    this.rules = [];
   }
 
   public async ready() {
@@ -432,125 +366,6 @@ export class Puppy {
     Render.run(this.render); /* 描画開始 */
     this.runner.enabled = false; /*初期位置を描画したら一度止める */
     // FIXME
-  }
-
-  private loadWorld(world: any) {
-    this.engine.world.bounds = {
-      min: { x: 0, y: 0 },
-      max: {
-        x: world.width || 1000,
-        y: world.height || 1000,
-      },
-    };
-    /* 描画サイズを自動拡大/縮小を設定する */
-    Render['lookAt'](this.render, this.engine.world.bounds);
-    /* 重力を設定する */
-    const engine = this.engine;
-    if (world.gravity) {
-      engine.world.gravity = world.gravity;
-      // ジャイロスコープ
-      // デバイスの傾きで重力の向きを調整する
-      // https://github.com/liabru/matter-js/blob/master/examples/gyro.js
-      window.addEventListener('deviceorientation', (event) => {
-        const orientation = window.orientation || 0;
-        const gravity = engine.world.gravity;
-        if (orientation === 0) {
-          gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-          gravity.y = Common.clamp(event.beta, -90, 90) / 90;
-        } else if (orientation === 180) {
-          gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-          gravity.y = Common.clamp(-event.beta, -90, 90) / 90;
-        } else if (orientation === 90) {
-          gravity.x = Common.clamp(event.beta, -90, 90) / 90;
-          gravity.y = Common.clamp(-event.gamma, -90, 90) / 90;
-        } else if (orientation === -90) {
-          gravity.x = Common.clamp(-event.beta, -90, 90) / 90;
-          gravity.y = Common.clamp(event.gamma, -90, 90) / 90;
-        }
-      });
-    }
-    /* マウス */
-    if (world.mouse) {
-      const mouse = Mouse.create(this.render.canvas);
-      const constraintOptions = {
-        pointA: { x: 0, y: 0 },
-        pointB: { x: 0, y: 0 },
-        stiffness: world.mouseStiffness || 0.2,  /* 剛性 */
-      };
-      constraintOptions['render'] = {
-        visible: world.mouseVisible || false,
-      };
-      const mouseConstraint = MouseConstraint.create(this.engine, {
-        mouse,
-        constraint: Constraint.create(constraintOptions),
-      });
-      World.add(this.engine.world, mouseConstraint);
-      this.render['mouse'] = mouse;
-
-      // an example of using mouse events on a mouse
-      Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
-        const mouse = event.mouse;
-        let body = event.sourcebody;
-        const bodies = Matter.Composite.allBodies(this.engine.world);
-        for (let i = 0; i < bodies.length; i += 1) {
-          body = bodies[i];
-          if (Bounds.contains(body.bounds, mouse.position)
-            && Detector.canCollide(body.collisionFilter, mouseConstraint.collisionFilter)) {
-            for (let j = body.parts.length > 1 ? 1 : 0; j < body.parts.length; j += 1) {
-              const part = body.parts[j];
-              if (part['clicked'] && Vertices.contains(part.vertices, mouse.position)) {
-                part['clicked'](part);
-                break;
-              }
-            }
-          }
-        }
-      });
-      /*
-
-      // an example of using mouse events on a mouse
-      Events.on(mouseConstraint, 'mouseup', function(event) {
-        var mousePosition = event.mouse.position;
-        console.log('mouseup at ' + mousePosition.x + ' ' + mousePosition.y);
-      });
-
-      // an example of using mouse events on a mouse
-      Events.on(mouseConstraint, 'startdrag', function(event) {
-        console.log('startdrag', event);
-      });
-
-      // an example of using mouse events on a mouse
-      Events.on(mouseConstraint, 'enddrag', function(event) {
-        console.log('enddrag', event);
-      });
-      */
-    }
-  }
-
-  public load(code: Code) {
-    this.init();
-    if (code.world) {
-      // 世界の再設定を行う
-      this.loadWorld(code.world);
-    }
-    // 物体の情報をアップデートする
-    if (code.bodies) {
-      const bodies = [];
-      for (const data of code.bodies) {
-        if (data.shape && data.position) {
-          const body = this.newBody(data);
-          if (data.name) {
-            this.vars[data.name] = body;
-          }
-          if (body.id) {
-            bodies.push(body);
-          }
-        }
-      }
-      World.add(this.engine.world, bodies);
-    }
-    this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
-    this.ready();
   }
 
   // Puppy APIs
@@ -582,19 +397,27 @@ export class Puppy {
   }
 
   public print(text: string, options = {}) {
-    const _options: ShapeOptions = Common.extend({ shape: 'label', position: { x: 1000, y: Math.random() * 1000 } }, options);
-    const body = this.newMatter(_options);
-    body['value'] = text;
-    World.add(this.engine.world, [body]);
-    const invokedTime = this.engine.timing.timestamp;
-    const commentRule = {
-      matchFunc: part => part.id === body.id,
-      actionFunc: (body, engine) => {
-        const px = 1000 - 100 * (engine.timing.timestamp - invokedTime) * 0.003;
+    const width = this.width;
+    const _options: ShapeOptions = Common.extend({
+      shape: 'label',
+      value: `${text}`,
+      created: this.engine.timing.timestamp,
+      position: { x: this.width, y: Math.random() * this.height },
+      eachUpdate: (body, time: number) => {
+        const px = width - 100 * (time - body['created']) * 0.003;
         Matter.Body.setPosition(body, { x: px, y: body.position.y });
       },
-    };
-    this.rules.push(commentRule);
+    },                                           options);
+    const body = this.newMatter(_options);
+    World.add(this.engine.world, [body]);
+    // const commentRule = {
+    //   matchFunc: part => part.id === body.id,
+    //   actionFunc: (body, engine) => {
+    //     const px = 1000 - 100 * (engine.timing.timestamp - invokedTime) * 0.003;
+    //     Matter.Body.setPosition(body, { x: px, y: body.position.y });
+    //   },
+    // };
+    // this.rules.push(commentRule);
   }
 
 }
