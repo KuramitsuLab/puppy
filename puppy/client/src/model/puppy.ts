@@ -17,6 +17,7 @@ const Detector = Matter['Detector'];
 const Common = Matter['Common'];
 
 export type Code = {
+  hash: string,
   world: any,
   bodies: any[],
   main: (Matter, puppy: Puppy) => IterableIterator<void>;
@@ -384,17 +385,32 @@ export class Puppy {
     World.add(this.engine.world, [body]);
     return body;
   }
-
+  /*
+  collisionFilter: {
+                  category: 0x0001,
+                  mask: 0xFFFFFFFF,
+                  group: 0
+              },
+              */
   public print(text: string, options = {}) {
     const width = this.width;
     const _options: ShapeOptions = Common.extend({
       shape: 'label',
       value: `${text}`,
       created: this.engine.timing.timestamp,
-      position: { x: this.width, y: Math.random() * this.height },
+      position: { x: this.width, y: this.height * (Math.random() * 0.9 + 0.05) },
+      collisionFilter: {
+        category: 0x0001,
+        mask: 0x00000000,
+        group: 3,
+      },
       eachUpdate: (body, time: number) => {
         const px = width - 100 * (time - body['created']) * 0.003;
         Matter.Body.setPosition(body, { x: px, y: body.position.y });
+        console.log(px);
+        if (px < -1) {
+          World.remove(this.engine.world, body);
+        }
       },
     },                                           options);
     const body = this.newMatter(_options);

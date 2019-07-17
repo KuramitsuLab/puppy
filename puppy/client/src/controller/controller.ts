@@ -1,4 +1,4 @@
-import { puppy, loadPuppy } from '../model/puppy';
+import { puppy, loadPuppy, Code } from '../model/puppy';
 import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
 import { exitFullscreen, getFullscreen } from '../view/screen';
 import * as marked from 'marked';
@@ -148,7 +148,7 @@ const togglePlay = (t: number) => {
 };
 
 const transpile: (code: string) => Promise<void> = (code) => {
-  const oldCode = window['PuppyVMCode'];
+  const oldCode: Code = window['PuppyVMCode'];
   window['PuppyVMCode'] = undefined;
   return fetch('/compile', {
     method: 'POST',
@@ -271,27 +271,27 @@ editor.on('change', (cm, obj) => {
   }
   timer = setTimeout(() => {
     console.log(`EDITOR CHANGE ${page['viewmode']}`);
-    if (editor.getValue() === '') {
-      session.removeItem(`/sample${path}`);
-      editor.setValue(loadText(`/sample${path}`, ''));
-    }
     if (page['type'] === 'puppy') {
+      let prevhash = '';
+      if (window['PuppyVMCode']) {
+        prevhash = window['PuppyVMCode']['hash'];
+      }
       editor.getSession().clearAnnotations();
       transpile(editor.getValue()).then(() => {
-        const errors: [] = window['PuppyVMCode']['errors'];
-        console.log(window['PuppyVMCode']);
+        const code: Code = window['PuppyVMCode'];
         let error_count = 0;
         const annos = [];
-        for (const e of errors) {
+        for (const e of code.errors) {
           if (e['type'] === 'error') {
             error_count += 1;
           }
           annos.push(e);
         }
         editor.getSession().setAnnotations(annos);
-        console.log(`size ${errors.length} ${error_count}`);
-        if (error_count === 0) {
-          loadPuppy('puppy-screen', window['PuppyVMCode']);
+        console.log(`PREV ${prevhash}`);
+        console.log(`HASH ${code.hash}`);
+        if (error_count === 0 && code.hash !== prevhash) {
+          loadPuppy('puppy-screen', code);
           puppy.start(togglePlay);
           session.setItem(`/sample${path}`, editor.getValue());
         }

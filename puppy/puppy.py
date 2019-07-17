@@ -1,6 +1,7 @@
 import sys
 from collections import namedtuple
 from pegpy.tpeg import grammar, generate, STDLOG
+import hashlib
 
 # 文法を直したいときは
 # pegpy/grammar/puppy.tpeg を編集する
@@ -694,8 +695,10 @@ def puppyVMCode(env, main):
     world = '\n'.join(world)
     error = '\n'.join(error)
     lives = ''
+    codehash = hashlib.sha256(world.encode() + main.encode()).hexdigest()
     return f'''
 window['PuppyVMCode'] = {{
+  hash: '{codehash}',
   world: {{
 {world}
   }},
