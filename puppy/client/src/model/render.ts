@@ -29,15 +29,15 @@ export const myRender = (render) => {
 
     for (let i = 0; i < bodies.length; i += 1) {
       const body = bodies[i];
-      // if (!body.visible) {
-      //   continue;
-      // }
+      if (!body.visible) {
+        continue;
+      }
       // handle compound parts
       for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
         const part = body.parts[k];
-        // if (!part.visible) {
-        //   continue;
-        // }
+        if (!part.visible) {
+          continue;
+        }
         if (part.opacity !== 1) {
           c.globalAlpha = part.opacity;
         }
@@ -55,30 +55,6 @@ export const myRender = (render) => {
           );
           c.rotate(-part.angle);
           c.translate(-part.position.x, -part.position.y);
-          // }
-          // else if (part.sprite && part.sprite.texture && !options.wireframes) {
-          //   // part sprite
-          //   const sprite = part.sprite;
-          //   const texture = _getTexture(render, part.image);
-          //   console.log(part.sprite);
-          //   c.translate(part.position.x, part.position.y);
-          //   c.rotate(part.angle);
-
-          //   if (!part.height) {
-          //     part.height = part.width;
-          //   }
-
-          //   c.drawImage(
-          //     texture,
-          //     part.width * -sprite.xOffset * sprite.xScale,
-          //     part.height * -sprite.yOffset * sprite.yScale,
-          //     part.width * sprite.xScale,
-          //     part.height * sprite.yScale,
-          //   );
-
-          //   // revert translation, hopefully faster than save / restore
-          //   c.rotate(-part.angle);
-          //   c.translate(-part.position.x, -part.position.y);
         } else {
           // part polygon
           if (part.circleRadius) {
@@ -132,11 +108,9 @@ export const myRender = (render) => {
           c.fillText(`${part.value}`, part.position.x, part.position.y + 10);
           c.restore();
         }
-
         c.globalAlpha = 1;
       }
     }
   };
-
   return render;
 };

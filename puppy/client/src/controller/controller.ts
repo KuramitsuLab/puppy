@@ -64,38 +64,48 @@ const loadFile: (path: string) => Promise<string> = (path) => {
   });
 };
 
-const loadText = (pathid: string, default_text: string) => {
-  let text = session.getItem(pathid);
-  console.log(`loadText ${pathid} ${text}`);
-  if (!text) {
-    loadFile(pathid).then((s: string) => {
-      text = s;
-      session.setItem(pathid, s);
-      console.log(`LOAD ${s}`);
-    }).catch((msg: string) => {
-      console.log(`ERR ${msg}`);
-      text = default_text;
-    });
-  }
-  return text;
-};
-
 /* setting */
 
 const initPage = () => {
-  const json_text = loadText(`/setting${path}`, '{}');
-  page = JSON.parse(json_text);
-
+  const page_json = session.getItem('/settings/');
+  console.log(`${page_json}`);
+  if (page_json) {
+    page = JSON.parse(page_json);
+  } else {
+    loadFile(`/setting${path}`).then((s: string) => {
+      page = JSON.parse(s);
+      session.setItem('/settings/', s);
+    }).catch((msg: string) => {
+      console.log(`ERR ${msg}`);
+    });
+  }
   const doc = document.getElementById('problem');
-  doc.innerHTML = marked(loadText(`/problem${path}`, ''));
-  editor.setValue(loadText(`/sample${path}`, ''), -1);  // 行番号の先頭にする
-
+  loadFile(`/problem${path}`).then((s: string) => {
+    doc.innerHTML = marked(s);
+  }).catch((msg: string) => {
+    doc.innerHTML = `ERR ${msg}`;
+  });
+  const source = session.getItem(`/sample${path}`);
+  if (source) {
+    editor.setValue(source, -1);
+  } else {
+    loadFile(`/sample${path}`).then((s: string) => {
+      editor.setValue(s, -1);
+      session.setItem(`/sample${path}`, s);
+    }).catch((msg: string) => {
+      editor.setValue(`#ERR ${msg}`, -1);
+    });
+  }
   if (page['type'] === 'sumomo') {
     const doc = document.getElementById('name');
     doc.innerHTML = 'Sumomo';
   } else {
     const doc = document.getElementById('gallery');
-    doc.innerHTML = loadText('/gallery', '');
+    loadFile('/gallery').then((s: string) => {
+      doc.innerHTML = s;
+    }).catch((msg: string) => {
+      doc.innerHTML = `ERR ${msg}`;
+    });
   }
   if (page[path]) {
     const doc = document.getElementById('page-title');
@@ -120,6 +130,7 @@ const initPage = () => {
 /* event */
 
 document.getElementById('base').onclick = () => {
+  session.removeItem('/settings/');
   if (path.startsWith('/Puppy')) {
     location.href = '/ITPP/01A';
   }
@@ -217,6 +228,8 @@ document.getElementById('extend').onclick = () => {
         return;
       }
     }
+    // loadPuppy('puppy-screen', window['PuppyVMCode']);
+    // puppy.start(togglePlay);
   }
 };
 
@@ -269,14 +282,15 @@ document.getElementById('clear').onclick = () => {
 /* editor */
 
 let timer = null;
+const editorPanel = document.getElementById('editor');
 
 editor.on('change', (cm, obj) => {
   if (timer) {
     clearTimeout(timer);
     timer = null;
   }
+  editorPanel.style.backgroundColor = 'rgba(255,255,255,0.7)';
   timer = setTimeout(() => {
-    console.log(`EDITOR CHANGE ${page['viewmode']}`);
     if (page['type'] === 'puppy') {
       let prevhash = '';
       if (window['PuppyVMCode']) {
@@ -307,7 +321,7 @@ editor.on('change', (cm, obj) => {
           }
         }
         else {
-          // error
+          editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
         }
       });
     }

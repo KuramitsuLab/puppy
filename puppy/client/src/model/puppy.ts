@@ -411,6 +411,33 @@ export class Puppy {
     return `${x}`;
   }
 
+  public range(x: number, y?: number, z?: number) {
+    let start = 0;
+    let end = 0;
+    let step = 1;
+    if (y === undefined) {
+      end = x;
+    }
+    else if (z !== undefined) {
+      start = x;
+      end = y;
+      step = z;
+    }
+    else {
+      start = x;
+      end = y;
+    }
+    const xs = [];
+    for (let i = start; i < end; i += step) {
+      xs.push(i);
+      if (xs.length > 100000) {
+        // safety break
+        break;
+      }
+    }
+    return xs;
+  }
+
   /* string (method) */
 
   public find(s: string, sub: string) {

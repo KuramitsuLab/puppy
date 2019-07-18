@@ -310,11 +310,12 @@ BUILDIN = {
     'math.': IMPORT_MATH,
     'print': VarInfo('puppy.print', False, [None, None, EmptyOption]),
     # 返値, 引数.. None はなんでもいい
-    'len': VarInfo('puppy.len', False, ['num', None]),
+    'len': VarInfo('puppy.len', False, ('num', None)),
     # 可変長引数
-    'range@3': VarInfo('puppy.range3', False, ['list[int]', 'num', 'num', 'num']),
-    'range@2': VarInfo('puppy.range2', False, ['list[int]', 'num', 'num']),
-    'range': VarInfo('puppy.range', False, ['list[int]', 'num']),
+    'range': VarInfo('puppy.range', False, ('list[int]', 'num')),
+    # append
+    'append': VarInfo('puppy.append', False, ('void', 'list', None)),
+    # クラス
     'World': VarInfo('world', False, MatterTypes),
     'Circle': VarInfo('Circle', False, MatterTypes),
     'Rectangle': VarInfo('Rectangle', False, MatterTypes),
@@ -752,7 +753,7 @@ def transpile(s, errors=[]):
 
 
 if __name__ == "__main__":
-    source = '''A = Ball(1,1,width=1000)\n'''
+    source = '''a.append('x')\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
