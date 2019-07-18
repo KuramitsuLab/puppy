@@ -426,8 +426,9 @@ def MethodExpr(env, t, indent, out):
             name = vari.target
             types = vari.types
             out.append(name)
+            out.append('(')
             args = [name] + [y for x, y in t['params'].subs()]
-            emit_Args(env, t['name'], args, types, '(', indent, out)
+            emit_Args(env, t['name'], args, types, '', indent, out)
             return types[0]
         else:
             perror(t['name'], f'{pkgname}{name}？ タイプミスしていませんか？')
@@ -438,8 +439,9 @@ def MethodExpr(env, t, indent, out):
         vari = env[methodname]
         types = vari.types
         out.append(vari.target)
+        out.append('(')
         args = [name, t['recv']] + [y for x, y in t['params'].subs()]
-        emit_Args(env, t['name'], args, types, '(', indent, out)
+        emit_Args(env, t['name'], args, types, '', indent, out)
         return types[0]
     else:
         perror(t['name'], f'本当にメソッド名 {name} が正しいか確認してください')
@@ -469,8 +471,9 @@ def ApplyExpr(env, t, indent, out):
         popenv(env, '@funcname', outter)
     else:
         out.append(name)
+        out.append('(')
         args = [y for x, y in t.subs()]
-        emit_Args(env, t['name'], args, types, '(', indent, out)
+        emit_Args(env, t['name'], args, types, '', indent, out)
         if name == 'puppy.print':
             env['@yield'] = trace(env, t)
     return types[0]
@@ -733,7 +736,7 @@ def transpile(s, errors=[]):
     ERROR = errors
     if t.tag == 'err':
         perror(t, '構文エラーです. 文法通り書けているか確認しましょう')
-        return puppyVMCode({'@world': {}}, '')
+        return puppyVMCode({'@world': {}, '@lines': [], '@lives': []}, '')
     # start transpile
     env = BUILDIN.copy()
     env['@world'] = WORLD.copy()

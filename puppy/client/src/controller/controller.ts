@@ -162,12 +162,18 @@ const transpile: (code: string) => Promise<void> = (code) => {
     }
     throw new Error(res.statusText);
   }).then((js: string) => {
-    console.log(js);
-    Function(js)(); // Eval javascript code
+    try {
+      Function(js)(); // Eval javascript code
+    }
+    catch (e) {
+      console.log(js);
+      console.log('FIXME');
+      console.log(e);
+    }
     if (!window['PuppyVMCode']) {
-      console.log(window['PuppyVMCode']);
+      // console.log(window['PuppyVMCode']);
       window['PuppyVMCode'] = oldCode;
-      throw new Error("Don\'t exist PuppyVMCode in window.");
+      // throw new Error("Don\'t exist PuppyVMCode in window.");
     }
   },
   ).catch((msg: string) => {
@@ -286,12 +292,12 @@ editor.on('change', (cm, obj) => {
             error_count += 1;
           }
           annos.push(e);
+          editor.getSession().setAnnotations(annos);
         }
-        editor.getSession().setAnnotations(annos);
-        console.log(`PREV ${prevhash}`);
+        // console.log(`PREV ${prevhash}`);
         if (error_count === 0) {
           if (code.hash === prevhash) {
-            console.log(`HASH ${code.hash}`);
+            // console.log(`HASH ${code.hash}`);
             puppy['lines'] = code['lines'];
           }
           else {
@@ -299,6 +305,9 @@ editor.on('change', (cm, obj) => {
             puppy.start(togglePlay);
             session.setItem(`/sample${path}`, editor.getValue());
           }
+        }
+        else {
+          // error
         }
       });
     }

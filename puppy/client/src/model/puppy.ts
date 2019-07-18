@@ -1,7 +1,7 @@
 import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
-import { shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
+import { initWorld, shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -37,6 +37,7 @@ export class Puppy {
 
   private width: number;    /* world.width */
   private height: number;   /* world.height */
+  private world: {};
   private vars: {};
   private lines: number[];
   private main: (Matter, puppy: Puppy) => IterableIterator<void>;
@@ -47,6 +48,7 @@ export class Puppy {
 
   // new puppy
   public constructor(canvasid: string, code: Code) {
+    this.world = initWorld(code.world);
     this.width = code.world.width || 1000;
     this.height = code.world.height || this.width;
     this.lines = code.lines;
@@ -91,19 +93,6 @@ export class Puppy {
           body['eachUpdate'](body, time);
         }
       }
-      /*
-      for (const rule of this.rules) {
-        for (let i = 0; i < bodies.length; i += 1) {
-          const body: Matter.Body = bodies[i];
-          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
-            const part = body.parts[k];
-            if (rule.matchFunc(part)) {
-              rule.actionFunc(body, this.engine);
-            }
-          }
-        }
-      }
-      */
     });
     Matter.Events.on(this.engine, 'collisionActive', (event) => {
       const pairs = event.pairs;
@@ -160,6 +149,8 @@ export class Puppy {
         width: render_width,
         height: render_height,
         background: code.world.background || 'rgba(0, 0, 0, 0)',
+        font: code.world.font || "bold 60px 'Arial'",
+        fontColor: code.world.fontColor || 'rgba(30, 30, 30, 0)',
         wireframes: false,
       },
     };
@@ -368,7 +359,7 @@ export class Puppy {
     const max_y = this.engine.world.bounds['max']['y'];
     const options: ShapeOptions = Common.extend({ position: { x: max_x / 2, y: max_y / 2 } }, _options);
     options.shape = options.shape in shapeFuncMap ? options.shape : 'circle';
-    const body = shapeFuncMap[options.shape](options);
+    const body = shapeFuncMap[options.shape](this.world, options);
     return body;
   }
 
@@ -402,11 +393,6 @@ export class Puppy {
       value: `${text}`,
       created: this.engine.timing.timestamp,
       position: { x: this.width, y: this.height * (Math.random() * 0.9 + 0.05) },
-      collisionFilter: {
-        category: 0x0001,
-        mask: 0x00000000,
-        group: 3,
-      },
       eachUpdate: (body, time: number) => {
         const px = width - 100 * (time - body['created']) * 0.003;
         Matter.Body.setPosition(body, { x: px, y: body.position.y });
@@ -417,14 +403,24 @@ export class Puppy {
     },                                           options);
     const body = this.newMatter(_options);
     World.add(this.engine.world, [body]);
-    // const commentRule = {
-    //   matchFunc: part => part.id === body.id,
-    //   actionFunc: (body, engine) => {
-    //     const px = 1000 - 100 * (engine.timing.timestamp - invokedTime) * 0.003;
-    //     Matter.Body.setPosition(body, { x: px, y: body.position.y });
-    //   },
-    // };
-    // this.rules.push(commentRule);
+  }
+
+  /* built-in */
+
+  public str(x: any) {
+    return `${x}`;
+  }
+
+  /* string (method) */
+
+  public find(s: string, sub: string) {
+    return s.indexOf(sub);
+  }
+
+  /* list */
+
+  public append(xs: any[], x: any) {
+    xs.push(x);
   }
 
 }
