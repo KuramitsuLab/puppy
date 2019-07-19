@@ -1,6 +1,6 @@
 body {
   font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  font-size: 1.6em;
+  font-size: 1.4em;
   font-weight: 300;
   letter-spacing: .01em;
   line-height: 1.6;
@@ -8,7 +8,7 @@ body {
 
 .all-contents {
   margin: 0 auto;
-  max-width: 100rem;
+  max-width: 80rem;
 }
 
 #essay .body p {
@@ -30,4 +30,35 @@ body {
 
 .authors .author .e-mail {
   font-size: 80%
+}
+
+.prettyprint ol.linenums > li {
+	list-style-type: decimal; 
+}
+
+.caption {
+  font-size: 80%;
+  margin: 2px 0px 0px 0px;
+}
+
+.caption:before {
+  content: "▼ ";
+}
+
+.TODO {
+  color: blue
+}
+
+.TODO:before {
+  content: "TODO : ";
+  font-weight: bold;
+}
+
+.FIXME {
+  color: red
+}
+
+.FIXME:before {
+  content: "FIXME : ";
+  font-weight: bold;
 }

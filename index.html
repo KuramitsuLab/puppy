@@ -2,15 +2,16 @@
 <html>
 
 <head>
-  <title>Puppy: A Educational Simplification of Python with a Tangible Playground</title>
+  <title>Puppy: A Educational Simplification of Python with a Live Playground</title>
   <link rel="stylesheet" type="text/css" href="index.css">
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
 </head>
 <body>
   <div class="all-contents">
     <div id="essay">
 
       <div class="header">
-        <h1>Puppy: A Educational Simplification of Python with a Tangible Playground</h1>
+        <h1>Puppy: A Educational Simplification of Python with a Live Playground</h1>
         <div class="authors">
           <div class='author'>
             <div class='name'>
@@ -41,6 +42,111 @@
         <h3>Abstract</h3>
         <p>A written 250 word abstract is required.</p>
         <h3>Introduction</h3>
+        <div class='FIXME'>英語にする</div>
+        <p>
+          コーディングは目標とするプログラムの振る舞いをコンピュータが解釈できるような表現に落とし込む作業である．
+          このプログラムの振る舞いは，標準出力に出力して確認をしたり，デバッガなどのツールを用いて確認することができるが，ほとんどはプログラマの頭の中で想像されている．
+          そのため，書いているコードが想像している振る舞いとは異なる振る舞いを表現していることも少なくない．
+          特に，プログラミング初学者はプログラミングの理解が浅いため，想像通りの振る舞いをするコードを書くことは困難である.
+          複雑になったコードから訂正箇所を見つけるのは，熟練のプログラマでも骨が折れる作業であり，学習に対する意欲を損ねかねない．
+          そのため，プログラミング学習ではこまめに実行結果を確認できるライブプログラミング環境が望ましい．
+          また，初学者にとって環境構築も大きな障壁となるため，CodecademyやSwift Playgroundsなどのプログラミング学習サービスは出力とエディタが統一された環境を提供している．
+          これらのことはプログラミング教育においても同様であり，ライブプログラミング環境は授業に導入しやすく，授業の進行を円滑にする．
+        </p>
+        <p>
+          このエッセイでは，ライブコーディングが可能なプレイグラウンドを備えた教育用のプログラミング言語Puppyを提案する．
+          Puppyはプログラミング言語Pythonを教育的に単純化した言語になっている．
+          Puppy言語で書かれたオブジェクトは即座にプレイグラウンドで視覚化され，インタラクティブにコードを書くことができる．
+          さらに，描画されたオブジェクトはmatter.jsの物理エンジンによって物理法則に従って動く．
+          これにより，少ないコード量でもダイナミックな動きを実現することができる．
+        </p>
+        <p>
+          現在，教育用言語はScratchを代表としたビジュアルプログラミング言語が注目を浴びている．
+          ビジュアルプログラミングはコードを書く必要がなく，厳密な構文規則やタイプミスなどに悩まされなくてよい．
+          しかし，実用的なプログラミング言語のほとんどはコードの記述が必要であり，両者の間には溝がある．
+          Puppyはコードベースのプログラミング言語として実用言語への橋渡しを目指している．
+          構文規則の緩和や自然言語処理を応用することで，初学者のコーディングを支援し滑らかなプログラミング体験を提供する．
+          以下は，Puppyのライブプログラミング環境であるPuppy Playgroundでのデモ動画である．
+        </p>
+        <!-- <p>
+          近年，実用的に使われているプログラミング言語のほとんどはコードを書くことでプログラムを構築する．
+          一方で，プログラミング教育ではScratchを代表としたビジュアルプログラミングが流行している．
+          ビジュアルプログラミングはコードを書く必要がなく，厳密な構文規則やタイプミスなどに悩まされなくてよいという魅力がある．
+          しかし，実用的なプログラミングに必要なコードを書く練習はすることができない．
+          そこで，我々はビジュアルプログラミングから実用的なプログラミングへの橋渡しをする教育用プログラミング言語Puppyを提案する．
+        </p>
+        <p>
+        プログラムを書くとき，プログラマはそのプログラムの挙動を頭の中で予測している．
+        このような予測はプログラミング初学者にとって困難なものであり，熟練のプログラマでさえ予測の正しさを確認するためにデバッガなどの支援を受けている．
+        我々はプログラミング初学者がプログラミングを学ぶ環境としてコーディングエディタとデバッガが一体化されたライブプログラミング環境がふさわしいと考えている．
+        コーディングエディタに記述されたプログラムが即座に実行結果として可視化されることによってプログラムの挙動を理解する助けとなるだけでなく，プログラミング体験をよりよいものにできると確信している．
+        </p>
+        <p>
+        現在，Scratchを代表とした様々な教育用プログラミング言語が活躍している．
+        これらの教育用言語のほとんどはコードを書くこと無しに簡単にプログラムを組み立てられるようになっている．
+        しかし，実用的なプログラミング言語はコードを書く必要があり，教育用プログラミング言語との間にギャップが見られる．
+        我々が提案するPuppyはこのギャップを埋めるようなコーディングを重視したプログラミング言語であり，プログラムの挙動を即座に反映するライブプログラミング環境上で動作する．
+        さらに，コーディング経験の少ない初学者のために自然言語処理を利用した協力なコーディング支援機能を備えている．
+        以下は，Puppyのライブプログラミング環境であるPuppy Playgroundでのデモ動画である．
+        </p> -->
+        <h3>Puppy Playground</h3>
+        <p>
+        Puppy Playground is a live programming environment which taking full advantage of Puppy.
+        Objects described by Puppy language are visualized as matter.js objects on this playground.
+        Furthermore, changing codes on an editor is reflected fluidly in matter.js objects behavior.
+        We show a screenshot of Puppy Playground and explanations of each part below.
+        </p>
+        <div class='FIXME'>Start ButtonではなくPlay Button??</div>
+        <div class="caption">Puppy Playground</div>
+        <img src='./image/playground.png' width="60%" height="auto">
+        <ul>
+          <li>Canvas</li>
+          <p>
+            Canvas is an area drawn matter.js objects described by Puppy.
+          </p>
+          <li>Editor</li>
+          <p>
+            Users can write Puppy codes and receive feedbacks about error and warning.
+          </p>
+          <li>Start Button</li>
+          <p>
+            A Button for starting matter.js physics engine.
+          </p>
+          <li>Pause Button</li>
+          <p>
+            A Button for pausing matter.js physics engine.
+          </p>
+          <li>Step Button</li>
+          <p>
+            A Button for step execution.
+          </p>
+        </ul>
+        <p>
+          This playground makes possible to learn writing codes easy and fun.
+          On Puppy Playground, we don't need to know IO actions to check execution results, unlike general programming languages.
+          When a user write Puppy codes on the Editor, matter.js objects will be drawn on the Canvas as soon.
+          Push the Start Button and starting physics engine, objects drawn on the Canvas behave according to the physics law.
+          Viewing behaving of objects, users can pause the pysics engine, execute per step, change Puppy codes and so on.
+        </p>
+        <!-- Moreover, feedbacks on Editor allow that users don't need to be bothered errors and warnings for a long time. -->
+        <p>
+          Puppy codes translate to javascript codes on the machine operating matter.js objects (we called Puppy Virtual Machine).
+          First, we will introduce Puppy language specification and demonstrations in the next section.
+          After that, we will explain how to realize live programming by Puppy Virtual Machine in the later section.
+        </p>
+        <h3>Puppy</h3>
+        <div class="TODO">canvas上へオブジェクトを書くことを中心に書いていく．</div>
+        <h4>Puppy Object</h4>
+        Here's a code of creating a Puppy object and drawing it on Puppy playground.
+        <div class="caption">Create a Puppy object</div>
+        <pre class="prettyprint">C = Circle(500, 500, radius=100)</pre>
+        <!-- Puppyのオブジェクトの書き方とそれぞれのデモを紹介 -->
+        <h4>Inheritance</h4>
+        <!-- 継承の書き方と使い方 -->
+        <h3>Puppy Virtual Machine</h3>
+        <div class="TODO">Puppyがどのように変換されているかや，Live Codingの機能の紹介と実装方法についての説明．</div>
+        <h3>Challenges and Conclusions</h3>
+        <h3>Reference</h3>
       </div>
 
     </div>
