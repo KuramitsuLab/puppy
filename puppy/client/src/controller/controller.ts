@@ -177,18 +177,18 @@ const transpile: (code: string) => Promise<void> = (code) => {
       Function(js)(); // Eval javascript code
     }
     catch (e) {
+      // alert(`トランスパイルにしっぱいしています ${e}`);
+      editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
       console.log(js);
       console.log('FIXME');
       console.log(e);
     }
     if (!window['PuppyVMCode']) {
-      // console.log(window['PuppyVMCode']);
       window['PuppyVMCode'] = oldCode;
-      // throw new Error("Don\'t exist PuppyVMCode in window.");
     }
   },
   ).catch((msg: string) => {
-    console.log(msg);
+    alert(`Puppy is down!! ${msg}`);
   });
 };
 

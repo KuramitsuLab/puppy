@@ -33,18 +33,18 @@ editor.getSession().setUseWrapMode(true); /* 折り返しあり */
 // });
 setFontSize(18);
 
-editor.commands.addCommand({
-  name: 'myCommand',
-  bindKey: { win: 'Ctrl-M', mac: 'Command-M' },
-  exec(editor) {
-    console.log(editor.session.getTextRange(editor.getSelectionRange()));
-  },
-});
+// editor.commands.addCommand({
+//   name: 'myCommand',
+//   bindKey: { win: 'Ctrl-M', mac: 'Command-M' },
+//   exec(editor) {
+//     console.log(editor.session.getTextRange(editor.getSelectionRange()));
+//   },
+// });
 
-editor.getSession().selection.on('changeCursor', () => {
-  console.log(editor.selection.getCursor());
-  console.log(editor.getSelectionRange());
-});
+// editor.getSession().selection.on('changeCursor', () => {
+//   console.log(editor.selection.getCursor());
+//   console.log(editor.getSelectionRange());
+// });
 
 let markers = [];
 const zenkaku = '！　”＃＄％＆’（）＊＋，－．／：；＜＝＞？＠［＼￥］＾＿‘｛｜｝～￣'

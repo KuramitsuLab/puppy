@@ -2,6 +2,7 @@ import sys
 from collections import namedtuple
 from pegpy.tpeg import grammar, generate, STDLOG
 import hashlib
+import puppytypes as ts
 
 # 文法を直したいときは
 # pegpy/grammar/puppy.tpeg を編集する
@@ -9,283 +10,9 @@ import hashlib
 peg = grammar('puppy2.tpeg')
 parser = generate(peg)
 
-
-# print(t.tag)
-# for label, subtree in t:
-#   print(label, subtree)
-
-
-def Source(env, t, indent, out):
-    for _, subtree in t:
-        out.append(indent)
-        conv(env, subtree, indent, out)
-        out.append('\n')
-        auto_yield(env, indent, out)
-
-
-def auto_yield(env, indent, out):
-    if '@yield' in env and not '@local' in env:
-        out.append(f"{indent}yield {env['@yield']};\n")
-        del env['@yield']
-
-
-def ClassDecl(env, t, indent, out):
-    name = t['name'].asString()
-    argNum = 1
-    if 'extends' in t:
-        extends = t["extends"].asString()
-        argNum += 1
-        out.append(
-            f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
-    else:
-        out.append(f'puppy.vars["{name}"] = class')
-    env['@local'] = name
-    for i, (_, sub) in enumerate(t.subs()):
-        if i < argNum:
-            continue
-        print(sub)
-        conv(env, sub, indent, out)
-    return 'class'
-
-
-def globalname(name):
-    return f"puppy.vars['{name}']"
-
-
-def localname(name):
-    return name
-
-
-def FuncDecl(env, t, indent, out):
-    name = t['name'].asString()
-    out.append(f'{globalname(name)} = (')
-    lenv = env.copy()
-    types = [None]
-    for _, p in t['params']:
-        pname = p['name'].asString()
-        if(len(types) > 1):
-            out.append(f',{pname}')
-        else:
-            out.append(pname)
-        ty = p['type'].asString() if 'type' in p else None
-        if ty is not None:
-            out.append(f'/*{ty}*/')
-        types.append(ty)
-        lenv[pname] = VarInfo(localname(pname), True, ty)
-    out.append(") => ")
-    env[name] = lenv[name] = VarInfo(globalname(name), False, types)
-    lenv['@local'] = name
-    conv(lenv, t['body'], indent, out)
-    return None
-
-
-def Return(env, t, indent, out):
-    if not '@local' in env:
-        pwarn(t, 'ここで return は使えません')
-        return
-    vari = env[env['@local']]
-    types = vari.types
-    out.append('return')
-    if 'expr' in t:
-        if types[0] == 'void':
-            pwarn(t['expr'], 'この返値は無視されます')
-            return None
-        out.append(' ')
-        ty = check(types[0], env, t['expr'], indent,
-                   out, f'{types[0]}型の値を返すようにしてください')
-        types[0] = ty
-    elif types[0] == 'None' or types[0] == 'void':
-        types[0] = 'void'
-    else:
-        perror(t, f'{types[0]}型の値を返すようにしてください')
-    return None
-
-
-def FuncExpr(env, t, indent, out):
-    out.append("(")
-    lenv = env.copy()
-    types = [None]
-    for _, p in t['params']:
-        pname = p.asString()
-        if(len(types) > 1):
-            out.append(f',{pname}')
-        else:
-            out.append(pname)
-        types.append(None)
-        lenv[pname] = VarInfo(localname(pname), True, None)
-    out.append(") => ")
-    lenv['lambda'] = VarInfo('', True, types)
-    lenv['@local'] = 'lambda'
-    conv(lenv, t['body'], indent, out)
-    return types
-
-
-def Yield(env, t, indent, out):
-    if '@local' in env:
-        pwarn(t, '関数内で yield は使えません')
-        return
-    out.append(f'yield {t.pos()[2]}')
-    return None
-
-
-def Continue(env, t, indent, out):
-    if '@inloop' in env:
-        pwarn(t, 'continue は、for文内でのみ使えます')
-        return
-    out.append('continue')
-    return None
-
-
-def Break(env, t, indent, out):
-    if '@inloop' in env:
-        pwarn(t, 'break は、for文内でのみ使えます')
-        return
-    out.append('break')
-    return None
-
-
-def Pass(env, t, indent, out):
-    return None
-
-
-def TrueExpr(env, t, indent, out):
-    out.append("true")
-    return 'bool'
-
-
-def FalseExpr(env, t, indent, out):
-    out.append('false')
-    return 'bool'
-
-
-def Int(env, t, indent, out):
-    out.append(t.asString())
-    return 'num'
-
-
-def Double(env, t, indent, out):
-    out.append(t.asString())
-    return 'num'
-
-
-def String(env, t, indent, out):
-    out.append("'{}'".format(t.asString()))
-    return 'str'
-
-
-def Char(env, t, indent, out):
-    out.append("'{}'".format(t.asString()))
-    return 'str'
-
-
-def List(env, t, indent, out):
-    ty = None
-    out.append('[')
-    for _, sub in t:
-        ty = check(ty, env, sub, indent, out, '全ての要素を同じ型に揃えてください')
-        out.append(',')
-    out.append(']')
-    return 'list' if ty == None else f'list[{ty}]'
-
-
-def Tuple(env, t, indent, out):
-    ty = None
-    subs = t.subs()
-    if len(subs) > 2:
-        pwarn(t, 'リストは[...]で書いてください')
-        return List(env, t, indent, out)
-    if len(subs) == 1:
-        out.append('(')
-        ty = conv(env, subs[0][1], indent, out)
-        out.append(')')
-        return ty
-    else:
-        out.append('{ x: ')
-        check(ty, env, subs[0][1], indent, out, 'ベクトルの要素は数値です')
-        out.append(', y: ')
-        check(ty, env, subs[1][1], indent, out, 'ベクトルの要素は数値です')
-        out.append('}')
-        return 'vec'
-
-
-def Data(env, t, indent, out):
-    out.append('{')
-    for _, sub in t:
-        conv(env, sub, indent, out)
-        out.append(',')
-    out.append('}')
-
-
-def KeyValue(env, t, indent, out):
-    conv(env, t['name'], indent, out)
-    out.append(': ')
-    conv(env, t['value'], indent, out)
-
-
-def Infix(env, t, indent, out):
-    op = t['name'].asString()
-    out.append('(')
-    ty = conv(env, t['left'], indent, out)
-    out.append(op)
-    ty2 = conv(env, t['right'], indent, out)
-    out.append(')')
-    return typeInfixFIXME(env, ty, op, ty2)
-
-
-CMP = ['<', '>', '=', '!=', '<=', '>=']
-
-
-def typeInfixFIXME(env, ty, op, ty2):
-    if op in CMP:
-        return 'bool'
-    return ty
-
-
-# Variable
-
-
-VarInfo = namedtuple('VarInfo', 'target local types')
-EmptyOption = {}
-MatterTypes = ('matter', 'num', 'num', EmptyOption)
-
-
-def isMatter(types):
-    return len(types) == 4 and types[0] == 'matter' and types[1] == 'num' and types[2] == 'num' and isinstance(types[3], dict)
-
-
-def Name(env, t, indent, out):
-    name = t.asString()
-    if name in env:
-        var = env[name]
-        out.append(var.target)
-    else:
-        out.append(name)
-        perror(t, f'変数名{name}は一度も定義されていません')
-
-
-def VarDecl(env, t, indent, out):
-    left = t['left']
-    newvar = None
-    ty = None
-    if left.tag == 'Name':
-        name = left.asString()
-        if name in env:
-            vari = env[name]
-            ty = vari.types
-            out.append(vari.target)
-        elif '@local' in env:  # ローカルスコープなら
-            newvar = localname(name)
-            out.append(f'let {newvar}')
-        else:
-            newvar = globalname(name)
-            out.append(newvar)
-    else:
-        ty = conv(env, t['left'], indent, out)
-    out.append(' = ')
-    # 左辺値から型推論する
-    ty = check(ty, env, t['right'], indent, out)
-    if newvar != None:
-        env[name] = VarInfo(newvar, '@local' in env, ty)
+const = True
+mutable = False
+Symbol = namedtuple('Symbol', 'target local types')
 
 
 def pushenv(env, key, val):
@@ -300,29 +27,341 @@ def popenv(env, key, prev):
     else:
         env[key] = prev
 
+# print(t.tag)
+# for label, subtree in t:
+#   print(label, subtree)
+
+
+def Source(env, t, out):
+    for _, subtree in t:
+        out.append(env['@indent'])
+        conv(env, subtree, out)
+        out.append('\n')
+        emitAutoYield(env, out)
+    return ts.Void
+
+
+def emitAutoYield(env, out):
+    if '@yield' in env and not '@local' in env:
+        out.append(f"{env['@indent']}yield {env['@yield']};\n")
+        del env['@yield']
+
+
+def ClassDecl(env, t, out):
+    name = t['name'].asString()
+    argNum = 1
+    if 'extends' in t:
+        extends = t["extends"].asString()
+        argNum += 1
+        out.append(
+            f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
+    else:
+        out.append(f'puppy.vars["{name}"] = class')
+    env['@local'] = name
+    for i, (_, sub) in enumerate(t.subs()):
+        if i < argNum:
+            continue
+        print(sub)
+        conv(env, sub, out)
+    return ts.Void
+
+
+def switchName(env, name):
+    return globalName(name) if '@local' in env else localName(name)
+
+
+def globalName(name):
+    return f"puppy.vars['{name}']"
+
+
+def isGlobalName(name):
+    return name.startwith('puppy.vars[')
+
+
+def var(env, name, jsname):
+    return 'var ' if name in env and not isGlobalName(jsname) else ''
+
+
+UNICODE_NAME = {}
+
+
+def localName(name):
+    if name in UNICODE_NAME:
+        return UNICODE_NAME[name]
+    for c in name:
+        if ord(c) > 127:
+            uid = len(UNICODE_NAME)
+            UNICODE_NAME[name] = f'_uu{uid}/*{name}*/'
+            return UNICODE_NAME[name]
+    return name
+
+
+def FuncDecl(env, t, out):
+    name = t['name'].asString()
+    jsname = switchName(env, name)
+    out.append(f'{var(env, name, jsname)}{jsname} = (')
+    lenv = env.copy()
+    types = [ts.Type()]
+    voidCheck = str(types[0])
+    for _, p in t['params']:
+        pname = p['name'].asString()
+        if(len(types) > 1):
+            out.append(f',{pname}')
+        else:
+            out.append(pname)
+        ty = ts.parseOf(p['type'], pwarn) if 'type' in p else ts.Type()
+        types.append(ty)
+        lenv[pname] = Symbol(localName(pname), mutable, ty)
+    out.append(") => ")
+    env[name] = lenv[name] = Symbol(jsname, mutable, tuple(types))
+    lenv['@local'] = types[0]  # return type
+    conv(lenv, t['body'], out)
+    if voidCheck == str(types[0]):
+        types[0] = ts.Void
+    return ts.Void
+
+
+def Return(env, t, out):
+    if not '@local' in env:
+        pwarn(env, t, 'ここで return文は使えません')
+        return ts.Void
+    out.append('return')
+    ret = env['@local']
+    if 'expr' in t:
+        if ret == ts.Void:
+            pwarn(env, t['expr'], 'この返値は無視されます')
+            return ts.Void
+        out.append(' ')
+        check(ret, env, t['expr'], out, f'{ts.msg(ret)}を返すようにしてください')
+        return ts.Void
+    if not ts.matchType(ts.Void, ret):
+        perror(env, t, f'{ts.msg(ret)}を返すようにしてください')
+    return ts.Void
+
+
+def FuncExpr(env, t, out):
+    out.append("(")
+    lenv = env.copy()
+    types = [ts.Type()]
+    voidCheck = str(types[0])
+    for _, p in t['params']:
+        pname = p.asString()
+        ty = ts.Type()
+        if(len(types) > 1):
+            out.append(f',{pname}')
+        else:
+            out.append(pname)
+        types.append(ty)
+        lenv[pname] = Symbol(localName(pname), mutable, ty)
+    out.append(") => ")
+    lenv['@local'] = types[0]  # return type
+    conv(lenv, t['body'], out)
+    if voidCheck == str(types[0]):
+        types[0] = ts.Void
+    return tuple(types)
+
+
+def Yield(env, t, out):
+    if '@local' in env:
+        pwarn(env, t, '関数内で yield 文は使えません')
+        return
+    out.append(f'yield {t.pos()[2]}')
+    return ts.Void
+
+
+def Continue(env, t, out):
+    if '@inloop' in env:
+        pwarn(env, t, 'continue は、for文内でのみ使えます')
+        return
+    out.append('continue')
+    return ts.Void
+
+
+def Break(env, t, out):
+    if '@inloop' in env:
+        pwarn(env, t, 'break は、for文内でのみ使えます')
+        return
+    out.append('break')
+    return ts.Void
+
+
+def Pass(env, t, out):
+    return ts.Void
+
+
+def TrueExpr(env, t, out):
+    out.append("true")
+    return ts.Bool
+
+
+def FalseExpr(env, t, out):
+    out.append('false')
+    return ts.Bool
+
+
+def Int(env, t, out):
+    out.append(t.asString())
+    return ts.Int
+
+
+def Double(env, t, out):
+    out.append(t.asString())
+    return ts.Float
+
+
+def String(env, t, out):
+    v = t.asString()[1:-1]
+    out.append(repr(v))
+    return ts.String
+
+
+def Char(env, t, out):
+    v = t.asString()[1:-1]
+    out.append(repr(v))
+    return ts.String
+
+
+def List(env, t, out):
+    ty = ts.Type()
+    out.append('[')
+    for _, sub in t:
+        ty = check(ty, env, sub, out, '全ての要素を同じ型に揃えてください')
+        out.append(',')
+    out.append(']')
+    return ts.Type(f'list[{ty}]')
+
+
+def Tuple(env, t, out):
+    subs = t.subs()
+    if len(subs) > 2:
+        pwarn(env, t, 'リストは[ ]で囲みましょう')
+        return List(env, t, out)
+    if len(subs) == 1:
+        out.append('(')
+        ty = conv(env, subs[0][1], out)
+        out.append(')')
+        return ty
+    else:
+        out.append('{ x: ')
+        check(ty, env, subs[0][1], out, 'ベクトルの要素は数値です')
+        out.append(', y: ')
+        check(ty, env, subs[1][1], out, 'ベクトルの要素は数値です')
+        out.append('}')
+        return ts.Vec
+
+
+def Data(env, t, out):
+    out.append('{')
+    for _, sub in t:
+        conv(env, sub, out)
+        out.append(',')
+    out.append('}')
+    return ts.Object
+
+
+def KeyValue(env, t, out):
+    conv(env, t['name'], out)
+    out.append(': ')
+    conv(env, t['value'], out)
+    return ts.Void
+
+
+OPS = {
+    '+': 'Add', '＋': 'Add',
+    '-': 'Sub', 'ー': 'Sub',
+    '*': 'Mul', '＊': 'Mul', '×': 'Mul',
+    '**': 'Pow', '＊＊': 'Pow',
+    '/': 'Div', '／': 'Div', '÷': 'Div',
+    '//': 'TrueDiv', '／／': 'TrueDiv',
+    '%': 'Mod', '％': 'Mod',
+    '<': 'Lt', '＜': 'Lt',
+    '<=': 'Lte', '＜＝': 'Lte',
+    '>': 'Gt', '＞': 'Gt',
+    '>=': 'Gte', '＞＝': 'Gte',
+    '==': 'Eq', '＝＝': 'Eq',
+    '!=': 'Ne', '！＝': 'Ne',
+    'in': 'In'
+}
+
+
+def Infix(env, t, out):
+    op = t['name'].asString()
+    if op in OPS:
+        op = OPS[op]
+    else:
+        perror(env, t['name'], f'{op}？ ちゃんと半角文字を使っていますか？')
+        out.append('false')
+        return ts.Bool
+    out1 = []
+    out2 = []
+    ty = check(ts.binaryFirst(op), env, t['left'], out1)
+    ty2 = check(ts.binarySecond(op, ty), env, t['right'], out2)
+    return ts.typeBinary(t['op'], op, ty, ty2, perror)
+
 
 IMPORT_MATH = {
-    'pi': VarInfo('3.14159', False, 'num'),
-    'sin': VarInfo('puppy.sin', False, ('num', 'num')),
+    'pi': Symbol('3.14159', const, ts.Float),
+    'sin': Symbol('Math.sin', const, (ts.Float, ts.Float)),
 }
 
 BUILDIN = {
     'math.': IMPORT_MATH,
-    'print': VarInfo('puppy.print', False, [None, None, EmptyOption]),
+    'print': Symbol('puppy.print', const, (ts.Void, 'any', ts.EmptyOption)),
     # 返値, 引数.. None はなんでもいい
-    'len': VarInfo('puppy.len', False, ('num', None)),
+    'len': Symbol('puppy.len', const, (ts.Int, 'list|str')),
     # 可変長引数
-    'range': VarInfo('puppy.range', False, ('list[int]', 'num')),
+    'range': Symbol('puppy.range', const, (ts.ListInt, ts.Int, ts.Int_, ts.Int_)),
     # append
-    'append': VarInfo('puppy.append', False, ('void', 'list', None)),
+    '.append': Symbol('puppy.append', const, (ts.Void, ts.ListA, ts.A)),
     # クラス
-    'World': VarInfo('world', False, MatterTypes),
-    'Circle': VarInfo('Circle', False, MatterTypes),
-    'Rectangle': VarInfo('Rectangle', False, MatterTypes),
-    'Polygon': VarInfo('Polygon', False, MatterTypes),
-    'Ball': VarInfo('Circle', False, ['matter', 'num', 'num', {'restitution': 1.0}]),
-    'Block': VarInfo('Rectangle', False, ['matter', 'num', 'num', {'isStatic': 'true'}]),
+    'World': Symbol('world', const, ts.MatterTypes),
+    'Circle': Symbol('Circle', const, ts.MatterTypes),
+    'Rectangle': Symbol('Rectangle', const, ts.MatterTypes),
+    'Polygon': Symbol('Polygon', const, ts.MatterTypes),
+    'Ball': Symbol('Circle', const, (ts.Matter, ts.Int, ts.Int, {'restitution': 1.0})),
+    'Block': Symbol('Rectangle', const, (ts.Matter, ts.Int, ts.Int, {'isStatic': 'true'})),
 }
+
+
+def Name(env, t, out):
+    name = t.asString()
+    if name in env:
+        var = env[name]
+        out.append(var.target)
+        return var.types
+    else:
+        out.append(name)
+        perror(env, t, f'変数名 {name} は一度も定義されていません')
+        return ts.Type()
+
+
+def VarDecl(env, t, out):
+    left = t['left']
+    newvar = None
+    ty = None
+    if left.tag == 'Name':
+        name = left.asString()
+        if name in env:
+            vari = env[name]
+            ty = vari.types
+            out.append(vari.target)
+        elif '@local' in env:  # ローカルスコープなら
+            newvar = localName(name)
+            out.append(f'var {newvar}')
+        else:
+            newvar = globalName(name)
+            out.append(newvar)
+    else:
+        ty = conv(env, t['left'], out)
+    out.append(' = ')
+    # 左辺値から型推論する
+    if ty is None:
+        ty = ts.Type()
+    ty = check(ty, env, t['right'], out)
+    if newvar != None:
+        env[name] = Symbol(newvar, mutable, ty)
+    return ts.Void
+
 
 KEYWORDS = {
     'width': 'width',
@@ -361,28 +400,29 @@ KEYWORDS = {
 }
 
 KEYWORDTYPES = {
-    'width': 'num',
-    'height': 'num',
-    'image': 'str',
-    'strokeStyle': 'str',
-    'lineWidth': 'num',
-    'fillStyle': 'str',
-    'restitution': 'num',  # float と int は同じ
-    'angle': 'num',
-    'friction': 'num',
-    'frictionStatic': 'num',
-    'airFriction': 'num',
-    'torque': "int",
-    'stiffness': 'num',
-    'isSensor': 'bool',
-    'damping': 'num',
-    'font': 'str',
-    'fontStyle': 'str',
-    'clicked': (None, 'matter'),
+    'width': ts.Int,
+    'height': ts.Int,
+    'image': ts.String,
+    'strokeStyle': ts.String,
+    'lineWidth': ts.Int,
+    'fillStyle': ts.String,
+    'restitution': ts.Float,  # float と int は同じ
+    'angle': ts.Float,
+    'friction': ts.Float,
+    'frictionStatic': ts.Float,
+    'airFriction': ts.Float,
+    'torque': ts.Float,
+    'stiffness': ts.Float,
+    'isSensor': ts.Bool,
+    'damping': ts.Float,
+    'font': ts.String,
+    'fontColor': ts.String,
+    'clicked': (ts.Void, ts.Matter),
+    'move': (ts.Void, ts.Matter, ts.Int),
 }
 
 
-def GetExpr(env, t, indent, out):
+def GetExpr(env, t, out):
     name = t['name'].asString()
     pkgname = t['recv'].asString() + '.'
     if pkgname in env:  # math.pi のような定数
@@ -392,32 +432,30 @@ def GetExpr(env, t, indent, out):
             out.append(vari.target)
             return vari.types
         else:
-            perror(t['name'], f'{pkgname}{name}？ タイプミスしてませんか？')
+            perror(env, t['name'], f'{pkgname}{name}？ タイプミスしてませんか？')
             out.append('null')
-            return None
-    conv(env, t['recv'], indent, out)
+            return ts.Type()
+    conv(env, t['recv'], out)
     out.append('.')
     if not name in KEYWORDS:
-        pwarn(t['name'], f'{name}？ タイプミスしてませんか？')
+        pwarn(env, t['name'], f'{name}？ タイプミスしてませんか？')
         out.append(name)
-        return None
+        return ts.Type()
     else:
         name = KEYWORDS[name]
         out.append(name)
         return KEYWORDTYPES[name]
 
 
-def IndexExpr(env, t, indent, out):
-    ty = check('list', env, t['recv'], indent, out)
-    if ty != None and ty.startswith('list'):
-        ty = ty[5:-1]
+def IndexExpr(env, t, out):
+    ty = check('list|str', env, t['recv'], out)
     out.append('[')
-    check('num', env, t['index'], indent, out)
+    check(ts.Int, env, t['index'], out)
     out.append(']')
-    return ty
+    return ts.typeOfSeq(ty)
 
 
-def MethodExpr(env, t, indent, out):
+def MethodExpr(env, t, out):
     name = t['name'].asString()
     pkgname = t['recv'].asString() + '.'
     if pkgname in env:
@@ -429,10 +467,10 @@ def MethodExpr(env, t, indent, out):
             out.append(name)
             out.append('(')
             args = [name] + [y for x, y in t['params'].subs()]
-            emit_Args(env, t['name'], args, types, '', indent, out)
+            emitArguments(env, t['name'], args, types, '', out)
             return types[0]
         else:
-            perror(t['name'], f'{pkgname}{name}？ タイプミスしていませんか？')
+            perror(env, t['name'], f'{pkgname}{name}？ タイプミスしていませんか？')
             out.append('null')
             return None
     methodname = '.' + name
@@ -442,15 +480,15 @@ def MethodExpr(env, t, indent, out):
         out.append(vari.target)
         out.append('(')
         args = [name, t['recv']] + [y for x, y in t['params'].subs()]
-        emit_Args(env, t['name'], args, types, '', indent, out)
+        emitArguments(env, t['name'], args, types, '', out)
         return types[0]
     else:
-        perror(t['name'], f'本当にメソッド名 {name} が正しいか確認してください')
+        perror(env, t['name'], f'本当にメソッド名 {name} が正しいか確認してください')
         out.append('null')
         return None
 
 
-def ApplyExpr(env, t, indent, out):
+def ApplyExpr(env, t, out):
     name = t['name'].asString()
     if name in env:
         vari = env[name]
@@ -462,92 +500,117 @@ def ApplyExpr(env, t, indent, out):
     else:
         _, types = guess_Matter(env, name, t)
 
-    if isMatter(types):
+    if ts.isMatterFunc(types):
         outter = pushenv(env, '@funcname', name)
         out.append(f'puppy.newMatter(new puppy.vars["{name}"](')
         args = [y for x, y in t.subs()]
-        emit_Args(env, t['name'], args, types, '', indent, out)
+        emitArguments(env, t['name'], args, types, '', out)
         out.append(')')
         env['@yield'] = trace(env, t)
+        env['@oid'] += 1
         popenv(env, '@funcname', outter)
     else:
         out.append(name)
         out.append('(')
         args = [y for x, y in t.subs()]
-        emit_Args(env, t['name'], args, types, '', indent, out)
+        emitArguments(env, t['name'], args, types, '', out)
         if name == 'puppy.print':
             env['@yield'] = trace(env, t)
+            env['@oid'] += 1
     return types[0]
 
 
 def guess_Matter(env, name, t):
-    return ('Circle', MatterTypes)
+    return ('Circle', ts.MatterTypes)
 
 
-def emit_Args(env, t, args, types, prev, indent, out):
+def scope(env, key, val, f):
+    outer = pushenv(env, key, val)
+    res = f()
+    popenv(env, key, outer)
+    return res
+
+
+def emitArguments(env, t, args, types, prev, out):
     tidx = 1
     kargs = None
+    options = None
+    types = ts.unique(types)
     while tidx < len(types):
-        if isinstance(types[tidx], dict):
+        if ts.isOption(types[tidx]):
             kargs = args[tidx:]
+            options = types[tidx]
             break
         if tidx < len(args):
             out.append(prev)
-            check(types[tidx], env, args[tidx], indent, out)
+            check(types[tidx], env, args[tidx], out)
             tidx += 1
             prev = ','
         else:
-            perror(t, f'必要な引数が足りません  {tidx} {args}')
+            if not ts.isOmittable(types[tidx]):
+                perror(env, t, f'必要な引数が足りません')
             out.append(')')
             return
     if kargs != None:
-        options = types[tidx].copy()
-        outter = pushenv(env, '@options', options)
         out.append(prev)
         out.append('{')
+        used_keys = {}
         for sub in kargs:
-            conv(env, sub, indent, out)
-        for k in options:
-            out.append(f"'{k}': {options[k]},")
-        popenv(env, '@options', outter)
+            if sub.tag == 'KeywordArgument':
+                KeywordArgument(env, sub, out, used_keys)
+            elif sub.tag == 'NLPSymbol':
+                NLPSymbol(env, sub, out, used_keys)
+            else:
+                pwarn(env, sub, 'この引数は使われません')
+        for k in types[tidx]:
+            if k not in used_keys:
+                out.append(f"'{k}': {options[k]},")
         out.append(f"'trace': {trace(env, t)},")
+        out.append(f"'oid': {env['@oid']},")
         out.append('}')
     out.append(')')
 
 
-def KeywordArgument(env, t, indent, out):
+def KeywordArgument(env, t, out, used_keys=None):
+    if used_keys is None:
+        pwarn(env, t, 'キーワード引数は物体のオプションのみ使えます')
+        return conv(env, t['value'], out)
     name = t['name'].asString()
-    if not '@options' in env:
-        pwarn(t, f'キーワード引数{name}の使えない位置です')
-        return conv(env, t['value'], indent, out)
     if not name in KEYWORDS:
-        pwarn(t['name'], f'{name}？ タイプミスしてませんか？')
+        pwarn(env, t['name'], f'{name}？ タイプミスしてませんか？')
     else:
         if name != KEYWORDS[name]:
-            pinfo(t, f'{name} => {KEYWORDS[name]}')
+            pinfo(env, t, f'{name} => {KEYWORDS[name]}')
         name = KEYWORDS[name]
-    out.append("'" + name + "': ")
-    options = env.get('@options', EmptyOption)
-    if name in options:
-        del options[name]
-    key = pushenv(env, '@key', name)
-    check(KEYWORDTYPES.get(name, None), env, t['value'], indent, out)
-    popenv(env, '@key', key)
-    out.append(",")
+    out2 = []
+    scope(env, '@key', name, lambda: check(
+        KEYWORDTYPES.get(name, 'any'), env, t['value'], out2))
+    value = ''.join(out2)
+    emitOption(env, t['name'], name, value, out, used_keys)
+    return ts.Void
 
 
-def NLPSymbol(env, t, indent, out):
+def emitOption(env, t, key, value, out, used_keys):
+    if key in used_keys:
+        pwarn(env, t, f'{key}は重複！！．こちらは無視することにします')
+        return
+    used_keys[key] = key
+    out.append("'" + key + "': " + value + ',')
+    env['@lives'].append((env['@oid'], key, value, trace(env, t)))
+
+
+def NLPSymbol(env, t, out, used_keys=None):
     phrase = t.asString()
     if '@funcname' in env:
         k = env.get('@key', '')
         k, v = nobuKeyVal(env['@funcname'], k, phrase)
         out.append(f"'{k}': {v},")
-        options = env.get('@options', EmptyOption)
+        options = env.get('@options', ts.EmptyOption)
         if k in options:
             del options[k]
-    else:
-        v = nlpExpr(env.get('@target', ''), phrase)
-        out.append(v)
+        return ts.Void
+    v = nlpExpr(env.get('@target', ''), phrase)
+    out.append(v)
 
 
 def nobuKeyVal(funcname, key='unknown', phrase='"?"'):
@@ -558,54 +621,60 @@ def nlpExpr(varname, phrase='"?"'):
     return phrase
 
 
-def IfStmt(env, t, indent, out):
+def IfStmt(env, t, out):
     out.append('if (')
-    conv(env, t['cond'], indent, out)
+    conv(env, t['cond'], out)
     out.append(') ')
-    conv(env, t['then'], indent, out)
+    conv(env, t['then'], out)
     if 'else' in t:
         out.append('else ')
-        conv(env, t['else'], indent, out)
+        conv(env, t['else'], out)
+    return ts.Void
 
 
-def ForStmt(env, t, indent, out):
+def ForStmt(env, t, out):
     if(t['each'].tag == 'Name'):
         name = t['each'].asString()
     else:
-        perror(t['each'], '変数名が欲しいところです')
-        return
+        perror(env, t['each'], '変数名が欲しいところです')
+        return ts.Void
     out.append(f'for (let {name} of ')
-    ty = check('list', env, t['list'], indent, out, msg='ここはリストでなければなりません')
+    ty = check(ts.Type('list[__]'), env,
+               t['list'], out, msg='ここはリストでなければなりません')
     out.append(')')
-    if ty != None and ty.startswith('list'):
-        ty = ty[5:-1]
-    outer = pushenv(env, name, VarInfo(localname(name), True, ty))
+    ty = ts.typeOfSeq(ty)
+    outer = pushenv(env, name, Symbol(localName(name), True, ty))
     outer2 = pushenv(env, '@inloop', True)
-    conv(env, t['body'], indent, out)
+    conv(env, t['body'], out)
     popenv(env, name, outer)
     popenv(env, '@inloop', outer2)
+    return ts.Void
 
 
 INDENT = '\t'
 
 
-def Block(env, t, indent, out):
+def Block(env, t, out):
     out.append('{\n')
+    indent = env['@indent']
     nested = INDENT + indent
+    pushenv(env, '@indent', nested)
     for _, subtree in t:
         out.append(nested)
-        conv(env, subtree, nested, out)
+        conv(env, subtree, out)
         out.append('\n')
-        auto_yield(env, nested, out)
+        emitAutoYield(env, out)
+    popenv(env, '@indent', indent)
     out.append(indent + '}\n')
+    return ts.Void
 
 
 func = globals()
 
 
-def conv(env, t, indent, out):
+def conv(env, t, out):
     if t.tag in func:
-        return func[t.tag](env, t, indent, out)
+        return func[t.tag](env, t, out)
     else:
         out.append(str(t))
         return None
@@ -622,7 +691,7 @@ WORLD = {
 
 def static_value(env, t):
     out = []
-    conv(env, t, '', out)
+    conv(env, t, out)
     return ''.join(out)
 
 
@@ -647,38 +716,32 @@ def set_World(env, t, options):
 # TypeChecker
 
 
-def matchType(request, given):
-    if request is None or given is None:
-        return True
-    return given.startswith(request)
-
-
-def check(request, env, t, indent, out, msg=None):
-    given = conv(env, t, indent, out)
-    if not matchType(request, given):
+def check(ret, env, t, out, msg=None):
+    vat = conv(env, t, out)
+    if not ts.matchType(ret, vat):
+        print('@TypeError', ts.strType(ret), ts.strType(vat))
         if msg != None:
-            perror(t, msg)
+            perror(env, t, msg)
         else:
-            perror(t, f'悪名高き型エラーです (ヒント: 仕様上は{request} != コード上は{given})')
-    return given
+            val = t.asString()
+            perror(env, t, f'型エラー: {val}は{ts.msg(ret)}')
+            #raise StopIteration()
+    return vat
 
 
-ERROR = []
-
-
-def perror(t, msg):
+def perror(env, t, msg):
     _, pos, raw, col = t.pos()
-    ERROR.append(('error', pos, raw, col, msg))
+    env['@logs'].append(('error', pos, raw, col, msg))
 
 
-def pwarn(t, msg):
+def pwarn(env, t, msg):
     _, pos, raw, col = t.pos()
-    ERROR.append(('warning', pos, raw, col, msg))
+    env['@logs'].append(('warning', pos, raw, col, msg))
 
 
-def pinfo(t, msg):
+def pinfo(env, t, msg):
     _, pos, raw, col = t.pos()
-    ERROR.append(('information', pos, raw, col, msg))
+    env['@logs'].append(('information', pos, raw, col, msg))
 
 
 def trace(env, t):
@@ -690,19 +753,18 @@ def trace(env, t):
 
 
 def puppyVMCode(env, main):
-    global ERROR
     W = env['@world']
     world = []
     for k in W:
         world.append(f"     '{k}': {W[k]},")
     error = []
-    for e in ERROR:
+    for e in env['@logs']:
         row = e[2]-2 if e[3] == -1 else e[2]-1
         error.append(f'''
         {{
             'type': '{e[0]}',
             'row': {row},
-            'text': "{e[4]}"
+            'text': {repr(e[4])}
         }},''')
     world = '\n'.join(world)
     error = '\n'.join(error)
@@ -731,20 +793,22 @@ window['PuppyVMCode'] = {{
 
 
 def transpile(s, errors=[]):
-    global WORLD, ERROR
     t = parser(s)
     STDLOG.dump(t)  # debug
-    ERROR = errors
-    if t.tag == 'err':
-        perror(t, '構文エラーです. 文法通り書けているか確認しましょう')
-        return puppyVMCode({'@world': {}, '@lines': [], '@lives': []}, '')
-    # start transpile
     env = BUILDIN.copy()
-    env['@world'] = WORLD.copy()
+    env['@logs'] = errors
     env['@lines'] = []
     env['@lives'] = []
+    env['@indent'] = INDENT
+    if t.tag == 'err':
+        env['@world'] = {}
+        perror(env, t, '構文エラーです. 文法通り書けているか確認しましょう')
+        return puppyVMCode(env, '')
+    # start transpile
+    env['@world'] = WORLD.copy()
+    env['@oid'] = 1
     out = []
-    conv(env, t, INDENT, out)
+    conv(env, t, out)
     code = puppyVMCode(env, ''.join(out))
     print(code)
     return code
@@ -753,11 +817,11 @@ def transpile(s, errors=[]):
 
 
 if __name__ == "__main__":
-    source = '''a.append('x')\n'''
+    source = '''range(1,2,3,4).append('x')\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
     code = transpile(source)
-    print(code)
+
 
 __package__ = 'puppy'
