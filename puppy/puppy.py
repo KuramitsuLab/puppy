@@ -36,15 +36,16 @@ def Source(env, t, out):
     for _, subtree in t:
         out.append(env['@indent'])
         conv(env, subtree, out)
-        out.append('\n')
         emitAutoYield(env, out)
     return ts.Void
 
 
 def emitAutoYield(env, out):
     if '@yield' in env and not '@local' in env:
-        out.append(f"{env['@indent']}yield {env['@yield']};\n")
+        out.append(f"; yield {env['@yield']};\n")
         del env['@yield']
+    else:
+        out.append('\n')
 
 
 def ClassDecl(env, t, out):
@@ -67,7 +68,7 @@ def ClassDecl(env, t, out):
 
 
 def switchName(env, name):
-    return globalName(name) if '@local' in env else localName(name)
+    return localName(name) if '@local' in env else globalName(name)
 
 
 def globalName(name):
@@ -78,8 +79,17 @@ def isGlobalName(name):
     return name.startwith('puppy.vars[')
 
 
-def var(env, name, jsname):
-    return 'var ' if name in env and not isGlobalName(jsname) else ''
+def emitDeclName(env, name, out):
+    if '@local' in env:
+        jsname = localName(name)
+        if name in env and env[name].target == jsname:
+            out.append(f'{jsname} = ')
+        else:
+            out.append(f'var {jsname} = ')
+    else:
+        jsname = globalName(name)
+        out.append(f'{jsname} = ')
+    return jsname
 
 
 UNICODE_NAME = {}
@@ -98,11 +108,11 @@ def localName(name):
 
 def FuncDecl(env, t, out):
     name = t['name'].asString()
-    jsname = switchName(env, name)
-    out.append(f'{var(env, name, jsname)}{jsname} = (')
+    jsname = emitDeclName(env, name, out)
     lenv = env.copy()
     types = [ts.Type()]
     voidCheck = str(types[0])
+    out.append('(')
     for _, p in t['params']:
         pname = p['name'].asString()
         if(len(types) > 1):
@@ -140,10 +150,10 @@ def Return(env, t, out):
 
 
 def FuncExpr(env, t, out):
-    out.append("(")
     lenv = env.copy()
     types = [ts.Type()]
     voidCheck = str(types[0])
+    out.append("(")
     for _, p in t['params']:
         pname = p.asString()
         ty = ts.Type()
@@ -270,17 +280,39 @@ OPS = {
     '+': 'Add', '＋': 'Add',
     '-': 'Sub', 'ー': 'Sub',
     '*': 'Mul', '＊': 'Mul', '×': 'Mul',
-    '**': 'Pow', '＊＊': 'Pow',
+    '**': 'Pow', '＊＊': 'Pow', '*＊': 'Pow', '＊*': 'Pow',
     '/': 'Div', '／': 'Div', '÷': 'Div',
-    '//': 'TrueDiv', '／／': 'TrueDiv',
+    '//': 'TrueDiv', '／／': 'TrueDiv', '／/': 'TrueDiv', '/／': 'TrueDiv',
     '%': 'Mod', '％': 'Mod',
     '<': 'Lt', '＜': 'Lt',
-    '<=': 'Lte', '＜＝': 'Lte',
+    '<=': 'Lte', '＜＝': 'Lte', '<＝': 'Lte', '＜=': 'Lte',
     '>': 'Gt', '＞': 'Gt',
-    '>=': 'Gte', '＞＝': 'Gte',
-    '==': 'Eq', '＝＝': 'Eq',
-    '!=': 'Ne', '！＝': 'Ne',
-    'in': 'In'
+    '>=': 'Gte', '＞＝': 'Gte', '>＝': 'Gte', '＞=': 'Gte',
+    '==': 'Eq', '＝＝': 'Eq', '=＝': 'Eq', '＝=': 'Eq',
+    '!=': 'Ne', '！＝': 'Ne', '!＝': 'Ne', '！=': 'Ne',
+    'in': 'In', '∈': 'In',
+}
+
+OPSFMT = {
+    'Add': '({}+{})',
+    'Sub': '({}-{})',
+    'Mul': 'puppy.anyMul({},{})',
+    'Div': '({}/{})',
+    'TrueDiv': '(({}/{})|0)',
+    'Mod': '({}%{})',
+    'Eq': '{}==={}',
+    'Ne': '{}!=={}',
+    'Lt': '{}<{}',
+    'Lte': '{}<={}',
+    'Gt': '{}>{}',
+    'Gte': '{}>={}',
+    'In': 'puppy.anyIn({}, {})',
+
+    'numberMul': '({}*{})',
+    'listAdd': '({}).concat({})',
+    'numberPow': 'Math.pow({},{})',
+    'objectEq': '({}).id === ({}).id',
+    'objectNe': '({}).id !== ({}).id',
 }
 
 
@@ -289,19 +321,54 @@ def Infix(env, t, out):
     if op in OPS:
         op = OPS[op]
     else:
-        perror(env, t['name'], f'{op}？ ちゃんと半角文字を使っていますか？')
-        out.append('false')
-        return ts.Bool
+        perror(env, t['name'], f'{op}？ 未対応の演算子です。')
+        return emitUndefined(env, t['name'], out)
     out1 = []
     out2 = []
-    ty = check(ts.binaryFirst(op), env, t['left'], out1)
-    ty2 = check(ts.binarySecond(op, ty), env, t['right'], out2)
-    return ts.typeBinary(t['op'], op, ty, ty2, perror)
+    ty1 = check(ts.binaryFirst(op), env, t['left'], out1)
+    ty2 = check(ts.binarySecond(op, ty1), env, t['right'], out2)
+    left,  right = ''.join(out1), ''.join(out2)
+    ty = ts.typeBinary(env, t['op'], op, ty1, ty2, perror)
+    key = ts.typeKey(ty1, op)
+    if key in OPSFMT:
+        out.append(OPSFMT[key].format(left, right))
+    else:
+        out.append(OPSFMT[op].format(left, right))
+    return ty
+
+
+OPS1 = {
+    '+': '+', '＋': '+',
+    '-': '-', 'ー': '-',
+    '!': '!', 'not': '!',
+}
+
+
+def Unary(env, t, out):
+    op = t['name'].asString()
+    if op in OPS1:
+        op = OPS1[op]
+    else:
+        perror(env, t['name'], f'{op}？ 未対応の演算子です。')
+        return emitUndefined(env, t['name'], out)
+    out.append(f'{op}(')
+    ty = check(ts.unaryPrefix(op), env, t['expr'], out)
+    out.append(')')
+    return ty
 
 
 IMPORT_MATH = {
     'pi': Symbol('3.14159', const, ts.Float),
-    'sin': Symbol('Math.sin', const, (ts.Float, ts.Float)),
+    'sin': Symbol('Math.sin', const, ts.MathFuncType),
+    'cos': Symbol('Math.cos', const, ts.MathFuncType),
+    'tan': Symbol('Math.tan', const, ts.MathFuncType),
+    'sqrt': Symbol('Math.sqrt', const, ts.MathFuncType),
+    'log': Symbol('Math.log', const, ts.MathFuncType),
+    'log10': Symbol('Math.log10', const, ts.MathFuncType),
+
+    'pow': Symbol('Math.pow', const, ts.Math2FuncType),
+    'hypot': Symbol('Math.hypot', const, ts.Math2FuncType),
+    'gcd': Symbol('puppy.gcd', const, ts.Math2FuncType),
 }
 
 BUILDIN = {
@@ -433,9 +500,9 @@ def GetExpr(env, t, out):
             return vari.types
         else:
             perror(env, t['name'], f'{pkgname}{name}？ タイプミスしてませんか？')
-            out.append('null')
+            out.append('undefined')
             return ts.Type()
-    conv(env, t['recv'], out)
+    check(ts.Matter, env, t['recv'], out)
     out.append('.')
     if not name in KEYWORDS:
         pwarn(env, t['name'], f'{name}？ タイプミスしてませんか？')
@@ -596,7 +663,7 @@ def emitOption(env, t, key, value, out, used_keys):
         return
     used_keys[key] = key
     out.append("'" + key + "': " + value + ',')
-    env['@lives'].append((env['@oid'], key, value, trace(env, t)))
+    addLives(env, key, value, trace(env, t))
 
 
 def NLPSymbol(env, t, out, used_keys=None):
@@ -623,7 +690,7 @@ def nlpExpr(varname, phrase='"?"'):
 
 def IfStmt(env, t, out):
     out.append('if (')
-    conv(env, t['cond'], out)
+    check(ts.Bool, env, t['cond'], out)
     out.append(') ')
     conv(env, t['then'], out)
     if 'else' in t:
@@ -662,11 +729,15 @@ def Block(env, t, out):
     for _, subtree in t:
         out.append(nested)
         conv(env, subtree, out)
-        out.append('\n')
         emitAutoYield(env, out)
     popenv(env, '@indent', indent)
     out.append(indent + '}\n')
     return ts.Void
+
+
+def emitUndefined(env, t, out):
+    out.append('undefined')
+    return ts.Type()
 
 
 func = globals()
@@ -676,8 +747,10 @@ def conv(env, t, out):
     if t.tag in func:
         return func[t.tag](env, t, out)
     else:
-        out.append(str(t))
-        return None
+        perror(env, t, f'未実装のコード{t.tag}です。')
+        print('@Debug[conv]', t.asString(), t)
+        out.append('undefined')
+        return ts.Type()
 
 
 # World
@@ -718,13 +791,16 @@ def set_World(env, t, options):
 
 def check(ret, env, t, out, msg=None):
     vat = conv(env, t, out)
+    if ret is None or vat is None:
+        print('@DEBUG[check]', t.asString(), ret, vat)
+        return vat
     if not ts.matchType(ret, vat):
         print('@TypeError', ts.strType(ret), ts.strType(vat))
         if msg != None:
             perror(env, t, msg)
         else:
             val = t.asString()
-            perror(env, t, f'型エラー: {val}は{ts.msg(ret)}')
+            perror(env, t, f'型エラー: {val}のところは{ts.msg(ret)}')
             #raise StopIteration()
     return vat
 
@@ -752,11 +828,95 @@ def trace(env, t):
     return f'puppy.lines[{lines.index(linenum)}]'
 
 
-def puppyVMCode(env, main):
+def transpile(s, errors=[]):
+    t = parser(s)
+    # STDLOG.dump(t)  # debug
+    env = BUILDIN.copy()
+    env['@logs'] = errors
+    env['@lines'] = []
+    env['@lives'] = []
+    env['@indent'] = ''
+    if t.tag == 'err':
+        env['@world'] = {}
+        perror(env, t, '構文エラーです. 文法通り書けているか確認しましょう')
+        return env, ''
+    # start transpile
+    env['@world'] = WORLD.copy()
+    env['@oid'] = 1
+    out = []
+    conv(env, t, out)
+    return env, ''.join(out)
+
+# Live
+
+
+prev_lives = []
+prev_code = ''
+
+
+def hasErrors(env):
+    for e in env['@logs']:
+        if e[0] == 'error':
+            return True
+    return False
+
+
+def diffCode(prev, cur):
+    prev = prev.split('\n')
+    cur = cur.split('\n')
+    plen, clen = len(prev), len(cur)
+    start, end = 0, clen
+    for i in range(min(plen, clen)):
+        start = i
+        if prev[i] != cur[i]:
+            break
+    prev, cur = prev[::-1], cur[::-1]
+    for i in range(min(plen, clen)):
+        end = i
+        if prev[i] != cur[i]:
+            break
+    end = clen - end
+    prev, cur = prev[::-1], cur[::-1]
+    print('@diff', start, end, clen)
+    #print('@diff', cur[start:end])
+    nstart, nend = start, end
+    for nstart in range(start, -1, -1):
+        if not cur[nstart].startswith('\t'):
+            break
+    for nend in range(end, clen, 1):
+        if not cur[nend-1].startswith('\t'):
+            break
+    print('@diff', nstart, nend, clen)
+    diffcode = '\n'.join(cur[nstart:end])
+    print('@diffcode\n', diffcode)
+    return ''  # diffcode
+
+
+def addLives(env, key, value, _trace):
+    env['@lives'].append((env['@oid'], key, value, _trace))
+
+
+def diffLives(prev, cur):
+    pdb = {(t[0], t[1]): t for t in prev}
+    lives = []
+    for c in cur:
+        key = (c[0], c[1])
+        if key in pdb:
+            p = pdb[key]
+            if p[2] != c[2]:
+                lives.append(f'\t[{c[0]}, "{c[1]}", {c[2]}, {p[2]}],\n')
+        else:
+            lives.append(f'\t[{c[0]}, "{c[1]}", {c[2]}, null],\n')
+    if len(lives) > 1:
+        print('@lives', lives)
+        lives = []
+    return lives
+
+
+def puppyVMCode(env, main, diffcode, lives):
     W = env['@world']
-    world = []
-    for k in W:
-        world.append(f"     '{k}': {W[k]},")
+    world = [f"     '{k}': {W[k]}," for k in W]
+    world = '\n'.join(world)
     error = []
     for e in env['@logs']:
         row = e[2]-2 if e[3] == -1 else e[2]-1
@@ -766,10 +926,11 @@ def puppyVMCode(env, main):
             'row': {row},
             'text': {repr(e[4])}
         }},''')
-    world = '\n'.join(world)
     error = '\n'.join(error)
     lines = ','.join(map(str, env['@lines']))
-    lives = ''
+    lives = ''.join(lives)
+    if diffcode != '':
+        diffcode = f'  update: function(Matter,puppy){{\n{diffcode}\n  }},'
     codehash = hashlib.sha256(world.encode() + main.encode()).hexdigest()
     return f'''
 window['PuppyVMCode'] = {{
@@ -781,6 +942,7 @@ window['PuppyVMCode'] = {{
   lives: [
 {lives}
   ],
+{diffcode}
   main: function*(Matter,puppy){{
 {main}
   }},
@@ -792,36 +954,29 @@ window['PuppyVMCode'] = {{
 '''
 
 
-def transpile(s, errors=[]):
-    t = parser(s)
-    STDLOG.dump(t)  # debug
-    env = BUILDIN.copy()
-    env['@logs'] = errors
-    env['@lines'] = []
-    env['@lives'] = []
-    env['@indent'] = INDENT
-    if t.tag == 'err':
-        env['@world'] = {}
-        perror(env, t, '構文エラーです. 文法通り書けているか確認しましょう')
-        return puppyVMCode(env, '')
-    # start transpile
-    env['@world'] = WORLD.copy()
-    env['@oid'] = 1
-    out = []
-    conv(env, t, out)
-    code = puppyVMCode(env, ''.join(out))
-    print(code)
-    return code
+def makeCode(s, errors=[]):
+    global prev_code, prev_lives
+    env, code = transpile(s, errors)
+    diffcode, lives = '', []
+    if not hasErrors(env):
+        diffcode = diffCode(prev_code, code)
+        lives = diffLives(prev_lives, env['@lives'])
+        prev_code = code
+        prev_lives = env['@lives']
+    return puppyVMCode(env, code, diffcode, lives)
+
+# test
+
 
 # main スクリプト
 
 
 if __name__ == "__main__":
-    source = '''range(1,2,3,4).append('x')\n'''
+    source = '''range(1,2,3**2).append(1+2)\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
-    code = transpile(source)
+    code = makeCode(source)
 
 
 __package__ = 'puppy'

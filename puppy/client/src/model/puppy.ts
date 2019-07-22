@@ -455,9 +455,11 @@ export class Puppy {
 export let puppy: Puppy = null; // new Puppy();
 
 export const loadPuppy = (canvasid: string, code: Code) => {
-  const newpuppy = new Puppy(canvasid, code);
-  if (puppy != null) {
-    puppy.dispose();
+  if (code) {
+    const newpuppy = new Puppy(canvasid, code);
+    if (puppy != null) {
+      puppy.dispose();
+    }
+    puppy = newpuppy;
   }
-  puppy = newpuppy;
 };
