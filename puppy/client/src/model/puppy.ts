@@ -2,7 +2,7 @@ import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
 import { initWorld, shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
-import { selectLine } from '../view/editor'
+import { selectLine } from '../view/editor';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -458,10 +458,9 @@ export class Puppy {
     return x.length;
   }
 
-  public map(func: any,lst: number[]){
-    return Array.from(lst,func)           //funcがダメ
+  public map(func: any, lst: number[]) {
+    return Array.from(lst, func);           // funcがダメ
   }
-
 
 }
 
