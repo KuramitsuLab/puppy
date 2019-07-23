@@ -630,6 +630,9 @@ def transpile(s, errors=[]):
     # start transpile
     env = {
         'print': VarInfo('print', 'puppy.print', False, [None, None, EmptyOption]),
+        'len': VarInfo('len', 'puppy.len', False, ['int',None]),
+        'zip': VarInfo('zip', 'puppy.zip', False, [None,None,None]),            # 値が2つあるいは
+        'range': VarInfo('range', 'puppy.range', False, ['[int]',int,int,int]), # listを生成する　abs,sqr
         'World': VarInfo('World', 'world', False, MatterTypes),
         'Circle': VarInfo('Circle', 'Circle', False, MatterTypes),
         'Rectangle': VarInfo('Rectangle', 'Rectangle', False, MatterTypes),

@@ -61,6 +61,7 @@ terminal.setReadOnly(true);
 terminal.renderer.setShowGutter(false);
 terminal.renderer.setOption('showLineNumbers', false);
 
+export const selectLine = (start: number, end :number) => editor.getSession().selection.setRange(new Range4(start, 0, end, 0));
 /**
 function resizeAce() {
   return $('#editor').height($(window).height());
