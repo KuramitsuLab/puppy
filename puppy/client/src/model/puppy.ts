@@ -1,8 +1,8 @@
 import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
-import { shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
-import { selectLine } from '../view/editor';
+import { initWorld, shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
+import { selectLine } from '../view/editor'
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -18,23 +18,17 @@ const Detector = Matter['Detector'];
 const Common = Matter['Common'];
 
 export type Code = {
+  hash: string,
   world: any,
   bodies: any[],
   main: (Matter, puppy: Puppy) => IterableIterator<void>;
+  lines: number[],
   errors?: {}[],
   rules?: any,
-  shapeFuncMap?: { [key: string]: (ctx: Puppy, options: {}) => (x: number, y: number, index: number) => any },
 };
-
-export class PuppyRule {
-  public matchFunc: (part: any) => boolean;
-  public actionFunc: (body: Matter.Body, engine: Matter.Engine) => void;
-}
 
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
-  // private width: number;
-  // private height: number;
   private runner: Matter.Runner;
   private engine: Matter.Engine;
   private render: Matter.Render;
@@ -42,125 +36,62 @@ export class Puppy {
 
   // private debug_mode: boolean;
 
+  private width: number;    /* world.width */
+  private height: number;   /* world.height */
+  private world: {};
   private vars: {};
+  private lines: number[];
   private main: (Matter, puppy: Puppy) => IterableIterator<number>;
-  private rules: PuppyRule[];
   private isRestart: boolean = false;
   private isStep: boolean = false;
 
-  // private DefaultRenderOptions: () => Matter.IRenderDefinition;
+  private eachUpdate: (time: number) => void;
 
-  public constructor() {
-    this.init();
-  }
-
-  public requestFullScreen() {
-    if (this.canvas) { // FIXME
-      if (this.canvas['webkitRequestFullscreen']) {
-        this.canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
-      } else if (this.canvas['mozRequestFullScreen']) {
-        this.canvas['mozRequestFullScreen'](); // FF10+
-      } else if (this.canvas['msRequestFullscreen']) {
-        this.canvas['msRequestFullscreen'](); // IE11+
-      } else if (this.canvas['requestFullscreen']) {
-        this.canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
-      } else {
-        // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
-        return;
-      }
-    }
-  }
-
-  public resize(width: number, height: number) {
-    const w = Math.min(width, height);
-    const h = Math.max(width, height);
-    this.canvas.setAttribute('width', w.toString());
-    this.canvas.setAttribute('height', h.toString());
-    this.render.options.width = w;
-    this.render.options.height = h;
-  }
-
-  public async wait(sec) {
-    await new Promise(resolve => setTimeout(resolve, sec * 1000));
-  }
-
-  public async waitForRun(interval) {
-    while (!(this.runner.enabled || this.isStep)) {
-      await this.wait(interval);
-    }
-  }
-
-  public async execute_main() {
-    let prevline = 0;
-    for await (const linenum of this.main(Matter, this)) {
-      selectLine(prevline, linenum);
-      prevline = linenum;
-      if (this.isStep) {
-        this.runner.enabled = false;
-        this.isStep = false;
-      } else {
-        await this.wait(0.5);
-      }
-      await this.waitForRun(1);
-    }
-    if (this.isStep) {
-      this.runner.enabled = true;
-      this.isStep = false;
-    }
-  }
-
-  public start() {
-    // console.log("start");
-    this.runner.enabled = true;
-    if (!this.isRestart) {
-      this.isRestart = true;
-      this.execute_main();
-    }
-  }
-
-  public pause() {
-    // console.log("pause");
-    this.runner.enabled = false;
-  }
-
-  public step() {
-    this.isStep = true;
-    if (!this.isRestart) {
-      this.isRestart = true;
-      this.execute_main();
-    }
-  }
-
-  public init() {
-    this.isRestart = false;
-    if (this.engine) {
-      World.clear(this.engine.world, false);
-      Engine.clear(this.engine);
-    }
-    /* engineのアクティブ、非アクティブの制御を行う */
-    if (this.runner) {
-      Runner.stop(this.runner);
-    }
-    if (this.render) {
-      Render.stop(this.render);
-      this.render.canvas.remove();
-      this.render.canvas = null;
-      this.render.context = null;
-      this.render.textures = {};
-    }
-    // init
+  // new puppy
+  public constructor(canvasid: string, code: Code) {
+    this.world = initWorld(code.world);
+    this.width = code.world.width || 1000;
+    this.height = code.world.height || this.width;
+    this.lines = code.lines;
     this.engine = Engine.create();
-    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
-      const bodies = Matter.Composite.allBodies(this.engine.world);
-      for (const rule of this.rules) {
-        for (let i = 0; i < bodies.length; i += 1) {
-          const body: Matter.Body = bodies[i];
-          for (let k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k += 1) {
-            const part = body.parts[k];
-            if (rule.matchFunc(part)) {
-              rule.actionFunc(body, this.engine);
-            }
+
+    if (code.world.gravity) {
+      const engine = this.engine;
+      if (code.world.gravity) {
+        engine.world.gravity = code.world.gravity;
+        // ジャイロスコープ
+        // デバイスの傾きで重力の向きを調整する
+        // https://github.com/liabru/matter-js/blob/master/examples/gyro.js
+        window.addEventListener('deviceorientation', (event) => {
+          const orientation = window.orientation || 0;
+          const gravity = engine.world.gravity;
+          if (orientation === 0) {
+            gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
+            gravity.y = Common.clamp(event.beta, -90, 90) / 90;
+          } else if (orientation === 180) {
+            gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
+            gravity.y = Common.clamp(-event.beta, -90, 90) / 90;
+          } else if (orientation === 90) {
+            gravity.x = Common.clamp(event.beta, -90, 90) / 90;
+            gravity.y = Common.clamp(-event.gamma, -90, 90) / 90;
+          } else if (orientation === -90) {
+            gravity.x = Common.clamp(-event.beta, -90, 90) / 90;
+            gravity.y = Common.clamp(event.gamma, -90, 90) / 90;
           }
+        });
+      }
+    }
+
+    Matter.Events.on(this.engine, 'beforeUpdate', (event: Matter.IEventTimestamped<Matter.Engine>) => {
+      const time = this.engine.timing.timestamp;
+      if (this.eachUpdate) {
+        this.eachUpdate(time);
+      }
+      const bodies = Matter.Composite.allBodies(this.engine.world);
+      for (let i = 0; i < bodies.length; i += 1) {
+        const body: Matter.Body = bodies[i];
+        if (body['eachUpdate']) {
+          body['eachUpdate'](body, time);
         }
       }
     });
@@ -201,9 +132,14 @@ export class Puppy {
       }
     });
     this.runner = Runner.create({});
-    const canvas = document.getElementById('puppy-screen');
-    const width = Math.min(canvas.clientWidth, canvas.clientHeight);
-    const height = Math.min(canvas.clientWidth, canvas.clientHeight);
+    // render
+    const canvas = document.getElementById(canvasid);
+    let render_width = canvas.clientWidth;
+    let render_height = canvas.clientWidth * this.height / this.width;
+    if (render_height > canvas.clientHeight) {
+      render_height = canvas.clientHeight;
+      render_width = canvas.clientHeight * this.width / this.height;
+    }
     const render = {
       /* Matter.js の変な仕様 canvas に 描画領域が追加される */
       // element: document.getElementById('canvas'),
@@ -211,78 +147,36 @@ export class Puppy {
       engine: this.engine,
       options: {
         /* オブジェクトが枠線のみになる */
-        width,
-        height,
-        background: 'rgba(0, 0, 0, 0)',
+        width: render_width,
+        height: render_height,
+        background: code.world.background || 'rgba(0, 0, 0, 0)',
+        font: code.world.font || "bold 60px 'Arial'",
+        fontColor: code.world.fontColor || 'rgba(30, 30, 30, 0)',
         wireframes: false,
       },
     };
     this.render = Render.create(render);
     this.canvas = this.render.canvas;
     //
-    this.vars = {
-      Circle,
-      Rectangle,
-      Label,
-      Polygon,
-      Trapezoid,
-      PuppyObject: PuppyShapeBase,
-    };
-    this.rules = [];
-  }
-
-  public async ready() {
-    Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
-    Render.run(this.render); /* 描画開始 */
-    this.runner.enabled = false; /*初期位置を描画したら一度止める */
-    // FIXME
-  }
-
-  private loadWorld(world: any) {
     this.engine.world.bounds = {
       min: { x: 0, y: 0 },
       max: {
-        x: world.width || 1000,
-        y: world.height || 1000,
+        x: this.width,
+        y: this.height,
       },
     };
     /* 描画サイズを自動拡大/縮小を設定する */
     Render['lookAt'](this.render, this.engine.world.bounds);
-    /* 重力を設定する */
-    const engine = this.engine;
-    if (world.gravity) {
-      engine.world.gravity = world.gravity;
-      // ジャイロスコープ
-      // デバイスの傾きで重力の向きを調整する
-      // https://github.com/liabru/matter-js/blob/master/examples/gyro.js
-      window.addEventListener('deviceorientation', (event) => {
-        const orientation = window.orientation || 0;
-        const gravity = engine.world.gravity;
-        if (orientation === 0) {
-          gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-          gravity.y = Common.clamp(event.beta, -90, 90) / 90;
-        } else if (orientation === 180) {
-          gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-          gravity.y = Common.clamp(-event.beta, -90, 90) / 90;
-        } else if (orientation === 90) {
-          gravity.x = Common.clamp(event.beta, -90, 90) / 90;
-          gravity.y = Common.clamp(-event.gamma, -90, 90) / 90;
-        } else if (orientation === -90) {
-          gravity.x = Common.clamp(-event.beta, -90, 90) / 90;
-          gravity.y = Common.clamp(event.gamma, -90, 90) / 90;
-        }
-      });
-    }
     /* マウス */
-    if (world.mouse) {
+    if (code.world.mouse) {
       const mouse = Mouse.create(this.render.canvas);
       const constraintOptions = {
         pointA: { x: 0, y: 0 },
         pointB: { x: 0, y: 0 },
-        stiffness: world.mouseStiffness || 0.2,  /* 剛性 */
+        stiffness: code.world.mouseStiffness || 0.2,  /* 剛性 */
       };
       constraintOptions['render'] = {
-        visible: world.mouseVisible || false,
+        visible: code.world.mouseVisible || false,
       };
       const mouseConstraint = MouseConstraint.create(this.engine, {
         mouse,
@@ -310,55 +204,156 @@ export class Puppy {
           }
         }
       });
-      /*
-
-      // an example of using mouse events on a mouse
-      Events.on(mouseConstraint, 'mouseup', function(event) {
-        var mousePosition = event.mouse.position;
-        console.log('mouseup at ' + mousePosition.x + ' ' + mousePosition.y);
-      });
-
-      // an example of using mouse events on a mouse
-      Events.on(mouseConstraint, 'startdrag', function(event) {
-        console.log('startdrag', event);
-      });
-
-      // an example of using mouse events on a mouse
-      Events.on(mouseConstraint, 'enddrag', function(event) {
-        console.log('enddrag', event);
-      });
-      */
     }
-  }
-
-  public load(code: Code) {
-    this.init();
-    if (code.world) {
-      // 世界の再設定を行う
-      this.loadWorld(code.world);
-    }
-    // 物体の情報をアップデートする
-    if (code.bodies) {
-      const bodies = [];
-      for (const data of code.bodies) {
-        if (data.shape && data.position) {
-          const body = this.newBody(data);
-          if (data.name) {
-            this.vars[data.name] = body;
-          }
-          if (body.id) {
-            bodies.push(body);
-          }
-        }
-      }
-      World.add(this.engine.world, bodies);
-    }
+    //
+    this.vars = {
+      Circle,
+      Rectangle,
+      Label,
+      Polygon,
+      Trapezoid,
+      PuppyObject: PuppyShapeBase,
+    };
     this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
-    this.ready();
+
+    Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
+    Render.run(this.render); /* 描画開始 */
+    this.runner.enabled = false; /*初期位置を描画したら一度止める */
   }
 
-  public preview() {
+  public dispose() {
+    this.isRestart = false;
+    if (this.engine) {
+      World.clear(this.engine.world, false);
+      Engine.clear(this.engine);
+    }
+    /* engineのアクティブ、非アクティブの制御を行う */
+    if (this.runner) {
+      Runner.stop(this.runner);
+    }
+    if (this.render) {
+      Render.stop(this.render);
+      this.render.canvas.remove();
+      this.render.canvas = null;
+      this.render.context = null;
+      this.render.textures = {};
+    }
+  }
 
+  // private DefaultRenderOptions: () => Matter.IRenderDefinition;
+
+  public getCanvas() {
+    return this.canvas;
+  }
+
+  // public requestFullScreen() {
+  //   if (this.canvas) { // FIXME
+  //     if (this.canvas['webkitRequestFullscreen']) {
+  //       this.canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
+  //     } else if (this.canvas['mozRequestFullScreen']) {
+  //       this.canvas['mozRequestFullScreen'](); // FF10+
+  //     } else if (this.canvas['msRequestFullscreen']) {
+  //       this.canvas['msRequestFullscreen'](); // IE11+
+  //     } else if (this.canvas['requestFullscreen']) {
+  //       this.canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
+  //     } else {
+  //       // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
+  //       return;
+  //     }
+  //   }
+  // }
+
+  public resize(width: number, height: number) {
+    console.log(`'resize width ${width} ${this.canvas.clientWidth} height ${height} ${this.canvas.clientHeight}`);
+    let w = width;
+    let h = width * this.height / this.width;
+    if (h > height) {
+      h = height;
+      w = height * this.width / this.height;
+    }
+    this.canvas.setAttribute('width', w.toString());
+    this.canvas.setAttribute('height', h.toString());
+    console.log('resize width {this.render.options.width} => {w} height {this.render.options.height} => {h}');
+    this.render.options.width = w;
+    this.render.options.height = h;
+  }
+
+  public async wait(sec) {
+    await new Promise(resolve => setTimeout(resolve, sec * 1000));
+  }
+
+  public async waitForRun(interval) {
+    while (!(this.runner.enabled || this.isStep)) {
+      await this.wait(interval);
+    }
+  }
+
+  public async execute_main() {
+    let prevline = 0;
+    for await (const linenum of this.main(Matter, this)) {
+      selectLine(prevline, linenum);
+      prevline = linenum;
+      if (this.isStep) {
+        this.runner.enabled = false;
+        this.isStep = false;
+      } else {
+        await this.wait(0.5);
+      }
+      await this.waitForRun(1);
+    }
+    if (this.isStep) {
+      this.runner.enabled = true;
+      this.isStep = false;
+    }
+  }
+
+  public start(updateEach = (t: number) => { }) {
+    // console.log("start");
+    this.eachUpdate = updateEach;
+    this.runner.enabled = true;
+    if (!this.isRestart) {
+      this.isRestart = true;
+      this.execute_main();
+    }
+  }
+
+  public pause() {
+    // console.log("pause");
+    this.runner.enabled = false;
+  }
+
+  public step() {
+    this.isStep = true;
+    if (!this.isRestart) {
+      this.isRestart = true;
+      this.execute_main();
+    }
+  }
+
+  public init() {
+    this.isRestart = false;
+    if (this.engine) {
+      World.clear(this.engine.world, false);
+      Engine.clear(this.engine);
+    }
+    /* engineのアクティブ、非アクティブの制御を行う */
+    if (this.runner) {
+      Runner.stop(this.runner);
+    }
+    if (this.render) {
+      Render.stop(this.render);
+      this.render.canvas.remove();
+      this.render.canvas = null;
+      this.render.context = null;
+      this.render.textures = {};
+    }
+  }
+
+  public async ready() {
+    Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
+    Render.run(this.render); /* 描画開始 */
+    this.runner.enabled = false; /*初期位置を描画したら一度止める */
+    // FIXME
   }
 
   // Puppy APIs
@@ -368,7 +363,7 @@ export class Puppy {
     const max_y = this.engine.world.bounds['max']['y'];
     const options: ShapeOptions = Common.extend({ position: { x: max_x / 2, y: max_y / 2 } }, _options);
     options.shape = options.shape in shapeFuncMap ? options.shape : 'circle';
-    const body = shapeFuncMap[options.shape](options);
+    const body = shapeFuncMap[options.shape](this.world, options);
     return body;
   }
 
@@ -382,26 +377,81 @@ export class Puppy {
     if (!options['position']) {
       options['position'] = { x: xx, y: yy };
     }
+
     options['shape'] = shape;
     const body = this.newBody(options);
     World.add(this.engine.world, [body]);
     return body;
   }
-
+  /*
+  collisionFilter: {
+                  category: 0x0001,
+                  mask: 0xFFFFFFFF,
+                  group: 0
+              },
+              */
   public print(text: string, options = {}) {
-    const _options: ShapeOptions = Common.extend({ shape: 'label', position: { x: 1000, y: Math.random() * 1000 } }, options);
-    const body = this.newMatter(_options);
-    body['value'] = text;
-    World.add(this.engine.world, [body]);
-    const invokedTime = this.engine.timing.timestamp;
-    const commentRule = {
-      matchFunc: part => part.id === body.id,
-      actionFunc: (body, engine) => {
-        const px = 1000 - 100 * (engine.timing.timestamp - invokedTime) * 0.003;
+    const width = this.width;
+    const _options: ShapeOptions = Common.extend({
+      shape: 'label',
+      value: `${text}`,
+      created: this.engine.timing.timestamp,
+      position: { x: this.width, y: this.height * (Math.random() * 0.9 + 0.05) },
+      eachUpdate: (body, time: number) => {
+        const px = width - 100 * (time - body['created']) * 0.003;
         Matter.Body.setPosition(body, { x: px, y: body.position.y });
+        if (px < -1) {
+          World.remove(this.engine.world, body);
+        }
       },
-    };
-    this.rules.push(commentRule);
+    },                                           options);
+    const body = this.newMatter(_options);
+    World.add(this.engine.world, [body]);
+  }
+
+  /* built-in */
+
+  public str(x: any) {
+    return `${x}`;
+  }
+
+  public range(x: number, y?: number, z?: number) {
+    let start = 0;
+    let end = 0;
+    let step = 1;
+    if (y === undefined) {
+      end = x;
+    }
+    else if (z !== undefined) {
+      start = x;
+      end = y;
+      step = z;
+    }
+    else {
+      start = x;
+      end = y;
+    }
+    const xs = [];
+    for (let i = start; i < end; i += step) {
+      xs.push(i);
+      if (xs.length > 100000) {
+        // safety break
+        break;
+      }
+    }
+    return xs;
+  }
+
+  /* string (method) */
+
+  public find(s: string, sub: string) {
+    return s.indexOf(sub);
+  }
+
+  /* list */
+
+  public append(xs: any[], x: any) {
+    xs.push(x);
   }
 
   public len(x:[]) {
@@ -415,4 +465,14 @@ export class Puppy {
 
 }
 
-export const puppy: Puppy = new Puppy();
+export let puppy: Puppy = null; // new Puppy();
+
+export const loadPuppy = (canvasid: string, code: Code) => {
+  if (code) {
+    const newpuppy = new Puppy(canvasid, code);
+    if (puppy != null) {
+      puppy.dispose();
+    }
+    puppy = newpuppy;
+  }
+};

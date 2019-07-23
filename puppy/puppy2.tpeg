@@ -310,8 +310,8 @@ Constant =
 //example FloatExpr, Expression 1.1e-9
 //example TrueExpr, Expression 有効
 
-StringExpr = '"' { STRING_CONTENT* #String } '"' _
-CharExpr = '\'' { CHAR_CONTENT* #Char } '\'' _
+StringExpr =  { '"' STRING_CONTENT* '"' #String }  _
+CharExpr = { '\'' CHAR_CONTENT* '\'' #Char } _
 STRING_CONTENT = ESCAPE / ![\"\n\\] .
 CHAR_CONTENT   = ESCAPE / !['\n\\] .
 ESCAPE =

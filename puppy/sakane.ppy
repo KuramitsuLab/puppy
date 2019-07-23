@@ -8,7 +8,7 @@ def suzume_collision():
     print("Bomb!")
 def suzume_clicked():
     print("Chun")
-suzume = Circle(500,100,image='bird.png',width=270,clicked=suzume_clicked,collisionStart=suzume_collision)
+#suzume = Circle(500,100,image='bird.png',width=270,clicked=suzume_clicked,collisionStart=suzume_collision)
 
 for x in range(1,5,-1):
     print(len(100000))

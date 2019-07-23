@@ -1,45 +1,55 @@
-import { puppy } from '../model/puppy';
+import { puppy, loadPuppy, Code } from '../model/puppy';
 import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
 import { exitFullscreen, getFullscreen } from '../view/screen';
 import * as marked from 'marked';
 
-// window.onload = resizeMe;
-// window.onclick = resizeMe;
-
-document.getElementById('play').onclick = () => {
-  puppy.load(window['PuppyVMCode']);
-  puppy.start();
-  // buttonInactivate('play');
-  // buttonActivate('pause');
-};
-
-document.getElementById('pause').onclick = () => {
-  puppy.pause();
-  // buttonInactivate('pause');
-  // buttonActivate('play');
-};
-
-document.getElementById('step').onclick = () => {
-  puppy.step();
-};
-
-document.getElementById('font-plus').onclick = () => {
-  fontPlus();
-};
-
-document.getElementById('font-minus').onclick = () => {
-  fontMinus();
-};
-
-document.getElementById('extend').onclick = () => {
-  puppy.requestFullScreen();
-};
-
-/** */
-
 const path = location.pathname;
+const session = window.sessionStorage;
+
 let page: {} = null;
-const gallery = null;
+
+const getPagePath = (shift: number) => {
+  const pages = page['list'];
+  let index = 0;
+  for (let i = 0; i < pages.length; i += 1) {
+    if (pages[i] === path) {
+      index = i;
+    }
+  }
+  return pages[(index + pages.length + shift) % pages.length] || pages[0];
+};
+
+const showView = (mode: string) => {
+  const slides = document.getElementsByClassName('mySlides');
+  page['viewmode'] = null;
+  for (let i = 0; i < slides.length; i += 1) {
+    // console.log(`${i} ${slides[i].id}`);
+    if (slides[i].id === mode) {
+      slides[i]['style'].display = 'block';
+      page['viewmode'] = mode;
+    } else {
+      slides[i]['style'].display = 'none';
+    }
+  }
+  // console.log(`viewmode ${page['viewmode']}`);
+  if (page['viewmode'] == null) {
+    slides[0]['style'].display = 'block';
+    page['viewmode'] = page['viewlist'][0];
+  }
+  session.setItem('viewmode', page['viewmode']);
+};
+
+const shiftView = (n: number) => {
+  const viewmode = page['viewmode'];
+  const viewlist: [string] = page['viewlist'];
+  let index = 0;
+  for (let i = 0; i < viewlist.length; i += 1) {
+    if (viewlist[i] === viewmode) {
+      index = i;
+    }
+  }
+  return viewlist[(index + viewlist.length + n) % viewlist.length];
+};
 
 const loadFile: (path: string) => Promise<string> = (path) => {
   return fetch(path, {
@@ -54,43 +64,184 @@ const loadFile: (path: string) => Promise<string> = (path) => {
   });
 };
 
-const loadSetting: (path: string) => Promise<string> = (path) => {
-  return fetch(`/setting${path}`, {
-    method: 'GET',
+/* setting */
+
+const initPage = () => {
+  const page_json = session.getItem('/settings/');
+  console.log(`${page_json}`);
+  if (page_json) {
+    page = JSON.parse(page_json);
+  } else {
+    loadFile(`/setting${path}`).then((s: string) => {
+      page = JSON.parse(s);
+      session.setItem('/settings/', s);
+    }).catch((msg: string) => {
+      console.log(`ERR ${msg}`);
+    });
+  }
+  const doc = document.getElementById('problem');
+  loadFile(`/problem${path}`).then((s: string) => {
+    doc.innerHTML = marked(s);
+  }).catch((msg: string) => {
+    doc.innerHTML = `ERR ${msg}`;
+  });
+  const source = session.getItem(`/sample${path}`);
+  if (source) {
+    editor.setValue(source, -1);
+  } else {
+    loadFile(`/sample${path}`).then((s: string) => {
+      editor.setValue(s, -1);
+      session.setItem(`/sample${path}`, s);
+    }).catch((msg: string) => {
+      editor.setValue(`#ERR ${msg}`, -1);
+    });
+  }
+  if (page['type'] === 'sumomo') {
+    const doc = document.getElementById('name');
+    doc.innerHTML = 'Sumomo';
+  } else {
+    const doc = document.getElementById('gallery');
+    loadFile('/gallery').then((s: string) => {
+      doc.innerHTML = s;
+    }).catch((msg: string) => {
+      doc.innerHTML = `ERR ${msg}`;
+    });
+  }
+  if (page[path]) {
+    const doc = document.getElementById('page-title');
+    doc.innerHTML = page[path].title;
+  }
+  showView(session.getItem('viewmode') || page['viewmode']);
+
+  let slides = document.getElementsByClassName('next-view');
+  for (let i = 0; i < slides.length; i += 1) {
+    slides[i]['onclick'] = () => {
+      showView(shiftView(+1));
+    };
+  }
+  slides = document.getElementsByClassName('prev-view');
+  for (let i = 0; i < slides.length; i += 1) {
+    slides[i]['onclick'] = () => {
+      showView(shiftView(-1));
+    };
+  }
+};
+
+/* event */
+
+document.getElementById('base').onclick = () => {
+  session.removeItem('/settings/');
+  if (path.startsWith('/Puppy')) {
+    location.href = '/ITPP/01A';
+  }
+  else {
+    location.href = '/Puppy/Welcome';
+  }
+};
+
+document.getElementById('next-page').onclick = () => {
+  location.href = getPagePath(+1);
+};
+
+document.getElementById('prev-page').onclick = () => {
+  location.href = getPagePath(-1);
+};
+
+/* puppy-view */
+
+let puppyRunning = false;
+const playPanel = document.getElementById('play-panel');
+const togglePlay = (t: number) => {
+  puppyRunning = true;
+  if (((t % 100) | 0) === 0) {
+    playPanel.innerHTML = `<i class="fa fa-pause"></i> ${(t / 100) | 0} `;
+  }
+};
+
+const transpile: (code: string) => Promise<void> = (code) => {
+  const oldCode: Code = window['PuppyVMCode'];
+  window['PuppyVMCode'] = undefined;
+  return fetch('/compile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text; charset=utf-8',
+    },
+    body: code,
   }).then((res: Response) => {
     if (res.ok) {
       return res.text();
     }
     throw new Error(res.statusText);
-  }).then((sample: string) => {
-    return sample;
+  }).then((js: string) => {
+    try {
+      Function(js)(); // Eval javascript code
+    }
+    catch (e) {
+      // alert(`トランスパイルにしっぱいしています ${e}`);
+      editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
+      console.log(js);
+      console.log('FIXME');
+      console.log(e);
+    }
+    if (!window['PuppyVMCode']) {
+      window['PuppyVMCode'] = oldCode;
+    }
+  },
+  ).catch((msg: string) => {
+    alert(`Puppy is down!! ${msg}`);
   });
 };
 
-const loadSample: (path: string) => Promise<string> = (path) => {
-  return fetch(`/sample${path}`, {
-    method: 'GET',
-  }).then((res: Response) => {
-    if (res.ok) {
-      return res.text();
-    }
-    throw new Error(res.statusText);
-  }).then((sample: string) => {
-    return sample;
-  });
+document.getElementById('play').onclick = () => {
+  if (puppyRunning) {
+    puppy.pause();
+    playPanel.innerHTML = '<i class="fa fa-play"></i> Play ';
+    puppyRunning = false;
+  } else {
+    loadPuppy('puppy-screen', window['PuppyVMCode']);
+    puppy.start(togglePlay);
+  }
 };
 
-const loadProblem: (path: string) => Promise<string> = (path) => {
-  return fetch(`/problem${path}`, {
-    method: 'GET',
-  }).then((res: Response) => {
-    if (res.ok) {
-      return res.text();
+// document.getElementById('pause').onclick = () => {
+//   puppy.pause();
+// };
+
+// document.getElementById('step').onclick = () => {
+//   puppy.step();
+// };
+
+document.getElementById('extend').onclick = () => {
+  if (puppy != null) {
+    const canvas = puppy.getCanvas();
+    if (canvas) { // FIXME
+      if (canvas['webkitRequestFullscreen']) {
+        canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
+      } else if (this.canvas['mozRequestFullScreen']) {
+        canvas['mozRequestFullScreen'](); // FF10+
+      } else if (this.canvas['msRequestFullscreen']) {
+        canvas['msRequestFullscreen'](); // IE11+
+      } else if (this.canvas['requestFullscreen']) {
+        canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
+      } else {
+        // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
+        return;
+      }
     }
-    throw new Error(res.statusText);
-  }).then((sample: string) => {
-    return sample;
-  });
+    // loadPuppy('puppy-screen', window['PuppyVMCode']);
+    // puppy.start(togglePlay);
+  }
+};
+
+/** */
+
+document.getElementById('run').onclick = () => {
+  console.log(page['type']);
+  if (page['type'] === 'puppy') {
+    showView('puppy-view');
+    loadPuppy('puppy-screen', window['PuppyVMCode']);
+    puppy.start(togglePlay);
+  }
 };
 
 const submitBuild: (path: string) => Promise<string> = (path) => {
@@ -128,66 +279,49 @@ document.getElementById('clear').onclick = () => {
   terminal.setValue('', 0);
 };
 
-const transpile: (code: string) => Promise<void> = (code) => {
-  const oldCode = window['PuppyVMCode'];
-  window['PuppyVMCode'] = undefined;
-  return fetch('/compile', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/text; charset=utf-8',
-    },
-    body: code,
-  }).then((res: Response) => {
-    if (res.ok) {
-      return res.text();
-    }
-    throw new Error(res.statusText);
-  }).then((js: string) => {
-    console.log(js);
-    Function(js)(); // Eval javascript code
-    if (!window['PuppyVMCode']) {
-      console.log(window['PuppyVMCode']);
-      window['PuppyVMCode'] = oldCode;
-      throw new Error("Don\'t exist PuppyVMCode in window.");
-    }
-  },
-  ).catch((msg: string) => {
-    console.log(msg);
-  });
-};
+/* editor */
 
 let timer = null;
+const editorPanel = document.getElementById('editor');
 
 editor.on('change', (cm, obj) => {
   if (timer) {
     clearTimeout(timer);
     timer = null;
   }
+  editorPanel.style.backgroundColor = 'rgba(255,255,255,0.7)';
   timer = setTimeout(() => {
-    console.log(`EDITOR CHANGE ${page['viewmode']}`);
-    // if (editor.getValue() === '') {
-    //   loadFile(`/sample${path}`).then((text) => {
-    //     editor.setValue(text);
-    //   });
-    // }
     if (page['type'] === 'puppy') {
+      let prevhash = '';
+      if (window['PuppyVMCode']) {
+        prevhash = window['PuppyVMCode']['hash'];
+      }
       editor.getSession().clearAnnotations();
       transpile(editor.getValue()).then(() => {
-        const errors: [] = window['PuppyVMCode']['errors'];
-        console.log(window['PuppyVMCode']);
+        const code: Code = window['PuppyVMCode'];
         let error_count = 0;
         const annos = [];
-        for (const e of errors) {
+        for (const e of code.errors) {
           if (e['type'] === 'error') {
             error_count += 1;
           }
           annos.push(e);
-          console.log(e);
+          editor.getSession().setAnnotations(annos);
         }
-        editor.getSession().setAnnotations(annos);
-        console.log(`size ${errors.length} ${error_count}`);
+        // console.log(`PREV ${prevhash}`);
         if (error_count === 0) {
-          puppy.load(window['PuppyVMCode']);
+          if (code.hash === prevhash) {
+            // console.log(`HASH ${code.hash}`);
+            puppy['lines'] = code['lines'];
+          }
+          else {
+            loadPuppy('puppy-screen', code);
+            puppy.start(togglePlay);
+            session.setItem(`/sample${path}`, editor.getValue());
+          }
+        }
+        else {
+          editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
         }
       });
     }
@@ -197,14 +331,23 @@ editor.on('change', (cm, obj) => {
   },                 400);
 });
 
-// window.onload = () => {
+document.getElementById('font-plus').onclick = () => {
+  fontPlus();
+};
+
+document.getElementById('font-minus').onclick = () => {
+  fontMinus();
+};
+
+// resize
 
 let fullscreen = false;
+
 function resizeMe() {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const toph = document.getElementById('top').clientHeight;
-  console.log('resizeMe', w, h, fullscreen, getFullscreen());
+  console.log('resize', w, h, fullscreen, getFullscreen());
   const ed = document.getElementById('editor');
   ed.style.height = `${(h - toph - 1)}px`;
   const tm = document.getElementById('terminal');
@@ -221,140 +364,16 @@ function resizeMe() {
     fullscreen = true;
   }
   if (fullscreen) {
-    puppy.resize(w, h);
+    if (puppy != null) {
+      puppy.resize(w, h);
+    }
     fullscreen = false;
   } else {
-    puppy.resize(w / 2, (h - toph - 1));
+    if (puppy != null) {
+      puppy.resize(w / 2, (h - toph - 1));
+    }
   }
 }
+initPage();
 resizeMe();
 window.onresize = resizeMe;
-
-loadSetting(path).then((jsonstr: string) => {
-  console.log(jsonstr);
-  page = JSON.parse(jsonstr);
-  if (page['type'] === 'sumomo') {
-    const doc = document.getElementById('name');
-    doc.innerHTML = 'Sumomo';
-  } else {
-    loadFile('/gallery').then((data: string) => {
-      const doc = document.getElementById('gallery');
-      doc.innerHTML = data;
-    }).catch((msg: string) => {
-      console.error(msg);
-    });
-  }
-  // else {
-  //   const doc = document.getElementById('name');
-  //   doc.innerHTML = 'Puppy';
-  // }
-  if (page[path]) {
-    const doc = document.getElementById('page-title');
-    doc.innerHTML = page[path].title;
-  }
-  showSilde(page['viewmode']);
-}).catch((msg: string) => {
-  console.error(msg);
-});
-
-loadProblem(path).then((data: string) => {
-  // console.log(data);
-  const doc = document.getElementById('problem');
-  doc.innerHTML = marked(data);
-  // MathJax.Hub.Queue(['Typeset', MathJax.Hub, doc]);
-}).catch((msg: string) => {
-  console.error(msg);
-});
-
-loadSample(path).then((sample: string) => {
-  // console.log(sample);
-  editor.setValue(sample, -1);  // 行番号の先頭にする
-}).catch((msg: string) => {
-  console.error(msg);
-});
-
-const showSilde = (mode: string) => {
-  const slides = document.getElementsByClassName('mySlides');
-  page['viewmode'] = null;
-  for (let i = 0; i < slides.length; i += 1) {
-    console.log(`${i} ${slides[i].id}`);
-    if (slides[i].id === mode) {
-      slides[i]['style'].display = 'block';
-      page['viewmode'] = mode;
-    } else {
-      slides[i]['style'].display = 'none';
-    }
-  }
-  console.log(`viewmode ${page['viewmode']}`);
-  if (page['viewmode'] == null) {
-    slides[0]['style'].display = 'block';
-    page['viewmode'] = page['viewlist'][0];
-  }
-};
-
-const shiftSlide = (n: number) => {
-  const viewmode = page['viewmode'];
-  const viewlist: [string] = page['viewlist'];
-  let index = 0;
-  for (let i = 0; i < viewlist.length; i += 1) {
-    if (viewlist[i] === viewmode) {
-      index = i;
-    }
-  }
-  page['viewmode'] = viewlist[(index + viewlist.length + n) % viewlist.length];
-};
-
-const setSlideButtons = () => {
-  let slides = document.getElementsByClassName('next-view');
-  for (let i = 0; i < slides.length; i += 1) {
-    slides[i]['onclick'] = () => {
-      shiftSlide(+1);
-      showSilde(page['viewmode']);
-    };
-  }
-  slides = document.getElementsByClassName('prev-view');
-  for (let i = 0; i < slides.length; i += 1) {
-    slides[i]['onclick'] = () => {
-      shiftSlide(-1);
-      showSilde(page['viewmode']);
-    };
-  }
-};
-setSlideButtons();
-
-const getPagePath = (shift: number) => {
-  const pages = page['list'];
-  let index = 0;
-  for (let i = 0; i < pages.length; i += 1) {
-    if (pages[i] === path) {
-      index = i;
-    }
-  }
-  return pages[(index + pages.length + shift) % pages.length] || pages[0];
-};
-
-document.getElementById('base').onclick = () => {
-  if (path.startsWith('/Puppy')) {
-    location.href = '/ITPP/01A';
-  }
-  else {
-    location.href = '/Puppy/Welcome';
-  }
-};
-
-document.getElementById('next-page').onclick = () => {
-  location.href = getPagePath(+1);
-};
-
-document.getElementById('prev-page').onclick = () => {
-  location.href = getPagePath(-1);
-};
-
-document.getElementById('run').onclick = () => {
-  console.log(page['type']);
-  if (page['type'] === 'puppy') {
-    showSilde('puppy-view');
-    puppy.load(window['PuppyVMCode']);
-    puppy.start();
-  }
-};
