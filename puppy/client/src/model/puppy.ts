@@ -451,23 +451,6 @@ export class Puppy {
     xs.push(x);
   }
 
-  public range(_start: number, _end: number, _step = 1) {
-    const l = [];
-    let start = _start;
-    let end = _end;
-    let step = _step;
-    if (step < 0) {
-      const buff = start;
-      start = end;
-      end = buff;
-      step *= -1;
-    }
-    for (let i = start; i < end; i += step) {
-      l.push(i);
-    }
-    return l;
-  }
-
 }
 
 export let puppy: Puppy = null; // new Puppy();
