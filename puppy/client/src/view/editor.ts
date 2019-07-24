@@ -2,7 +2,7 @@ import * as ace from '../../node_modules/ace-builds/src-min-noconflict/ace.js';
 import * as python_mode from '../../node_modules/ace-builds/src-min-noconflict/mode-python.js';
 
 const editorState = {
-  fontSize: 20,
+  fontSize: 18,
 };
 
 export const setFontSize = (size: number) => {
@@ -19,12 +19,32 @@ export const fontMinus = () => {
   setFontSize(editorState.fontSize);
 };
 
+ace.require('ace/ext/language_tools');
 const Range4 = ace.require('ace/range').Range;
 
 export const editor = ace.edit('editor');
 editor.getSession().setMode(new python_mode.Mode());
 editor.getSession().setUseWrapMode(true); /* 折り返しあり */
-setFontSize(20);
+// https://github.com/ajaxorg/ace/wiki/Embedding---API
+// editor.setOptions({
+//   enableBasicAutocompletion: true,
+//   enableSnippets: true,
+//   enableLiveAutocompletion: false,
+// });
+setFontSize(18);
+
+// editor.commands.addCommand({
+//   name: 'myCommand',
+//   bindKey: { win: 'Ctrl-M', mac: 'Command-M' },
+//   exec(editor) {
+//     console.log(editor.session.getTextRange(editor.getSelectionRange()));
+//   },
+// });
+
+// editor.getSession().selection.on('changeCursor', () => {
+//   console.log(editor.selection.getCursor());
+//   console.log(editor.getSelectionRange());
+// });
 
 let markers = [];
 const zenkaku = '！　”＃＄％＆’（）＊＋，－．／：；＜＝＞？＠［＼￥］＾＿‘｛｜｝～￣'
@@ -46,8 +66,9 @@ export const checkZenkaku = () => {
     for (let c = 0; c < s.length; c += 1) {
       const ch = s.charCodeAt(c);
       if (ch > 127 && zenkaku.search(s[c]) > 0) {
-        console.log(`${s}: ${i},${c}, ${ch}`);
-        const m = editor.session.addMarker(new Range4(i, c, i + 1, c), 'utf8', 'text');
+        const p = new Range4(i, c, i, c + 1);
+        console.log(`${s}: ${i},${c}, ${p}`);
+        const m = editor.session.addMarker(p, 'utf8', 'text');
         markers.push(m);
       }
     }
@@ -59,7 +80,7 @@ export const checkZenkaku = () => {
 export const terminal = ace.edit('terminal');
 terminal.setReadOnly(true);
 terminal.renderer.setShowGutter(false);
-terminal.renderer.setOption('showLineNumbers', false);
+terminal.setOption('showLineNumbers', false);
 
 /**
 function resizeAce() {

@@ -29,7 +29,7 @@ Statement =
     / FuncDecl
     / IfStmt
     / ForStmt
-    / Return
+    / Return / Yield / Break / Continue
     / VarDecl
     / Expression
 
@@ -76,8 +76,8 @@ FuncParam = {
 }
 
 Lambda = {
-    'lambda' S _
-    params: LambdaParams ':' _
+    'lambda' 
+    (S _ params: LambdaParams)? ':' _
     body: (Block / Statement)
     #FuncExpr
 }
@@ -87,16 +87,20 @@ LambdaParams = {
     #Param
 }
 
+example Lambda lambda: print(1)
 example Lambda lambda x: print(x)
+example Lambda lambda x,y: print(x,y)
 
 Return = {
     'return' 
     (S _ expr: Expression)?
     #Return
-} / { 'yield' _ #Yield } 
-  / { 'pass' _ #Pass }
-  / { 'break' _ #Break }
-  / { 'continue' _ #Continue }
+} 
+
+Yield = { 'yield' _ #Yield } 
+Pass =  { 'pass' _ #Pass }
+Break = { 'break' _ #Break }
+Continue = { 'continue' _ #Continue }
 
 
 /* if文 */
@@ -150,19 +154,31 @@ ForStmt = {
 /* var */
 
 example VarDecl,Statement A = 1
+example VarDecl,Statement A += 1
 
 VarDecl = {
     left: LeftHand
     [=＝] _ 
     right: Expression
     #VarDecl
-}
+} / SelfAssign
 
 LeftHand =
     Name (
 	    recv:^ { [の.．] _ name: Name #GetExpr }
     	/ recv:^ { "[" index: Expression "]" #IndexExpr }
     )*
+
+SelfAssign = {
+    left: LeftHand
+    name: SelfAssignOp
+    right: Expression
+    #SelfAssign
+}
+
+SelfAssignOp = {
+    ('<<' / '>>' / '**' / '//' / [+=*@/%&|^]) '='
+} _
 
 /* Reserved */
 
@@ -171,28 +187,31 @@ LeftHand =
 example Expression A
 example EqExpr, Expression A == 1
 
-Expression = Operator
+Expression = 
+    Operator (then:^ { 'if' _ cond: Expression 'else' _ else: Expression #IfExpr })?
 
 Operator =
 	AndExpr (left:^ { OR _ right: AndExpr #Or })*
 
-OR = '||' / 'or' / 'または'
+OR = 'or' / '||' / 'または'
 
 AndExpr =
 	EqExpr (left:^ { AND _ right: EqExpr #And })*
 
-AND = '&&' / 'and' / 'かつ' / 'で'
+AND = 'and' / '&&' / 'かつ'
 
 EqExpr =
 	SumExpr (left:^ { name: { EQ #Name } _ right: SumExpr #Infix })*
 
 EQ =
-	/ '==' !'='
-	/ '!=' !'='
-	/ '<=' !'='
-	/ '>=' !'='
-	/ '<'  !'<'
-	/ '>'  !'>'
+	/ '==' !'=' / '＝＝' 
+	/ '!=' !'=' / '！＝' 
+	/ '<=' !'=' / '＜＝'
+	/ '>=' !'=' / '＞＝'
+	/ '<'  !'<' / '＜' !'＜'
+	/ '>'  !'>' / '＞' !'＜'
+    / 'in' / 'not in' / '⊆' 
+    / 'is' / 'is not'
 
 SumExpr =
 	ProdExpr (left:^ { name: { SUM #Name } _ right: ProdExpr #Infix })*
@@ -205,10 +224,12 @@ ProdExpr =
 	UnaryExpr (left:^ { name: { PROD #Name } _ right: UnaryExpr #Infix })*
 
 PROD =
+    / '//' / '／／'
 	/ '/' / '÷' / '／'
     / '**' / '＊＊'
 	/ '*' / '×' / '＊'
-	/ '%' / '％'
+	/ '%' / '％' 
+    / '@' / '＠'
 	/ '^'
 
 UnaryExpr
@@ -219,6 +240,7 @@ PRE =
     / '-' / 'ー'
     / '!' / '！'
     / '+' / '＋'
+    / 'not' S
 
 SuffixExpr =
 	Primary (
@@ -298,6 +320,8 @@ REF =
 /* Literal */
 
 Constant =
+    / FormatString
+    / LongString
 	/ StringExpr
 	/ CharExpr
 	/ Number
@@ -305,13 +329,32 @@ Constant =
 	/ FalseExpr
 	/ NullExpr
 
-//example StringExpr, Expression "\n\u1234a\0"
-//example CharExpr, Expression '\''
-//example FloatExpr, Expression 1.1e-9
-//example TrueExpr, Expression 有効
+example FormatString,Expression f'{a}+{1}'
 
-StringExpr = '"' { STRING_CONTENT* #String } '"' _
-CharExpr = '\'' { CHAR_CONTENT* #Char } '\'' _
+FormatString = [Ff] (
+    '\'\'\'' { FormatContent3* #Format } '\'\'\''
+    / '\'' { FormatContent1* #Format } '\''
+    / '"""' { FormatContent3D* #Format } '"""'
+    / '"' { FormatContent1D* #Format } '"' ) _
+
+FormatContent3 =
+    '{' Expression '}' / { (!'\'\'\'' !'{' .)* #StringPart }
+
+FormatContent1 =
+    '{' Expression '}' / { (!'\'' !'{' .)* #StringPart }
+
+FormatContent3D =
+    '{' Expression '}' / { (!'"""' !'{' .)* #StringPart }
+
+FormatContent1D =
+    '{' Expression '}' / { (!'"' !'{' .)* #StringPart }
+
+LongString = 
+    '\'\'' { '\'' ( ESCAPE / ![\\'] . / !'\'\'\'' '\'' )* '\'' #String } '\'\'' _
+    / '""' { '"' ( ESCAPE / ![\\"] . / !'"""' '"' )* '"' #String } '""' _
+
+StringExpr =  { '"' STRING_CONTENT* '"' #String }  _
+CharExpr = { '\'' CHAR_CONTENT* '\'' #Char } _
 STRING_CONTENT = ESCAPE / ![\"\n\\] .
 CHAR_CONTENT   = ESCAPE / !['\n\\] .
 ESCAPE =
@@ -319,7 +362,7 @@ ESCAPE =
 	/ '\\' [0-3] [0-7] [0-7]
     / '\\' [0-7] [0-7]
     / '\\' [0-7]
-	/ '\\' 'u'+ HEX HEX HEX HEX
+	/ '\\' [uU] HEX HEX HEX HEX
 
 IntExpr = {
 	(DECIMAL / HEXADECIMAL / BINARY / OCTAL)
@@ -358,8 +401,7 @@ Unit = {
     #Symbol
 }
 
-UNIT = [%％度]
-    / 'px' / 'pt'
+UNIT = [%％度] / 'px' / 'pt'
 
 example Number,Expression 33.3%
 

@@ -4,7 +4,7 @@ import os
 from subprocess import STDOUT, check_output
 from pathlib import Path
 from flask import Flask, render_template, send_file, request, Response
-from puppy import transpile
+from puppy import makeCode
 
 
 def getRootPath(subdir='data'):
@@ -107,11 +107,7 @@ def dist_build(d):
 @app.route('/compile', methods=['POST'])
 def transcompile():
     inputText = request.data
-    # if '(ArareCode)' in inputText:
-    #   code = inputText
-    # else:
-    #   code = compile(inputText)
-    return Response(transpile(inputText.decode('utf-8'), []), mimetype='application/javascript')
+    return Response(makeCode(inputText.decode('utf-8'), []), mimetype='application/javascript')
 
 
 '''
