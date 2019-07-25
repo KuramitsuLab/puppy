@@ -1,11 +1,10 @@
-import { puppy, loadPuppy, Code } from '../model/puppy';
+import { initPuppy, runPuppy, PuppyCode, Puppy } from '../model/puppy';
 import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
-import { exitFullscreen, getFullscreen } from '../view/screen';
+import { getFullscreen } from '../view/screen';
 import * as marked from 'marked';
 
 const path = location.pathname;
 const session = window.sessionStorage;
-
 let page: {} = null;
 
 const getPagePath = (shift: number) => {
@@ -147,26 +146,54 @@ document.getElementById('prev-page').onclick = () => {
   location.href = getPagePath(-1);
 };
 
-/* puppy-view */
+/* puppy */
 
-let puppyRunning = false;
+let puppy: Puppy = null;
+
 const playPanel = document.getElementById('play-panel');
 const togglePlay = (t: number) => {
-  puppyRunning = true;
-  if (((t % 100) | 0) === 0) {
-    playPanel.innerHTML = `<i class="fa fa-pause"></i> ${(t / 100) | 0} `;
+  playPanel.innerHTML = `<i class="fa fa-pause"></i> ${t | 0} `;
+};
+
+initPuppy({
+  canvas: 'puppy-screen',
+  eachUpdate: togglePlay,
+});
+
+document.getElementById('play').onclick = () => {
+  if (puppy && puppy.isRunning()) {
+    puppy.pause();
+    playPanel.innerHTML = '<i class="fa fa-play"></i> Play ';
+  } else {
+    transpile(editor.getValue());
   }
 };
 
-const transpile: (code: string) => Promise<void> = (code) => {
-  const oldCode: Code = window['PuppyVMCode'];
-  window['PuppyVMCode'] = undefined;
+const checkError = (code: PuppyCode) => {
+  let error_count = 0;
+  const annos = [];
+  editor.getSession().clearAnnotations();
+  for (const e of code.errors) {
+    if (e['type'] === 'error') {
+      error_count += 1;
+    }
+    annos.push(e);
+    editor.getSession().setAnnotations(annos);
+  }
+  if (error_count === 0) {
+    editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
+    return false;
+  }
+  return true;
+};
+
+const transpile: (source: string) => Promise<void> = (source) => {
   return fetch('/compile', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/text; charset=utf-8',
     },
-    body: code,
+    body: source,
   }).then((res: Response) => {
     if (res.ok) {
       return res.text();
@@ -174,42 +201,25 @@ const transpile: (code: string) => Promise<void> = (code) => {
     throw new Error(res.statusText);
   }).then((js: string) => {
     try {
-      Function(js)(); // Eval javascript code
+      const code = Function(js)(); // Eval javascript code
+      if (!checkError(code)) {
+        session.setItem(`/sample${path}`, source);
+        puppy = runPuppy(puppy, code);
+        puppy.runCode();
+      }
     }
     catch (e) {
       // alert(`トランスパイルにしっぱいしています ${e}`);
       editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
       console.log(js);
-      console.log('FIXME');
+      console.log(`FAIL TO TRANSCOMPILE ${e}`);
       console.log(e);
-    }
-    if (!window['PuppyVMCode']) {
-      window['PuppyVMCode'] = oldCode;
     }
   },
   ).catch((msg: string) => {
-    alert(`Puppy is down!! ${msg}`);
+    alert(`Puppy is maybe down!! ${msg}`);
   });
 };
-
-document.getElementById('play').onclick = () => {
-  if (puppyRunning) {
-    puppy.pause();
-    playPanel.innerHTML = '<i class="fa fa-play"></i> Play ';
-    puppyRunning = false;
-  } else {
-    loadPuppy('puppy-screen', window['PuppyVMCode']);
-    puppy.start(togglePlay);
-  }
-};
-
-// document.getElementById('pause').onclick = () => {
-//   puppy.pause();
-// };
-
-// document.getElementById('step').onclick = () => {
-//   puppy.step();
-// };
 
 document.getElementById('extend').onclick = () => {
   if (puppy != null) {
@@ -228,8 +238,6 @@ document.getElementById('extend').onclick = () => {
         return;
       }
     }
-    // loadPuppy('puppy-screen', window['PuppyVMCode']);
-    // puppy.start(togglePlay);
   }
 };
 
@@ -239,8 +247,7 @@ document.getElementById('run').onclick = () => {
   console.log(page['type']);
   if (page['type'] === 'puppy') {
     showView('puppy-view');
-    loadPuppy('puppy-screen', window['PuppyVMCode']);
-    puppy.start(togglePlay);
+    transpile(editor.getValue());
   }
 };
 
@@ -292,43 +299,10 @@ editor.on('change', (cm, obj) => {
   editorPanel.style.backgroundColor = 'rgba(255,255,255,0.7)';
   timer = setTimeout(() => {
     if (page['type'] === 'puppy') {
-      let prevhash = '';
-      if (window['PuppyVMCode']) {
-        prevhash = window['PuppyVMCode']['hash'];
-      }
-      editor.getSession().clearAnnotations();
-      transpile(editor.getValue()).then(() => {
-        const code: Code = window['PuppyVMCode'];
-        let error_count = 0;
-        const annos = [];
-        for (const e of code.errors) {
-          if (e['type'] === 'error') {
-            error_count += 1;
-          }
-          annos.push(e);
-          editor.getSession().setAnnotations(annos);
-        }
-        // console.log(`PREV ${prevhash}`);
-        if (error_count === 0) {
-          if (code.hash === prevhash) {
-            // console.log(`HASH ${code.hash}`);
-            puppy['lines'] = code['lines'];
-          }
-          else {
-            loadPuppy('puppy-screen', code);
-            puppy.start(togglePlay);
-            session.setItem(`/sample${path}`, editor.getValue());
-          }
-        }
-        else {
-          editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
-        }
-      });
+      transpile(editor.getValue());
     }
     checkZenkaku();
-    // buttonInactivate('pause');
-    // buttonActivate('play');
-  },                 400);
+  },                 500);
 });
 
 document.getElementById('font-plus').onclick = () => {

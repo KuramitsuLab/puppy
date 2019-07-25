@@ -825,7 +825,7 @@ def trace(env, t):
     linenum = t.pos()[2]
     if not linenum in lines:
         lines.append(linenum)
-    return f'puppy.lines[{lines.index(linenum)}]'
+    return f'puppy.ln({lines.index(linenum)})'
 
 
 def transpile(s, errors=[]):
@@ -877,8 +877,7 @@ def diffCode(prev, cur):
             break
     end = clen - end
     prev, cur = prev[::-1], cur[::-1]
-    print('@diff', start, end, clen)
-    #print('@diff', cur[start:end])
+    #print('@diff', start, end, clen)
     nstart, nend = start, end
     for nstart in range(start, -1, -1):
         if not cur[nstart].startswith('\t'):
@@ -886,10 +885,11 @@ def diffCode(prev, cur):
     for nend in range(end, clen, 1):
         if not cur[nend-1].startswith('\t'):
             break
-    print('@diff', nstart, nend, clen)
-    diffcode = '\n'.join(cur[nstart:end])
-    print('@diffcode\n', diffcode)
-    return ''  # diffcode
+    #print('@diff', nstart, nend, clen)
+    diffcode = '\n'.join(cur[nstart:nend])
+    diffcode = diffcode.replace('; yield', '; //yield')
+    print('@diffcode', diffcode)
+    return diffcode
 
 
 def addLives(env, key, value, _trace):
@@ -907,8 +907,8 @@ def diffLives(prev, cur):
                 lives.append(f'\t[{c[0]}, "{c[1]}", {c[2]}, {p[2]}],\n')
         else:
             lives.append(f'\t[{c[0]}, "{c[1]}", {c[2]}, null],\n')
+    print('@lives', lives)
     if len(lives) > 1:
-        print('@lives', lives)
         lives = []
     return lives
 
@@ -930,10 +930,10 @@ def puppyVMCode(env, main, diffcode, lives):
     lines = ','.join(map(str, env['@lines']))
     lives = ''.join(lives)
     if diffcode != '':
-        diffcode = f'  update: function(Matter,puppy){{\n{diffcode}\n  }},'
+        diffcode = f'  diff: function(puppy){{\n{diffcode}\n  }},'
     codehash = hashlib.sha256(world.encode() + main.encode()).hexdigest()
     return f'''
-window['PuppyVMCode'] = {{
+return {{
   hash: '{codehash}',
   world: {{
 {world}
@@ -943,7 +943,7 @@ window['PuppyVMCode'] = {{
 {lives}
   ],
 {diffcode}
-  main: function*(Matter,puppy){{
+  main: function*(puppy){{
 {main}
   }},
   lines: [{lines}],
@@ -963,7 +963,9 @@ def makeCode(s, errors=[]):
         lives = diffLives(prev_lives, env['@lives'])
         prev_code = code
         prev_lives = env['@lives']
-    return puppyVMCode(env, code, diffcode, lives)
+    code = puppyVMCode(env, code, diffcode, lives)
+    print(code)
+    return code
 
 # test
 
