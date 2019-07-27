@@ -367,13 +367,29 @@ export class Puppy {
     this.code = code;
     if (this.runner.enabled) {
       this.initCode();
-      code.diff(this);
+      if (code.lives && code.lives.length > 0) {
+        const bodies = Matter.Composite.allBodies(this.engine.world);
+        for (const body of bodies) {
+          for (const live of code.lives) {
+            if (body['oid'] === live[0]) {
+              console.log(body);
+              console.log(live);
+              const name = live[1];
+              console.log(`change ${name} ${body[name]} ${live[2]} ${live[3]}`);
+              // if (body[name] === live[3] || live[3] == null) {
+              body[name] = live[2];
+              // }
+            }
+          }
+        }
+        return true;
+      }
+      if (code.diff) {
+        code.diff(this);
+        return true;
+      }
     }
-    else {
-      this.startCode();
-      this.runner.enabled = true;
-      this.execute_main();
-    }
+    return false;
   }
 
   public pause() {
@@ -503,14 +519,13 @@ export const runPuppy = (puppy: Puppy, code: PuppyCode) => {
       if (puppy.getCode().hash === code.hash) {
         return puppy;
       }
-      if (puppy.isRunning() && code.diff) {
+      if (puppy.isRunning()) {
+        console.log(`lives ${code.lives}`);
         console.log(`diff ${code.diff}`);
         puppy.updateLiveCode(code);
         return puppy;
       }
     }
-    puppy.runCode();
-    return puppy;
   }
   if (code) {
     if (puppy != null) {

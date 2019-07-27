@@ -181,9 +181,9 @@ const checkError = (code: PuppyCode) => {
     editor.getSession().setAnnotations(annos);
   }
   if (error_count === 0) {
-    editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
     return false;
   }
+  editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
   return true;
 };
 
@@ -205,7 +205,6 @@ const transpile: (source: string) => Promise<void> = (source) => {
       if (!checkError(code)) {
         session.setItem(`/sample${path}`, source);
         puppy = runPuppy(puppy, code);
-        puppy.runCode();
       }
     }
     catch (e) {
