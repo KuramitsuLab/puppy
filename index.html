@@ -5,6 +5,8 @@
   <title>Puppy: A Educational Simplification of Python with a Live Playground</title>
   <link rel="stylesheet" type="text/css" href="index.css">
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+  <script type="text/javascript" src="https://cdn.rawgit.com/pcooksey/bibtex-js/5ccf967/src/bibtex_js.js"></script>
+  <bibtex src="./bib/test.bib"></bibtex>
 </head>
 <body>
   <div class="all-contents">
@@ -40,34 +42,55 @@
 
       <div class="body">
         <h3>Abstract</h3>
-        <p>A written 250 word abstract is required.</p>
+        <div class='FIXME'>A written 250 word abstract is required.</div>
         <h3>Introduction</h3>
-        <div class='FIXME'>英語にする</div>
         <p>
-          コーディングは目標とするプログラムの振る舞いをコンピュータが解釈できるような表現に落とし込む作業である．
+          <!-- コーディングは目標とするプログラムの振る舞いをコンピュータが解釈できるような表現に落とし込む作業である．
           このプログラムの振る舞いは，標準出力に出力して確認をしたり，デバッガなどのツールを用いて確認することができるが，ほとんどはプログラマの頭の中で想像されている．
           そのため，書いているコードが想像している振る舞いとは異なる振る舞いを表現していることも少なくない．
           特に，プログラミング初学者はプログラミングの理解が浅いため，想像通りの振る舞いをするコードを書くことは困難である.
           複雑になったコードから訂正箇所を見つけるのは，熟練のプログラマでも骨が折れる作業であり，学習に対する意欲を損ねかねない．
           そのため，プログラミング学習ではこまめに実行結果を確認できるライブプログラミング環境が望ましい．
           また，初学者にとって環境構築も大きな障壁となるため，CodecademyやSwift Playgroundsなどのプログラミング学習サービスは出力とエディタが統一された環境を提供している．
-          これらのことはプログラミング教育においても同様であり，ライブプログラミング環境は授業に導入しやすく，授業の進行を円滑にする．
+          これらのことはプログラミング教育においても同様であり，ライブプログラミング環境は授業に導入しやすく，授業の進行を円滑にする． -->
+          Coding is the task of applying the behavior of the target program to a representation that a computer can interpret. The
+          behavior of this program can be confirmed by outputting it to the standard output, or by using a tool such as a
+          debugger, although most are imagined in the mind of the programmers. For this reason, the code often expresses a
+          different behavior that is imagined. In particular, it is difficult for beginners to write code that behaviors as
+          expected because they have a poor understanding of the program. Finding the revision place in complex code is a daunting
+          task for even skilled programmers, and can detract from the motivation for learning. Therefore, in programming learning,
+          it is desirable to use a live programming environment that allows you to check execution results frequently. Besides,
+          since environment construction is a major barrier for beginners, programming learning services provide an integrated
+          environment of output and editor, such as Codecademy and Swift Playgrounds. A live programming environment is easy to
+          introduce into classes and facilitates class progression.
         </p>
         <p>
-          このエッセイでは，ライブコーディングが可能なプレイグラウンドを備えた教育用のプログラミング言語Puppyを提案する．
+          <!-- このエッセイでは，ライブコーディングが可能なプレイグラウンドを備えた教育用のプログラミング言語Puppyを提案する．
           Puppyはプログラミング言語Pythonを教育的に単純化した言語になっている．
           Puppy言語で書かれたオブジェクトは即座にプレイグラウンドで視覚化され，インタラクティブにコードを書くことができる．
           さらに，描画されたオブジェクトはmatter.jsの物理エンジンによって物理法則に従って動く．
-          これにより，少ないコード量でもダイナミックな動きを実現することができる．
+          これにより，少ないコード量でもダイナミックな動きを実現することができる． -->
+          In this essay, we propose Puppy, an educational programming language with a playground which realizes a live coding.
+          Puppy is a simplification of the programming language Python for education. Objects written by Puppy can be instantly
+          visualized in the playground, and code can be written interactively. Furthermore, drawn objects are moved according to
+          physical laws by a physics engine of matter.js. This will enable to realize dynamic motion even with a small amount of
+          code.
         </p>
         <p>
-          現在，教育用言語はScratchを代表としたビジュアルプログラミング言語が注目を浴びている．
+          <!-- 現在，教育用言語はScratchを代表としたビジュアルプログラミング言語が注目を浴びている．
           ビジュアルプログラミングはコードを書く必要がなく，厳密な構文規則やタイプミスなどに悩まされなくてよい．
           しかし，実用的なプログラミング言語のほとんどはコードの記述が必要であり，両者の間には溝がある．
           Puppyはコードベースのプログラミング言語として実用言語への橋渡しを目指している．
           構文規則の緩和や自然言語処理を応用することで，初学者のコーディングを支援し滑らかなプログラミング体験を提供する．
-          以下は，Puppyのライブプログラミング環境であるPuppy Playgroundでのデモ動画である．
+          以下は，Puppyのライブプログラミング環境であるPuppy Playgroundでのデモ動画である． -->
+          At present, visual programming languages, such as Scratch, have been attracting attention. Visual programming does not
+          require you to write code and not suffer from strict syntax or typing mistakes. However, most practical programming
+          languages require code description, and there is a gap between the two. Puppy aims to address the bridge to practical
+          languages as code-based programming languages. It supports beginner’s coding and provides a smooth programming
+          experience by relaxed syntax rules and application of natural language processing. The following is a demonstration
+          video on Puppy Playground, a live programming environment of Puppy.
         </p>
+        <div class='TODO'>デモを入れる</div>
         <!-- <p>
           近年，実用的に使われているプログラミング言語のほとんどはコードを書くことでプログラムを構築する．
           一方で，プログラミング教育ではScratchを代表としたビジュアルプログラミングが流行している．
@@ -91,62 +114,198 @@
         </p> -->
         <h3>Puppy Playground</h3>
         <p>
-        Puppy Playground is a live programming environment which taking full advantage of Puppy.
-        Objects described by Puppy language are visualized as matter.js objects on this playground.
-        Furthermore, changing codes on an editor is reflected fluidly in matter.js objects behavior.
-        We show a screenshot of Puppy Playground and explanations of each part below.
+        Puppy describes the objects on the physics engine.
+        To take advantage of Puppy, we provide a live programming environment called Puppy Playground.
+        On this playground, the written code is auto executed and the area which the physicas engine running visualizes its result.
+        Furthermore, since the playground implemented as a web application, it can be easy to start without complex environment setup.
+        Here's a screenshot of Puppy Playground and explanations of each part.
         </p>
-        <div class='FIXME'>Start ButtonではなくPlay Button??</div>
         <div class="caption">Puppy Playground</div>
-        <img src='./image/playground.png' width="60%" height="auto">
+        <img src='./image/playground.png' width="80%" height="auto">
         <ul>
-          <li>Canvas</li>
-          <p>
-            Canvas is an area drawn matter.js objects described by Puppy.
-          </p>
           <li>Editor</li>
           <p>
-            Users can write Puppy codes and receive feedbacks about error and warning.
+            This is an editor to write a Puppy code.
+            It provides immediate feedback on errors and warnings.
           </p>
-          <li>Start Button</li>
+          <li>Canvas</li>
           <p>
-            A Button for starting matter.js physics engine.
+            The canvas is the area where the execution result of Puppy are drawn.
           </p>
-          <li>Pause Button</li>
+          <li>Play/Pause Button</li>
           <p>
-            A Button for pausing matter.js physics engine.
-          </p>
-          <li>Step Button</li>
-          <p>
-            A Button for step execution.
+            When the play button is pushed, the live programming and the physics engine starts to run.
+            In the live programming, the canvas seamlessly reflects the execution result of the code.
+            After to push the play button, the play button changes to the pause button.
+            When the pause button is pushed, the live coding is not paused but the physics engine makes to be paused.
           </p>
         </ul>
         <p>
-          This playground makes possible to learn writing codes easy and fun.
-          On Puppy Playground, we don't need to know IO actions to check execution results, unlike general programming languages.
-          When a user write Puppy codes on the Editor, matter.js objects will be drawn on the Canvas as soon.
-          Push the Start Button and starting physics engine, objects drawn on the Canvas behave according to the physics law.
-          Viewing behaving of objects, users can pause the pysics engine, execute per step, change Puppy codes and so on.
+          We illustrate the flow which a Puppy code is executed and its result is visualized.
+          First, the written code in the editor sends to the server.
+          Second, the server translates the receiving Puppy code to the javascript code and response it.
+          Finally, the javascript code is interpreted by Puppy Virtual Machine (Puppy VM) which is an execution environment on the physics engine.
+          Puppy VM handles drawing the objects on the canvas and physics simulating.
         </p>
-        <!-- Moreover, feedbacks on Editor allow that users don't need to be bothered errors and warnings for a long time. -->
+
+        <h3>Puppy Virtual Machine</h3>
         <p>
-          Puppy codes translate to javascript codes on the machine operating matter.js objects (we called Puppy Virtual Machine).
-          First, we will introduce Puppy language specification and demonstrations in the next section.
-          After that, we will explain how to realize live programming by Puppy Virtual Machine in the later section.
+          Puppy Virtual Machine (Puppy VM) is an execution environment on the 2D physics engine.
+          We use the 2D physics engine javascript library called matter.js.
+          Therefore, Puppy VM acts as a matter.js wrapper that provides an API.
+          The following figure schematically represents Puppy VM.
         </p>
+        <div class="caption">Puppy VM</div>
+        <img src='./image/PuppyVM.png' width="600" height="auto">
+        <p>
+          To draw an object on the canvas, you need to register the object in matter.js.
+          Then, matter.js repeatedly draws and calculates for the registered object.
+          Puppy VM provides the API of objects registration and changing parameters which registered objects have.
+          These operating objects API is called by the javascript code which Puppy is translated.
+          New objects declared in Puppy are registered in matter.js through API.
+          When you change the parameter of an object in Puppy, the parameter of the object registered in matter.js is also changed.
+          On the other hand, Puppy VM also provides the API to call from a user interface.
+          The "start" or "pause" API operate physics calculating and objects drawing on physics engine.
+          For example, when the button is pushed, the "start" API is called and order to run the physics engine.
+        </p>
+        <p>
+          Puppy VM has a feature to support live programming.
+          The "yield" feature makes for gradual execution.
+          The code interpreted by Puppy VM can insert a "yield" keyword, the entire of the code is executed by a "for" statement.
+          As a result, it is possible to make a delay in the execution and highlight of the executed code.
+          In an educational perspective, it helps to understand programming by confirming the correspondence between the executed code and the changes in the execution state.
+        </p>
+
         <h3>Puppy</h3>
-        <div class="TODO">canvas上へオブジェクトを書くことを中心に書いていく．</div>
-        <h4>Puppy Object</h4>
-        Here's a code of creating a Puppy object and drawing it on Puppy playground.
-        <div class="caption">Create a Puppy object</div>
+        <p>
+        In this section, we introduce the specification of Puppy.
+        Puppy is an educational language to step up to practical programming languages.
+        The syntax definition of Puppy imitates Python's one.
+        <!-- In addition, to reduce the learning cost for syntax, the syntax definition of Puppy is fewer than Python. -->
+        The following code is the <i>if</i> statement on Puppy.
+        </p>
+        <div class="caption">If statement</div>
+        <pre class="prettyprint">
+v = 10
+if v > 5:
+  print('condition was true')
+else:
+  print('condition was false')</pre>
+        <p>
+          The if statement starts with the keyword <i>if</i> and is followed by a condition.
+          In this case, the condition is whether or not the variable <i>v</i> has a value larger than 5.
+          If this condition is true, the following statements after a colon are executed.
+          Else, the execution skips to after the keyword <i>else</i> and a colon.
+          As the variable <i>v</i> has the value 10, this example executes to the statement <i>print('condition was true')</i>.
+          Up to this point is similar to Python, although Puppy's print function is executed in Puppy Playground as follows:
+        </p>
+        <div class="caption">The if statement demonstration</div>
+        <video src='./video/if-statement.mov' controls width="60%" height="auto"></video>
+        <p>
+          This video shows the print function draws a flowing object pasted a string.
+          The important feature of Puppy is the description of objects.
+          The objects called Puppy objects.
+          The following subsections describe Puppy objects more detail.
+        </p>
+        <h4>World</h4>
+        <p>
+          A world is an environment to arrange the objects.
+          Objects arranged in a world are simulated under the laws of classical mechanics such as gravity, air resistance, frictional resistance, and so on.
+          The position of the object is specified in Cartesian coordinate system.
+          The origin of the coordinates is at the upper left as shown in the following figure.
+          Note that, the x-axis is larger towards the right and the y-axis is larger at the bottom.
+          In addition, the point of the position of x, y is expressed as (x, y) after this.
+        </p>
+        <div class="caption">The coordinate system</div>
+        <img src='./image/coordinate.png' width="500" height="auto">
+        <p>
+          Without the declaration of the world, a world with , height 1000 and gravitational acceleration (0, 1) is created as the default.
+          If you want to create a world, write the following code.
+        </p>
+        <div class="caption">World</div>
+        <pre class="prettyprint">World(1600, 900, gravity={'x': 1, 'y': 1}, colorShceme='japan')</pre>
+        <p>
+          This code creates a world with width 1600, height 900 and gravitational acceleration (1, 1).
+          A <i>colorSheme</i> property is to set colors for the objects which not be specified the color.
+          In this case, a color that is reminiscent of Japan is set.
+        </p>
+        <h4>Puppy Objects</h4>
+        <p>
+          Puppy can easily draw Puppy objects on a world.
+          The four shapes are prepared, circle, rectangle, trapezoid, polygon, and label.
+          The following code is creating a circle object.
+        </p>
+        <div class="caption">Create a Circle</div>
         <pre class="prettyprint">C = Circle(500, 500, radius=100)</pre>
+        <p>
+          A first and a second argument is x and y coordinates respectively.
+          Optional arguments can be specified from the third argument.
+          In this case, this code draws a circle of radius 100 at (500, 500).
+        </p>
+        <p>
+          In addition to object properties, collision and click events can also be registered as optional arguments.
+          For example, when you want to register a click event, write the below code.
+        </p>
+        <div class="caption">Click event</div>
+        <pre class="prettyprint">C = Circle(500, 500, radius=100, clicked=lambda self: print('Hi'), isStatic=True)</pre>
+        <p>
+          A clicked argument specifies a function of one argument.
+          The above example specifies a lambda function that executes print 'Hi'.
+          Not to be affected by gravity, the isStatic argument fixes the object.
+          The execution results are shown below.
+        </p>
+        <div class="caption">The click event demo</div>
+        <div class="TODO">クリックのデモ</div>
+        <p>
+          A label object is useful for displaying text.
+          The code to create a Label object and its execution result are shown below.
+        </p>
+        <div class="caption">Create a label</div>
+        <pre class="prettyprint">L = Label(100, 100, value='Hello')</pre>
+        <div class="caption">The label object demo</div>
+        <div class="TODO">Labelのデモ</div>
+        <p>
+          The text set in the value argument is displayed.
+          A isStatic of a label object is <i>True</i> as default.
+          Furthermore, since the color of the label object is transparent, it is ideal for displaying text.
+          A print function is implemented using label objects.
+          The label object is set its value property and moved from right to left.
+        </p>
         <!-- Puppyのオブジェクトの書き方とそれぞれのデモを紹介 -->
         <h4>Inheritance</h4>
-        <!-- 継承の書き方と使い方 -->
-        <h3>Puppy Virtual Machine</h3>
-        <div class="TODO">Puppyがどのように変換されているかや，Live Codingの機能の紹介と実装方法についての説明．</div>
+        <p>
+          Abstraction is a crucial technique to write beautiful and maintainable code.
+          Puppy supports inheritance to acquire thinking of abstraction.
+          Here's the class declaration example and its demo.
+        </p>
+        <div class="caption">Class declaration</div>
+        <pre class="prettyprint">class MyBlock(Rectangle):
+  width = 80
+  height = 60
+  def clicked(self):
+    print(self.width)
+
+block = MyBlock(100,100)</pre>
+        <div class="caption">The class declaration demo</div>
+        <div class="TODO">クラス定義のデモ</div>
+        <!-- <div class="caption">Class declaration</div>
+        <pre class="prettyprint">class <i>ClassName</i>(<i>SuperClassName</i>,...):
+          <i>&lt;Statement&gt;</i>
+          &#xFE19;</pre> -->
+        <p>
+          This example shows declarating <i>MyBlock</i> that inherits from <i>Rectangle</i> and creating its instance.
+          When an instance of <i>MyBlock</i> is created, a rectangle object is drawn at the (100, 100) position.
+          In this case, the width and height of the object are 80 and 60 respectively without specification at creating the instance.
+          In addition, the clicked event is also registered.
+        </p>
+
         <h3>Challenges and Conclusions</h3>
+        <div class='TODO'>GCをつけたい</div>
+
+        
+
         <h3>Reference</h3>
+        <div id="bibtex_display" bibtexkey="Scratch"></div>
       </div>
 
     </div>

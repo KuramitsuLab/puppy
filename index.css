@@ -8,7 +8,7 @@ body {
 
 .all-contents {
   margin: 0 auto;
-  max-width: 80rem;
+  max-width: 60rem;
 }
 
 #essay .body p {
@@ -34,6 +34,11 @@ body {
 
 .prettyprint ol.linenums > li {
 	list-style-type: decimal; 
+}
+
+pre.prettyprint {
+  white-space: pre;
+  overflow: auto;
 }
 
 .caption {
