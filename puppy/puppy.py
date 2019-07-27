@@ -384,6 +384,7 @@ BUILDIN = {
     # append
     '.append': Symbol('puppy.append', const, (ts.Void, ts.ListA, ts.A)),
     # クラス
+    '.setPosition': Symbol('puppy.setPosition', const, (ts.Void, ts.Matter, ts.Int, ts.Int)),
     'World': Symbol('world', const, ts.MatterTypes),
     'Circle': Symbol('Circle', const, ts.MatterTypes),
     'Rectangle': Symbol('Rectangle', const, ts.MatterTypes),

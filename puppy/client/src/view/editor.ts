@@ -82,6 +82,23 @@ terminal.setReadOnly(true);
 terminal.renderer.setShowGutter(false);
 terminal.setOption('showLineNumbers', false);
 
+const runmarkers = [];
+export const selectLine = (start: number, end :number) => {
+  console.log(start, end);
+  if (runmarkers.length > 0) {
+    for (const m of runmarkers) {
+      editor.session.removeMarker(m);
+    }
+  }
+  runmarkers.push(editor.session.addMarker(new Range4(start, 0, end, 0), 'running-line', 'line'));
+};
+
+export const removeLine = () => {
+  for (const m of runmarkers) {
+    editor.session.removeMarker(m);
+  }
+};
+
 /**
 function resizeAce() {
   return $('#editor').height($(window).height());

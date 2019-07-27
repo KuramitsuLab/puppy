@@ -2,6 +2,7 @@ import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
 import { initWorld, shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
+import { selectLine, removeLine, editor } from '../view/editor';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -41,7 +42,7 @@ export class Puppy {
   private world: {};
   private vars: {};
   private lines: number[];
-  private main: (Matter, puppy: Puppy) => IterableIterator<void>;
+  private main: (Matter, puppy: Puppy) => IterableIterator<number>;
   private isRestart: boolean = false;
   private isStep: boolean = false;
 
@@ -289,7 +290,16 @@ export class Puppy {
   }
 
   public async execute_main() {
-    for await (const _ of this.main(Matter, this)) {
+    let prevline = 0;
+    const lines: [string] = editor.getSession().getDocument().getAllLines();
+    for await (const linenum of this.main(Matter, this)) {
+      if (prevline == 0 || prevline >= linenum || lines[prevline] == '') {
+        selectLine(linenum - 1, linenum);
+      }
+      else {
+        selectLine(prevline, linenum);
+      }
+      prevline = linenum;
       if (this.isStep) {
         this.runner.enabled = false;
         this.isStep = false;
@@ -298,6 +308,7 @@ export class Puppy {
       }
       await this.waitForRun(1);
     }
+    removeLine();
     if (this.isStep) {
       this.runner.enabled = true;
       this.isStep = false;
@@ -451,6 +462,17 @@ export class Puppy {
     xs.push(x);
   }
 
+  public len(x:[]) {
+    return x.length;
+  }
+
+  public map(func: any, lst: number[]) {
+    return Array.from(lst, func);           // funcがダメ
+  }
+
+  public setPosition(body: Matter.Body, x: number, y: number) {
+    Matter.Body.setPosition(body, { x, y });
+  }
 }
 
 export let puppy: Puppy = null; // new Puppy();
