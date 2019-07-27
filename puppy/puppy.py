@@ -58,7 +58,7 @@ def ClassDecl(env, t, out):
             f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
     else:
         out.append(f'puppy.vars["{name}"] = class')
-    env['@local'] = name
+    env['@class'] = name
     for i, (_, sub) in enumerate(t.subs()):
         if i < argNum:
             continue
@@ -86,6 +86,9 @@ def emitDeclName(env, name, out):
             out.append(f'{jsname} = ')
         else:
             out.append(f'var {jsname} = ')
+    elif '@class' in env:
+        jsname = localName(name)
+        out.append(f'{jsname} = ')
     else:
         jsname = globalName(name)
         out.append(f'{jsname} = ')
@@ -415,6 +418,9 @@ def VarDecl(env, t, out):
         elif '@local' in env:  # ローカルスコープなら
             newvar = localName(name)
             out.append(f'var {newvar}')
+        elif '@class' in env:
+            newvar = localName(name)
+            out.append(newvar)
         else:
             newvar = globalName(name)
             out.append(newvar)
