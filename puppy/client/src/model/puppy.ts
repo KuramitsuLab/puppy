@@ -1,7 +1,8 @@
 import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
-import { initWorld, shapeFuncMap, ShapeOptions, isShapeOptions, Circle, Rectangle, Polygon, Trapezoid, Label, PuppyShapeBase } from './shape';
+import { PuppyConstructor, ShapeOptions, setBuildInVariables } from './shape';
+import { selectLine, removeLine, editor } from '../view/editor';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -96,8 +97,8 @@ const choiceColor = (key: string) => {
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
   private settings: PuppySettings;
-  private code: PuppyCode;
-  private world: PuppyWorld;
+  public code: PuppyCode;
+  public world: PuppyWorld;
 
   private runner: Matter.Runner;
   private engine: Matter.Engine;
@@ -256,6 +257,12 @@ export class Puppy {
       this.render['mouse'] = mouse;
 
       // an example of using mouse events on a mouse
+      // const mouse = Mouse.create(this.element);
+      // this.element.addEventListener('click', () => {
+      //   const query = Query.point(Composite.allBodies(world), mouse.position)
+      //   console.log(mouse.position);
+      //   console.log(query);
+      // });
       Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
         const mouse = event.mouse;
         let body = event.sourcebody;
@@ -276,14 +283,8 @@ export class Puppy {
       });
     }
     //
-    this.vars = {
-      Circle,
-      Rectangle,
-      Label,
-      Polygon,
-      Trapezoid,
-      PuppyObject: PuppyShapeBase,
-    };
+    this.vars = {};
+    setBuildInVariables(this.vars);
     // this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
 
     Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
@@ -349,6 +350,30 @@ export class Puppy {
       await this.wait(0.5);
       await this.waitForRun(1);
     }
+    // editor に依存するためNG
+    // let prevline = 0;
+    // const lines: [string] = editor.getSession().getDocument().getAllLines();
+    // for await (const linenum of this.main(Matter, this)) {
+    //   if (prevline == 0 || prevline >= linenum || lines[prevline] == '') {
+    //     selectLine(linenum - 1, linenum);
+    //   }
+    //   else {
+    //     selectLine(prevline, linenum);
+    //   }
+    //   prevline = linenum;
+    //   if (this.isStep) {
+    //     this.runner.enabled = false;
+    //     this.isStep = false;
+    //   } else {
+    //     await this.wait(0.5);
+    //   }
+    //   await this.waitForRun(1);
+    // }
+    // removeLine();
+    // if (this.isStep) {
+    //   this.runner.enabled = true;
+    //   this.isStep = false;
+    // }
   }
 
   public isRunning() {
@@ -396,6 +421,10 @@ export class Puppy {
     this.runner.enabled = false;
   }
 
+  public getTimeStamp() {
+    return this.engine.timing.timestamp;
+  }
+
   // lives
 
   public ln(n: number) {
@@ -404,46 +433,21 @@ export class Puppy {
 
   // Puppy APIs
 
-  public newBody(_options: {}): Matter.Body {
-    const max_x = this.engine.world.bounds['max']['x'];
-    const max_y = this.engine.world.bounds['max']['y'];
-    const options: ShapeOptions = Common.extend({ position: { x: max_x / 2, y: max_y / 2 } }, _options);
-    options.shape = options.shape in shapeFuncMap ? options.shape : 'circle';
-    const body = shapeFuncMap[options.shape](this.world, options);
-    return body;
-  }
-
-  public newMatter(options: {}): Matter.Body {
-    const body = this.newBody(options);
-    World.add(this.engine.world, [body]);
-    return body;
-  }
-
-  public newMatter2(shape: string, xx: number, yy: number, options: {}) {
-    if (!options['position']) {
-      options['position'] = { x: xx, y: yy };
+  public new_ = (cons: PuppyConstructor, x: number, y: number, options: ShapeOptions) => {
+    if (!options.position) {
+      options.position = { x, y };
     }
-
-    options['shape'] = shape;
-    const body = this.newBody(options);
+    const body: Matter.Body = cons(this, options);
     World.add(this.engine.world, [body]);
     return body;
   }
-  /*
-  collisionFilter: {
-                  category: 0x0001,
-                  mask: 0xFFFFFFFF,
-                  group: 0
-              },
-              */
 
   public print(text: string, options = {}) {
     const width = this.world.width;
     const _options: ShapeOptions = Common.extend({
       shape: 'label',
       value: `${text}`,
-      created: this.engine.timing.timestamp,
-      position: { x: this.world.width, y: this.world.height * (Math.random() * 0.9 + 0.05) },
+      created: this.getTimeStamp(),
       move: (body, time: number) => {
         const px = width - 100 * (time - body['created']) * 0.003;
         Matter.Body.setPosition(body, { x: px, y: body.position.y });
@@ -452,8 +456,9 @@ export class Puppy {
         }
       },
     },                                           options);
-    const body = this.newMatter(_options);
-    World.add(this.engine.world, [body]);
+    const x = this.world.width;
+    const y = this.world.height * (Math.random() * 0.9 + 0.05);
+    this.new_(this.vars['Label'], x, y, _options);
   }
 
   /* built-in */
@@ -501,6 +506,17 @@ export class Puppy {
     xs.push(x);
   }
 
+  public len(x: []) {
+    return x.length;
+  }
+
+  public map(func: any, lst: number[]) {
+    return Array.from(lst, func);           // funcがダメ
+  }
+
+  public setPosition(body: Matter.Body, x: number, y: number) {
+    Matter.Body.setPosition(body, { x, y });
+  }
 }
 
 /* puppy controller */
@@ -513,9 +529,9 @@ export const initPuppy = (settings: PuppySettings) => {
   puppy_settings = settings;
 };
 
-export const runPuppy = (puppy: Puppy, code: PuppyCode) => {
+export const runPuppy = (puppy: Puppy, code: PuppyCode, alwaysRun: boolean) => {
   if (puppy != null) {
-    if (code) {
+    if (!alwaysRun && code) {
       if (puppy.getCode().hash === code.hash) {
         return puppy;
       }

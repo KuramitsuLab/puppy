@@ -381,6 +381,7 @@ BUILDIN = {
     # append
     '.append': Symbol('puppy.append', const, (ts.Void, ts.ListA, ts.A)),
     # クラス
+    '.setPosition': Symbol('puppy.setPosition', const, (ts.Void, ts.Matter, ts.Int, ts.Int)),
     'World': Symbol('world', const, ts.MatterTypes),
     'Circle': Symbol('Circle', const, ts.MatterTypes),
     'Rectangle': Symbol('Rectangle', const, ts.MatterTypes),
@@ -569,10 +570,9 @@ def ApplyExpr(env, t, out):
 
     if ts.isMatterFunc(types):
         outter = pushenv(env, '@funcname', name)
-        out.append(f'puppy.newMatter(new puppy.vars["{name}"](')
+        out.append(f'puppy.new_(puppy.vars["{name}"],')
         args = [y for x, y in t.subs()]
         emitArguments(env, t['name'], args, types, '', out)
-        out.append(')')
         env['@yield'] = trace(env, t)
         env['@oid'] += 1
         popenv(env, '@funcname', outter)

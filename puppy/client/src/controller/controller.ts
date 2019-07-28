@@ -146,6 +146,41 @@ document.getElementById('prev-page').onclick = () => {
   location.href = getPagePath(-1);
 };
 
+const submitBuild: (path: string) => Promise<string> = (path) => {
+  return fetch(`/build${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text; charset=utf-8',
+    },
+    body: editor.getValue(),
+  }).then((res: Response) => {
+    if (res.ok) {
+      return res.text();
+    }
+    throw new Error(res.statusText);
+  }).then((output: string) => {
+    return output;
+  });
+};
+
+document.getElementById('build').onclick = () => {
+  submitBuild(path).then((data: string) => {
+    console.log(data);
+    const doc = `${terminal.getValue()}\n${data}`;
+    terminal.setValue(doc, -1);
+    terminal.resize(true);
+    // terminal.scrollToLine(50, true, true, function () { });
+    // terminal.gotoLine(50, 10, true);
+  }).catch((msg: string) => {
+    const doc = `${terminal.getValue()}\n${msg}`;
+    terminal.setValue(doc, -1);
+  });
+};
+
+document.getElementById('clear').onclick = () => {
+  terminal.setValue('', 0);
+};
+
 /* puppy */
 
 let puppy: Puppy = null;
@@ -165,7 +200,7 @@ document.getElementById('play').onclick = () => {
     puppy.pause();
     playPanel.innerHTML = '<i class="fa fa-play"></i> Play ';
   } else {
-    transpile(editor.getValue());
+    transpile(editor.getValue(), true);
   }
 };
 
@@ -187,7 +222,7 @@ const checkError = (code: PuppyCode) => {
   return true;
 };
 
-const transpile: (source: string) => Promise<void> = (source) => {
+const transpile: (source: string, alwaysRun: boolean) => Promise<void> = (source, alwaysRun) => {
   return fetch('/compile', {
     method: 'POST',
     headers: {
@@ -204,7 +239,7 @@ const transpile: (source: string) => Promise<void> = (source) => {
       const code = Function(js)(); // Eval javascript code
       if (!checkError(code)) {
         session.setItem(`/sample${path}`, source);
-        puppy = runPuppy(puppy, code);
+        puppy = runPuppy(puppy, code, alwaysRun);
       }
     }
     catch (e) {
@@ -246,43 +281,8 @@ document.getElementById('run').onclick = () => {
   console.log(page['type']);
   if (page['type'] === 'puppy') {
     showView('puppy-view');
-    transpile(editor.getValue());
+    transpile(editor.getValue(), true);
   }
-};
-
-const submitBuild: (path: string) => Promise<string> = (path) => {
-  return fetch(`/build${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/text; charset=utf-8',
-    },
-    body: editor.getValue(),
-  }).then((res: Response) => {
-    if (res.ok) {
-      return res.text();
-    }
-    throw new Error(res.statusText);
-  }).then((output: string) => {
-    return output;
-  });
-};
-
-document.getElementById('build').onclick = () => {
-  submitBuild(path).then((data: string) => {
-    console.log(data);
-    const doc = `${terminal.getValue()}\n${data}`;
-    terminal.setValue(doc, -1);
-    terminal.resize(true);
-    // terminal.scrollToLine(50, true, true, function () { });
-    // terminal.gotoLine(50, 10, true);
-  }).catch((msg: string) => {
-    const doc = `${terminal.getValue()}\n${msg}`;
-    terminal.setValue(doc, -1);
-  });
-};
-
-document.getElementById('clear').onclick = () => {
-  terminal.setValue('', 0);
 };
 
 /* editor */
@@ -298,10 +298,10 @@ editor.on('change', (cm, obj) => {
   editorPanel.style.backgroundColor = 'rgba(255,255,255,0.7)';
   timer = setTimeout(() => {
     if (page['type'] === 'puppy') {
-      transpile(editor.getValue());
+      transpile(editor.getValue(), false);
     }
     checkZenkaku();
-  },                 500);
+  },                 1000);
 });
 
 document.getElementById('font-plus').onclick = () => {
