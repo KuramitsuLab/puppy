@@ -200,7 +200,7 @@ else:
           Up to this point is similar to Python, although Puppy's print function is executed in Puppy Playground as follows:
         </p>
         <div class="caption">The if statement demonstration</div>
-        <video src='./video/if-statement.mov' controls width="60%" height="auto"></video>
+        <video src='./video/if_statement.mov' controls width="60%" height="auto"></video>
         <p>
           This video shows the print function draws a flowing object pasted a string.
           The important feature of Puppy is the description of objects.
@@ -254,16 +254,14 @@ else:
           Not to be affected by gravity, the isStatic argument fixes the object.
           The execution results are shown below.
         </p>
-        <div class="caption">The click event demo</div>
-        <div class="TODO">クリックのデモ</div>
+        <div class="caption">The click event demonstration</div>
+        <video src='./video/clicked.mov' controls width="60%" height="auto"></video>
         <p>
           A label object is useful for displaying text.
-          The code to create a Label object and its execution result are shown below.
+          The code to create a Label object.
         </p>
         <div class="caption">Create a label</div>
         <pre class="prettyprint">L = Label(100, 100, value='Hello')</pre>
-        <div class="caption">The label object demo</div>
-        <div class="TODO">Labelのデモ</div>
         <p>
           The text set in the value argument is displayed.
           A isStatic of a label object is <i>True</i> as default.
@@ -276,7 +274,7 @@ else:
         <p>
           Abstraction is a crucial technique to write beautiful and maintainable code.
           Puppy supports inheritance to acquire thinking of abstraction.
-          Here's the class declaration example and its demo.
+          Here's the class declaration example and its demonstration.
         </p>
         <div class="caption">Class declaration</div>
         <pre class="prettyprint">class MyBlock(Rectangle):
@@ -286,8 +284,8 @@ else:
     print(self.width)
 
 block = MyBlock(100,100)</pre>
-        <div class="caption">The class declaration demo</div>
-        <div class="TODO">クラス定義のデモ</div>
+        <div class="caption">The class declaration demonstration</div>
+        <video src='./video/extends.mov' controls width="60%" height="auto"></video>
         <!-- <div class="caption">Class declaration</div>
         <pre class="prettyprint">class <i>ClassName</i>(<i>SuperClassName</i>,...):
           <i>&lt;Statement&gt;</i>
@@ -300,10 +298,23 @@ block = MyBlock(100,100)</pre>
         </p>
 
         <h3>Challenges and Conclusions</h3>
-        <div class='TODO'>GCをつけたい</div>
-
-        
-
+        <p>
+          The challenge for a better language is to implement garbage collector.
+          Objects that are not referenced should be free, however, the objects remain to register to the physics engine　at this version.
+          Thus, it leads to making redundant calculation and memory consumption.
+          Hence, we consider implementing the garbage collector to search for unreferenced objects and remove from the physics engine.
+        </p>
+        <p>
+          Another challenge is verification by beginners use.
+          We need to investigate whether to learn by Puppy is effective.
+          In particular, the crucial point is the practice of coding.
+          We will have continued to refinement Puppy for the bridge to the practical programming languages.
+        </p>
+        <p>
+          In this essay, we introduced Puppy with a live environment using a physics engine.
+          The development of Puppy open to the public as OSS on Github.
+          We believe that this tool helps to practice coding and make fun for many beginners.
+        </p>
         <h3>Reference</h3>
         <div id="bibtex_display" bibtexkey="Scratch"></div>
       </div>
