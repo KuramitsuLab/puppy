@@ -386,6 +386,9 @@ BUILDIN = {
     'Circle': Symbol('Circle', const, ts.MatterTypes),
     'Rectangle': Symbol('Rectangle', const, ts.MatterTypes),
     'Polygon': Symbol('Polygon', const, ts.MatterTypes),
+    'Label': Symbol('Label', const, ts.MatterTypes),
+    'Drop': Symbol('Drop', const, ts.MatterTypes),
+    'Newton': Symbol('Pendulum', const, ts.MatterTypes),
     'Ball': Symbol('Circle', const, (ts.Matter, ts.Int, ts.Int, {'restitution': 1.0})),
     'Block': Symbol('Rectangle', const, (ts.Matter, ts.Int, ts.Int, {'isStatic': 'true'})),
 }

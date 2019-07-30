@@ -251,7 +251,7 @@ const transpile: (source: string, alwaysRun: boolean) => Promise<void> = (source
     }
   },
   ).catch((msg: string) => {
-    alert(`Puppy is maybe down!! ${msg}`);
+    alert(`Puppy is down!! ${msg}`);
   });
 };
 

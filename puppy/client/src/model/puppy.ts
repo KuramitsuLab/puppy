@@ -1,7 +1,7 @@
 import * as Matter from 'matter-js';
 import * as api from './api';
 import { myRender } from './render';
-import { PuppyConstructor, ShapeOptions, setBuildInVariables } from './shape';
+import { PuppyConstructor, Shape, initVars, setShapeProperty } from './shape';
 import { selectLine, removeLine, editor } from '../view/editor';
 
 const Bodies = Matter.Bodies;
@@ -80,11 +80,8 @@ const PuppyColorScheme = {
   asian: ['#946761', '#b80040', '#4eacb8', '#7f1f69', '#c8b568', '#147472', '#1d518b', '#b1623b', '#95a578', '#b9b327', '#af508a', '#dab100'],
 };
 
-const choiceColor = (key: string) => {
-  if (key in PuppyColorScheme) {
-    return PuppyColorScheme[key];
-  }
-  return PuppyColorScheme[Common.choose(['pop',
+const chooseColorScheme = (key: string) => {
+  const cs = (key in PuppyColorScheme) ? PuppyColorScheme[key] : PuppyColorScheme[Common.choose(['pop',
     'cute', 'dynamic', 'gorgeous', 'casual',
     'psychedelic', 'bright',
     'fairytale', 'heavy', 'impact', 'street', 'cool',
@@ -92,6 +89,11 @@ const choiceColor = (key: string) => {
     'boy', 'girl', 'smart', 'light', 'stylish', 'natural',
     'spring', 'summer', 'fall', 'winter',
     'japan', 'euro', 'nordic', 'asian'])];
+  const targets = <HTMLCollectionOf<HTMLElement>>document.getElementsByClassName('btn');
+  for (let i = 0; i < targets.length; i += 1) {
+    targets[i].style.backgroundColor = cs[i % cs.length];
+  }
+  return cs;
 };
 
 // (Puppy, {}) -> (number, number, number) -> any
@@ -130,7 +132,7 @@ export class Puppy {
       viewHeight: vheight,
       background: code.world['background'] || 'white',
       gravity: code.world['gravitiy'] || { x: 0.0, y: 1.0 },
-      colorScheme: choiceColor(code.world['colorScheme'] || ''),
+      colorScheme: chooseColorScheme(code.world['colorScheme'] || ''),
       font: code.world['font'] || "bold 60px 'Arial'",
       view: code.world['view'] || {
         min: pos,
@@ -283,8 +285,7 @@ export class Puppy {
       });
     }
     //
-    this.vars = {};
-    setBuildInVariables(this.vars);
+    this.vars = initVars({});
     // this.main = code.main || (function* (Matter: any, puppy: Puppy) { });
 
     Runner.run(this.runner, this.engine); /*物理エンジンを動かす */
@@ -402,17 +403,17 @@ export class Puppy {
               const name = live[1];
               console.log(`change ${name} ${body[name]} ${live[2]} ${live[3]}`);
               // if (body[name] === live[3] || live[3] == null) {
-              body[name] = live[2];
+              setShapeProperty(this, body as Shape, name, live[2]);
               // }
             }
           }
         }
         return true;
       }
-      if (code.diff) {
-        code.diff(this);
-        return true;
-      }
+      // if (code.diff) {
+      //   code.diff(this);
+      //   return true;
+      // }
     }
     return false;
   }
@@ -433,7 +434,7 @@ export class Puppy {
 
   // Puppy APIs
 
-  public new_ = (cons: PuppyConstructor, x: number, y: number, options: ShapeOptions) => {
+  public new_ = (cons: PuppyConstructor, x: number, y: number, options: Shape) => {
     if (!options.position) {
       options.position = { x, y };
     }
@@ -444,7 +445,7 @@ export class Puppy {
 
   public print(text: string, options = {}) {
     const width = this.world.width;
-    const _options: ShapeOptions = Common.extend({
+    const _options: Shape = Common.extend({
       shape: 'label',
       value: `${text}`,
       created: this.getTimeStamp(),
@@ -455,7 +456,7 @@ export class Puppy {
           World.remove(this.engine.world, body);
         }
       },
-    },                                           options);
+    },                                    options);
     const x = this.world.width;
     const y = this.world.height * (Math.random() * 0.9 + 0.05);
     this.new_(this.vars['Label'], x, y, _options);
