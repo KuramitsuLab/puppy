@@ -127,31 +127,15 @@
           video on Puppy Playground. -->
         </p>
         <h3>Puppy</h3>
+        <div class='TODO'>
+          ボールが跳ねるデモ
+        </div>
         <p>
-          Puppy is an educational language that simplifies Python.
-          Puppy can be executed on a live programming environment called Puppy Playground.
-          Let's see how to run on the playground in the following demonstration.
-        </p>
-        <div class="caption">The demonstration of a bounding ball</div>
-        <video src='./video/bounding.mov' controls width="60%" height="auto"></video>
-        <p>
-          As you can see, the playground makes easy to the programming of Puppy.
-          On the left side of the playground is a canvas where the execution result of Puppy is visualized.
-          When you write code in the editor, the execution result of the code is immediately displayed on the canvas.
-          In the above demonstration, the following code is written on the editor.
-        </p>
-        <div class="caption">The Puppy code of a bounding ball</div>
-        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
-Circle(500,100,width=200, restitution=1.0)</pre>
-        <p>
-          The <i>Rectangle</i> and <i>Circle</i> are functions that create an object on the canvas.
-          The argument of first and second are x and y coordinates on the canvas respectively.
-          The canvas has a Cartesian coordinate system the origin of which is at the top left.
-          Moreover, the horizontal axis is x and the vertical axis is y.
-          In this case, a rectangle centered at position (x, y) = (500, 950) is drawn on the canvas.
-          The drawn rectangle has a width of 1000 and a height of 100.
-          In addition, the <i>isStatic</i> property fixes the position of the rectangle.
-          Since objects on the canvas behave in the law of classical physics, the property makes not to be moved by forces such as gravity.
+          <div class='TODO'>
+            PlayGroundの見方
+            オブジェクトの作り方 + 種類
+            座標系の作り方
+          </div>
         </p>
         <div class='TODO'>
           World+ドミノ倒しのデモ
@@ -173,7 +157,43 @@ Circle(500,100,width=200, restitution=1.0)</pre>
         <div class='TODO'>
           クリックイベント
           衝突イベント
+          クラス
         </div>
+        <h3>Puppy Playground</h3>
+        <p>
+        Puppy describes the objects on the physics engine.
+        To take advantage of Puppy, we provide a live programming environment called Puppy Playground.
+        On this playground, the written code is auto executed and the area which the physicas engine running visualizes its result.
+        Furthermore, since the playground implemented as a web application, it can be easy to start without complex environment setup.
+        Here's a screenshot of Puppy Playground and explanations of each part.
+        </p>
+        <div class="caption">Puppy Playground</div>
+        <img src='./image/playground.png' width="80%" height="auto">
+        <ul>
+          <li>Editor</li>
+          <p>
+            This is an editor to write a Puppy code.
+            It provides immediate feedback on errors and warnings.
+          </p>
+          <li>Canvas</li>
+          <p>
+            The canvas is the area where the execution result of Puppy are drawn.
+          </p>
+          <li>Play/Pause Button</li>
+          <p>
+            When the play button is pushed, the live programming and the physics engine starts to run.
+            In the live programming, the canvas seamlessly reflects the execution result of the code.
+            After to push the play button, the play button changes to the pause button.
+            When the pause button is pushed, the live coding is not paused but the physics engine makes to be paused.
+          </p>
+        </ul>
+        <p>
+          We illustrate the flow which a Puppy code is executed and its result is visualized.
+          First, the written code in the editor sends to the server.
+          Second, the server translates the receiving Puppy code to the javascript code and response it.
+          Finally, the javascript code is interpreted by Puppy Virtual Machine (Puppy VM) which is an execution environment on the physics engine.
+          Puppy VM handles drawing the objects on the canvas and physics simulating.
+        </p>
 
         <h3>Puppy Virtual Machine</h3>
         <p>
@@ -201,6 +221,127 @@ Circle(500,100,width=200, restitution=1.0)</pre>
           The code interpreted by Puppy VM can insert a "yield" keyword, the entire of the code is executed by a "for" statement.
           As a result, it is possible to make a delay in the execution and highlight of the executed code.
           In an educational perspective, it helps to understand programming by confirming the correspondence between the executed code and the changes in the execution state.
+        </p>
+
+        <h3>Puppy</h3>
+        <p>
+        In this section, we introduce the specification of Puppy.
+        Puppy is an educational language to step up to practical programming languages.
+        The syntax definition of Puppy imitates Python's one.
+        <!-- In addition, to reduce the learning cost for syntax, the syntax definition of Puppy is fewer than Python. -->
+        The following code is the <i>if</i> statement on Puppy.
+        </p>
+        <div class="caption">If statement</div>
+        <pre class="prettyprint">
+v = 10
+if v > 5:
+  print('condition was true')
+else:
+  print('condition was false')</pre>
+        <p>
+          The if statement starts with the keyword <i>if</i> and is followed by a condition.
+          In this case, the condition is whether or not the variable <i>v</i> has a value larger than 5.
+          If this condition is true, the following statements after a colon are executed.
+          Else, the execution skips to after the keyword <i>else</i> and a colon.
+          As the variable <i>v</i> has the value 10, this example executes to the statement <i>print('condition was true')</i>.
+          Up to this point is similar to Python, although Puppy's print function is executed in Puppy Playground as follows:
+        </p>
+        <div class="caption">The if statement demonstration</div>
+        <video src='./video/if_statement.mov' controls width="60%" height="auto"></video>
+        <p>
+          This video shows the print function draws a flowing object pasted a string.
+          The important feature of Puppy is the description of objects.
+          The objects called Puppy objects.
+          The following subsections describe Puppy objects more detail.
+        </p>
+        <h4>World</h4>
+        <p>
+          A world is an environment to arrange the objects.
+          Objects arranged in a world are simulated under the laws of classical mechanics such as gravity, air resistance, frictional resistance, and so on.
+          The position of the object is specified in Cartesian coordinate system.
+          The origin of the coordinates is at the upper left as shown in the following figure.
+          Note that, the x-axis is larger towards the right and the y-axis is larger at the bottom.
+          In addition, the point of the position of x, y is expressed as (x, y) after this.
+        </p>
+        <div class="caption">The coordinate system</div>
+        <img src='./image/coordinate.png' width="500" height="auto">
+        <p>
+          Without the declaration of the world, a world with , height 1000 and gravitational acceleration (0, 1) is created as the default.
+          If you want to create a world, write the following code.
+        </p>
+        <div class="caption">World</div>
+        <pre class="prettyprint">World(1600, 900, gravity={'x': 1, 'y': 1}, colorShceme='japan')</pre>
+        <p>
+          This code creates a world with width 1600, height 900 and gravitational acceleration (1, 1).
+          A <i>colorSheme</i> property is to set colors for the objects which not be specified the color.
+          In this case, a color that is reminiscent of Japan is set.
+        </p>
+        <h4>Puppy Objects</h4>
+        <p>
+          Puppy can easily draw Puppy objects on a world.
+          The four shapes are prepared, circle, rectangle, trapezoid, polygon, and label.
+          The following code is creating a circle object.
+        </p>
+        <div class="caption">Create a Circle</div>
+        <pre class="prettyprint">C = Circle(500, 500, radius=100)</pre>
+        <p>
+          A first and a second argument is x and y coordinates respectively.
+          Optional arguments can be specified from the third argument.
+          In this case, this code draws a circle of radius 100 at (500, 500).
+        </p>
+        <p>
+          In addition to object properties, collision and click events can also be registered as optional arguments.
+          For example, when you want to register a click event, write the below code.
+        </p>
+        <div class="caption">Click event</div>
+        <pre class="prettyprint">C = Circle(500, 500, radius=100, clicked=lambda self: print('Hi'), isStatic=True)</pre>
+        <p>
+          A clicked argument specifies a function of one argument.
+          The above example specifies a lambda function that executes print 'Hi'.
+          Not to be affected by gravity, the isStatic argument fixes the object.
+          The execution results are shown below.
+        </p>
+        <div class="caption">The click event demonstration</div>
+        <video src='./video/clicked.mov' controls width="60%" height="auto"></video>
+        <p>
+          A label object is useful for displaying text.
+          The code to create a Label object.
+        </p>
+        <div class="caption">Create a label</div>
+        <pre class="prettyprint">L = Label(100, 100, value='Hello')</pre>
+        <p>
+          The text set in the value argument is displayed.
+          A isStatic of a label object is <i>True</i> as default.
+          Furthermore, since the color of the label object is transparent, it is ideal for displaying text.
+          A print function is implemented using label objects.
+          The label object is set its value property and moved from right to left.
+        </p>
+        <!-- Puppyのオブジェクトの書き方とそれぞれのデモを紹介 -->
+        <h4>Inheritance</h4>
+        <p>
+          Abstraction is a crucial technique to write beautiful and maintainable code.
+          Puppy supports inheritance to acquire thinking of abstraction.
+          Here's the class declaration example and its demonstration.
+        </p>
+        <div class="caption">Class declaration</div>
+        <pre class="prettyprint">class MyBlock(Rectangle):
+  width = 80
+  height = 60
+  def clicked(self):
+    print(self.width)
+
+block = MyBlock(100,100)</pre>
+        <div class="caption">The class declaration demonstration</div>
+        <video src='./video/extends.mov' controls width="60%" height="auto"></video>
+        <!-- <div class="caption">Class declaration</div>
+        <pre class="prettyprint">class <i>ClassName</i>(<i>SuperClassName</i>,...):
+          <i>&lt;Statement&gt;</i>
+          &#xFE19;</pre> -->
+        <p>
+          This example shows declarating <i>MyBlock</i> that inherits from <i>Rectangle</i> and creating its instance.
+          When an instance of <i>MyBlock</i> is created, a rectangle object is drawn at the (100, 100) position.
+          In this case, the width and height of the object are 80 and 60 respectively without specification at creating the instance.
+          In addition, the clicked event is also registered.
         </p>
 
         <h3>Challenges and Conclusions</h3>
