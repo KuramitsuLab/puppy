@@ -80,7 +80,7 @@ const PuppyColorScheme = {
   asian: ['#946761', '#b80040', '#4eacb8', '#7f1f69', '#c8b568', '#147472', '#1d518b', '#b1623b', '#95a578', '#b9b327', '#af508a', '#dab100'],
 };
 
-const chooseColorScheme = (key: string) => {
+export const chooseColorScheme = (key: string) => {
   const cs = (key in PuppyColorScheme) ? PuppyColorScheme[key] : PuppyColorScheme[Common.choose(['pop',
     'cute', 'dynamic', 'gorgeous', 'casual',
     'psychedelic', 'bright',
@@ -392,8 +392,14 @@ export class Puppy {
   public updateLiveCode(code: PuppyCode) {
     this.code = code;
     if (this.runner.enabled) {
-      this.initCode();
+      if (code.diff) {
+        this.initCode();
+        console.log(`live diff now ${code.diff}`);
+        code.diff(this);
+        return true;
+      }
       if (code.lives && code.lives.length > 0) {
+        this.initCode();
         const bodies = Matter.Composite.allBodies(this.engine.world);
         for (const body of bodies) {
           for (const live of code.lives) {
@@ -410,10 +416,6 @@ export class Puppy {
         }
         return true;
       }
-      // if (code.diff) {
-      //   code.diff(this);
-      //   return true;
-      // }
     }
     return false;
   }
@@ -537,10 +539,11 @@ export const runPuppy = (puppy: Puppy, code: PuppyCode, alwaysRun: boolean) => {
         return puppy;
       }
       if (puppy.isRunning()) {
-        console.log(`lives ${code.lives}`);
-        console.log(`diff ${code.diff}`);
-        puppy.updateLiveCode(code);
-        return puppy;
+        // console.log(`lives ${code.lives}`);
+        // console.log(`diff ${code.diff}`);
+        if (puppy.updateLiveCode(code)) {
+          return puppy;
+        }
       }
     }
   }
