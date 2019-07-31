@@ -64,10 +64,8 @@ def dist_sample(d):
 def dist_gallery():
     ls = []
     for f in os.listdir(getRootPath('client/static/image')):
-        print('@', f)
         ls.append(
             f'<div><img style="width: 100%" src="/image/{f}"></img><div class="caption">{f}</div></div>')
-    print('\n'.join(ls))
     return Response('\n'.join(ls), mimetype='text/html')
 
 

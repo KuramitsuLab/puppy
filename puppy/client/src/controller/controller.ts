@@ -1,4 +1,4 @@
-import { initPuppy, runPuppy, PuppyCode, Puppy } from '../model/puppy';
+import { initPuppy, runPuppy, PuppyCode, Puppy, chooseColorScheme } from '../model/puppy';
 import { editor, terminal, fontPlus, fontMinus, checkZenkaku } from '../view/editor';
 import { getFullscreen } from '../view/screen';
 import * as marked from 'marked';
@@ -99,6 +99,7 @@ const initPage = () => {
     const doc = document.getElementById('name');
     doc.innerHTML = 'Sumomo';
   } else {
+    chooseColorScheme('pop');
     const doc = document.getElementById('gallery');
     loadFile('/gallery').then((s: string) => {
       doc.innerHTML = s;
