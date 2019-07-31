@@ -59,72 +59,21 @@
       <div class="body">
         <h3>Abstract</h3>
         <p>
-          Debuggers are useful tools to confirm the behavior of the program.
-          In particular, those help beginners who are not familiar with programming to understand programs.
-          Therefore, we consider that it is desirable to use a live programming environment integrating an editor and a debugger in learning programming.
-          Puppy is an educational programming language on the assumption that using a live programming environment having a physics engine.
-          It is possible to describe the objects on a physics engine by Puppy.
-          Using a physics engine, only a little amount of code can express complex behavior.
-          In this essay, we illustrate the system of the live programming environment and specification of Puppy.
-        </p>
-        <h3>Introduction</h3>
-        <p>
-          <!-- A debugger is a useful tool for programmers who suffer from bugs.
-          It makes possible to visualize states of machines by inserting breakpoints or running per steps.
-          However, to use debuggers, it needs to know a few kinds of commands and the right position of breakpoints.
-          DrRacket and Stepper are pedagogical programming environments for novice programmers unfamiliar with debuggers.
-          These tools make coding fluidly by showing results of evaluations each step.
-          Furthermore, the visualization of the states of machines helps novice programmers to understand the interpretation of computer.
-          Scratch provides the environment which can try to run the interesting blocks and show its result visually as soon. Thus,
-          learners are able to understand the interpretation of computer interactively. -->
-        </p>
-        <!-- <p>
-          コーディングは目標とするプログラムの振る舞いをコンピュータが解釈できるような表現に落とし込む作業である．
-          このプログラムの振る舞いは，標準出力に出力して確認をしたり，デバッガなどのツールを用いて確認することができるが，ほとんどはプログラマの頭の中で想像されている．
-          そのため，書いているコードが想像している振る舞いとは異なる振る舞いを表現していることも少なくない．
-          特に，プログラミング初学者はプログラミングの理解が浅いため，想像通りの振る舞いをするコードを書くことは困難である.
-          複雑になったコードから訂正箇所を見つけるのは，熟練のプログラマでも骨が折れる作業であり，学習に対する意欲を損ねかねない．
-          そのため，プログラミング学習ではこまめに実行結果を確認できるライブプログラミング環境が望ましい．
-          また，初学者にとって環境構築も大きな障壁となるため，CodecademyやSwift Playgroundsなどのプログラミング学習サービスは出力とエディタが統一された環境を提供している．
-          これらのことはプログラミング教育においても同様であり，ライブプログラミング環境は授業に導入しやすく，授業の進行を円滑にする.
-          Coding is the task of applying the behavior of the target program to a representation that a computer can interpret. The
-          behavior of this program can be confirmed by outputting it to the standard output, or by using a tool such as a
-          debugger, although most are imagined in the mind of the programmers. For this reason, the code often expresses a
-          different behavior that is imagined. In particular, it is difficult for beginners to write code that behaviors as
-          expected because they have a poor understanding of the program. Finding the revision place in complex code is a daunting
-          task for even skilled programmers, and can detract from the motivation for learning. Therefore, in programming learning,
-          it is desirable to use a live programming environment that allows you to check execution results frequently. Besides,
-          since environment construction is a major barrier for beginners, programming learning services provide an integrated
-          environment of output and editor, such as Codecademy and Swift Playgrounds. A live programming environment is easy to
-          introduce into classes and facilitates class progression.
-        </p> -->
-        <p>
-          In this essay, we introduce Puppy Playground, an live programming environment for programming education.
-          The live programming environment provides to switch coding and debugging seamlessly.
-          As soon as you write the code, it will be reflected in the execution result.
-          Puppy is an educational language to write on Puppy Playground.
-          On the playground, the objects written by Puppy are visualized as execution results.
-          In addition, the objects behave in the law of classical physics, since the playground has a physics engine.
-          Hence, the playground realizes complex behaviors even with a small amount of code.
-        </p>
-        <p>
-          <!-- 現在，教育用言語はScratchを代表としたビジュアルプログラミング言語が注目を浴びている．
-          ビジュアルプログラミングはコードを書く必要がなく，厳密な構文規則やタイプミスなどに悩まされなくてよい．
-          しかし，実用的なプログラミング言語のほとんどはコードの記述が必要であり，両者の間には溝がある．
-          Puppyはコードベースのプログラミング言語として実用言語への橋渡しを目指している．
-          構文規則の緩和や自然言語処理を応用することで，初学者のコーディングを支援し滑らかなプログラミング体験を提供する．
-          以下は，Puppyのライブプログラミング環境であるPuppy Playgroundでのデモ動画である． -->
-          The concept of Puppy is code-based unlike block-based languages such as Scratch.
-          Almost practical programming languages require code description.
-          We consider that it should support for coding rather than removing coding.
-          Therefore, the playground assists the fluid coding experience in some features.
-          The following is a demonstration video on Puppy Playground.
-          <!-- At present, visual programming languages, such as Scratch, have been attracting attention. Visual programming does not
-          require you to write code and not suffer from strict syntax or typing mistakes. However, most practical programming
-          languages require code description, and there is a gap between the two. Puppy aims to address the bridge to practical
-          languages as code-based programming languages. It supports beginner’s coding and provides a smooth programming
-          experience by relaxed syntax rules and application of natural language processing. The following is a demonstration
-          video on Puppy Playground. -->
+          近年の初等プログラミング教育の潮流は、SCRATCHに代表されるように、コードを書かなくてよいことである。代わりに、ブロックで制御構造などのプログラムを構築し、構文エラーなどに悩まされずに、プログラミングを体験することができる。
+          
+          しかし、コーディングの楽しさはどのように学んだら良いのだろう？
+          
+          我々は、プログラミングの本質のひとつはコーディングだと考え、コーディングの楽しさを伝えるため、新しい入門プログラミング環境Puppyを開発している。
+          
+          Puppy は、Python の文法と機能を制限し、短期間でプログラミングを体験できるように設計された子供向けのPython
+          である。さらに、コーディングとプログラム実行の統合環境を備え、プログラムの実行は物体の動作と解釈されて、可視化してみることができる。
+          
+          ここまでは、よくある入門環境であろう。Puppy では、Puppy
+          のコーディングの楽しさを伝える鍵として、ライブコーディングの技法を取り込んでいる。理想を言えば、コーディングしたら、即座にプログラムに反映させることができれば、コーディング体験は大きく高まる。Puppy
+          では、そのようなコーディング体験の向上を目指して開発が進められている。
+          
+          本稿は、Puppy の初期の開発状況をデモと共に報告する。
+          本稿の構成は以下の通りである。
         </p>
         <h3>Puppy</h3>
         <p>
@@ -154,28 +103,71 @@ Circle(500,100,width=200, restitution=1.0)</pre>
           Since objects on the canvas behave in the law of classical physics, the property makes not to be moved by forces such as gravity.
         </p>
         <div class='TODO'>
-          World+ドミノ倒しのデモ
-        </div>
-        <p>
-          <div class='TODO'>
-            Worldの説明
-            Live Coding
-          </div>
-        </p>
-        <div class='TODO'>
-          World+ドミノ倒しのデモ(リファクタ版)
-        </div>
-        <p>
-          <div class='TODO'>
-            使用できるPythonの文法
-          </div>
-        </p>
-        <div class='TODO'>
-          クリックイベント
-          衝突イベント
+          Puppy はどのような言語か？ 実際に簡単なデモをみながら、見ていこう。
+          
+          Block と Ball は、Puppy が提供する物体を基本クラスである。次のようにインスタンス化できる。（Puppy は、Python サブセットなので、new は必要ないことに注意）
+          
+          Ball(500,500)
+          Block(500, 950, width=1000)
+          
+          すると、左側にPuppy コンソールにボールとブロックが表示される。Puppy のクラスは、それが表現する物体をインスタンス化するのと同時に、画面に表示される。
+          
+          デモ1 （コードを入力しながら見せる）
+          
+          Puppyにおいて、Ball は、動く、しかも跳ねる丸い物体と定義されている。一方、Block は、動かない四角い物体となっている。
+          
+          なぜ跳ねるのか？　Puppy の実行環境は、物理エンジンと統合され、プログラムされた物体は物理法則の影響を受けるようになっているからである。
+          
+          なぜ物理エンジンなのか？子供向けプログラミングは、ロボットの制御を題材にすることが多い。これは、プログラムの動作が時間軸のある実世界の物体の動作として確認しやすいからである。Puppyの物理エンジンは、同様な理解しやすさを狙ったものである。
+          
+          Puppy とコーディングに戻ろう。Puppy は、コードを入力したら、その入力結果を実行されるプログラムで見ることができる。
+          
+          例えば、print 文を追加してみると:
+          
+          Ball(500,500)
+          Block(500, 950, width=1000)
+          print("Hello,world");
+          
+          デモ２ （コードを入力しながら見せる）
+          
+          既に書いたコードの軽微な変更であれば、実行を止めずにライブアップデートされる。
+          
+          Ball(500,500, image='bird.png')
+          Block(500, 950, width=1000, slop=0.1)
+          
+          デモ３ （コードを入力しながら見せる）
+          
+          このようにコードを書くことが、プログラムと即座にリンクされることで、コードを書くことがプログラムが動くまでの退屈な時間でなくなることを期待している。
+          
+          もう少し、複雑な例を見ていこう。
+          
+          ボールの跳ねた回数をカウントして表示するプログラムを作ってみよう。
+          
+          変数を表示するために、Label という物体を使う。
+          
+          Ball(500,500, image='bird.png')
+          Block(500, 950, width=1000, slop=0.1)
+          
+          C = Label(x,y, value=0)
+          def hit(x,y):
+          C.value = C.value + 1
+          print(C.value)
+          block.collisionEnd = hit
+          
+          
+          
+          デモ４
+          
+          もうここまで見ればおわかりであろう。
+          Puppy は、簡単なPython ながら簡単なゲームなら作ることができる記述力がある。
+          最後に、Puppy で作られたブロック崩しの例を紹介しておこう。
+          
+          デモ５
+
         </div>
 
         <h3>Puppy Virtual Machine</h3>
+        <div class='FIXME'>Liveについて詳しく</div>
         <p>
           Puppy Virtual Machine (Puppy VM) is an execution environment on the 2D physics engine.
           We use the 2D physics engine javascript library called matter.js.
@@ -204,6 +196,7 @@ Circle(500,100,width=200, restitution=1.0)</pre>
         </p>
 
         <h3>Challenges and Conclusions</h3>
+        <div class='FIXME'>
         <p>
           The challenge for a better language is to implement garbage collector.
           Objects that are not referenced should be free, however, the objects remain to register to the physics engine　at this version.
@@ -221,6 +214,7 @@ Circle(500,100,width=200, restitution=1.0)</pre>
           The development of Puppy open to the public as OSS on Github.
           We believe that this tool helps to practice coding and make fun for many beginners.
         </p>
+        </div>
         <h3>Reference</h3>
         <div class="bibtex_template">
           <ol>
