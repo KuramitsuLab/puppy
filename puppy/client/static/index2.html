@@ -174,7 +174,7 @@
 
     .running-line {
       position: absolute;
-      background: rgba(152,251,152, 0.925);
+      background: rgba(152, 251, 152, 0.925);
       z-index: 20;
     }
   </style>
@@ -183,16 +183,16 @@
 
 <body>
   <div id="top" style="padding:8px 0;">
-    <button id="base" class="btn"><i class="fa fa-bars"></i> <span id='name'>Puppy</span> </button>
-    <button class="btn"><i class="fa fa-folder"></i> <span id="page-title">Sample</span> </button>
-    <button id="prev-page" class="btn"> &laquo;</button>
-    <button id="next-page" class="btn"> &raquo;</button>
+    <button id="base" class="btn cs"><i class="fa fa-shapes"></i> <span id='name'>Puppy</span> </button>
+    <button class="btn cs"><i class="fa fa-folder"></i> <span id="page-title">Sample</span> </button>
+    <button id="prev-page" class="btn cs"> &laquo;</button>
+    <button id="next-page" class="btn cs"> &raquo;</button>
 
     <span style="float:right;">
       <span id="framesize"></span>
-      <button class="btn"><i class="fa fa-user"></i> Login </button>
-      <button class="btn"><i class="fa fa-share"></i> Share </button>
-      <button class="btn"><i class="fa fa-close"></i> </button>
+      <button class="btn cs"><i class="fa fa-user"></i> Login </button>
+      <button class="btn cs"><i class="fa fa-share"></i> Share </button>
+      <button class="btn cs"><i class="fa fa-bars"></i> </button>
     </span>
   </div>
 
@@ -206,11 +206,11 @@
           <button id="step" class="btn"><i class="fa fa-step-forward"></i></button>
           -->
           <button id="extend" class="btn"><i class="fa fa-expand"></i></button>
-          <button class="btn prev-view">&#10094;</button>
+          <button id="math" class="btn"><i class="fa fa-square-root-alt"></i></button>
+          <button class="btn prev-view"><i class="fa fa-book-open"></i></button>
           <button class="btn next-view">&#10095;</button>
         </div>
       </div>
-
       <div id="terminal-view" class="mySlides fade">
         <div id="terminal"> </div>
         <div class="text">
@@ -246,6 +246,7 @@
       <div id="editor">
       </div>
       <div class="text">
+        <button id="live" class="btn"><i class="fa fa-toggle-off"></i></button>
         <button id="font-plus" class="btn"><i class="fa fa-plus"></i></button>
         <button id="font-minus" class="btn"><i class="fa fa-minus"></i></button>
       </div>
