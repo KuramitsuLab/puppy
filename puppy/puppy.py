@@ -869,37 +869,29 @@ def hasErrors(env):
             return True
     return False
 
-
 def diffCode(prev, cur):
     prev = prev.split('\n')
     cur = cur.split('\n')
-    plen, clen = len(prev), len(cur)
-    start, end = 0, clen
-    for i in range(min(plen, clen)):
-        start = i
+    plen, clen = len(prev)-1, len(cur)-1 # 最後は空行
+    print('@diff1', plen, clen)
+    if plen >= clen:
+        return ''
+    print('@prev', prev)
+    print('@cur', cur)
+    for i in range(plen):
         if prev[i] != cur[i]:
-            break
-    prev, cur = prev[::-1], cur[::-1]
-    for i in range(min(plen, clen)):
-        end = i
-        if prev[i] != cur[i]:
-            break
-    end = clen - end
-    prev, cur = prev[::-1], cur[::-1]
-    #print('@diff', start, end, clen)
-    nstart, nend = start, end
-    for nstart in range(start, -1, -1):
+            print('@', i, '\n', prev[i], '\n', cur[i])
+            return ''
+    nstart, nend = plen, clen
+    print('@diff2', nstart, nend)
+    for nstart in range(plen, -1, -1):
         if not cur[nstart].startswith('\t'):
             break
-    for nend in range(end, clen, 1):
-        if not cur[nend-1].startswith('\t'):
-            break
-    #print('@diff', nstart, nend, clen)
+    print('@diff3', nstart, nend)
     diffcode = '\n'.join(cur[nstart:nend])
     diffcode = diffcode.replace('; yield', '; //yield')
     print('@diffcode', diffcode)
     return diffcode
-
 
 def addLives(env, key, value, _trace):
     env['@lives'].append((env['@oid'], key, value, _trace))
