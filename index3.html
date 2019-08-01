@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Puppy: A Educational Simplification of Python with a Live Playground</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+  <script type="text/javascript" src="https://cdn.rawgit.com/pcooksey/bibtex-js/5ccf967/src/bibtex_js.js"></script>
+  <bibtex src="./bib/test.bib"></bibtex>
+</head>
+<body>
+  <div class="all-contents">
+    <div id="essay">
+
+      <div class="header">
+        <h1>Puppy: A Educational Simplification of Python with a Live Playground</h1>
+        <div class="authors">
+          <div class='author'>
+            <div class='name'>
+              Taku Tada
+            </div>
+            <div class='institution'>
+              Yokohama National University
+            </div>
+            <div class='e-mail'>
+              <a href="tada-taku-jp@ynu.jp">tada-taku-jp@ynu.jp</a>
+            </div>
+          </div>
+          <div class='author'>
+            <div class='name'>
+              Yuka Akinobu
+            </div>
+            <div class='institution'>
+              Japan Women's University
+            </div>
+          </div>
+          <div class='author'>
+            <div class='name'>
+              Makoto Sakane
+            </div>
+            <div class='institution'>
+              Japan Women's University
+            </div>
+          </div>
+          <div class='author'>
+            <div class='name'>
+              Kimio Kuramitsu
+            </div>
+            <div class='institution'>
+              Japan Women's University
+            </div>
+            <div class='e-mail'>
+              <a href="kuramitsuk@fc.jwu.ac.jp">kuramitsuk@fc.jwu.ac.jp</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="body">
+        <h3>Abstract</h3>
+        <p>
+          近年の初等プログラミング教育の潮流は、SCRATCHに代表されるように、コードを書かなくてよいことである。代わりに、ブロックで制御構造などのプログラムを構築し、構文エラーなどに悩まされずに、プログラミングを体験することができる。
+          
+          しかし、コーディングの楽しさはどのように学んだら良いのだろう？
+          
+          我々は、プログラミングの本質のひとつはコーディングだと考え、コーディングの楽しさを伝えるため、新しい入門プログラミング環境Puppyを開発している。
+          
+          Puppy は、Python の文法と機能を制限し、短期間でプログラミングを体験できるように設計された子供向けのPython
+          である。さらに、コーディングとプログラム実行の統合環境を備え、プログラムの実行は物体の動作と解釈されて、可視化してみることができる。
+          
+          ここまでは、よくある入門環境であろう。Puppy では、Puppy
+          のコーディングの楽しさを伝える鍵として、ライブコーディングの技法を取り込んでいる。理想を言えば、コーディングしたら、即座にプログラムに反映させることができれば、コーディング体験は大きく高まる。Puppy
+          では、そのようなコーディング体験の向上を目指して開発が進められている。
+          
+          本稿は、Puppy の初期の開発状況をデモと共に報告する。
+          本稿の構成は以下の通りである。
+        </p>
+        <h3>What is Puppy Like?</h3>
+        <div class='FIXME'>途中からwidthが200になっている</div>
+        <p>
+          Puppy is an educational language that simplifies Python.
+          In this section, we introduce Puppy by some demonstrations.
+          Puppy can be executed on a live programming environment called Puppy Playground.
+          Let's see how to run on the playground in the following demonstration.
+        </p>
+        <div class="caption">The demonstration of a bounding ball</div>
+        <video src='./video/bounding.mov' controls width="60%" height="auto"></video>
+        <p>
+          As you can see, the playground makes easy to the programming of Puppy.
+          On the left side of the playground is a canvas where the execution result of Puppy is visualized.
+          When you write code in the editor, the execution result of the code is immediately displayed on the canvas.
+          In the above demonstration, the following code is written on the editor.
+        </p>
+        <div class="caption">The Puppy code of a bounding ball</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
+Circle(500,100,width=150, restitution=1.0)</pre>
+        <p>
+          The Rectangle and Circle are basic classes that Puppy supplies standard.
+          Like Python, an instance of a class is created by such as the above code without a keyword of <i>new</i>.
+        </p>
+        <div class="caption">The syntax of creating a instance of a basic class</div>
+        <pre class="prettyprint"><i>ClassName</i>(<i>x</i>, <i>y</i>, <i>options...</i>)</pre>
+        <p>
+          The argument of first and second are x and y coordinates on the canvas respectively.
+          The canvas has a Cartesian coordinate system the origin of which is at the top left.
+          Moreover, the horizontal axis is x and the vertical axis is y.
+          In this case, a rectangle centered at position (x, y) = (500, 950) is drawn on the canvas.
+          The drawn rectangle has a width of 1000 and a height of 100.
+          In addition, the <i>isStatic</i> property fixes the position of the rectangle.
+          Since objects on the canvas behave in the law of classical physics, the property makes not to be moved by forces such as gravity.
+        </p>
+        <video src='./video/bounding2.mov' controls width="60%" height="auto"></video>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
+Circle(500,100,width=150, restitution=1.0)
+print('Hello World')</pre>
+        <video src='./video/bounding3.mov' controls width="60%" height="auto"></video>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
+Circle(500,100,width=150, restitution=1.5, image='bird.png')</pre>
+        <video src='./video/bounding4.mov' controls width="60%" height="auto"></video>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
+C = Circle(500,100, width=150, restitution=1.5, image='bird.png')
+L = Label(100, 100, value=0)
+def hit(obj1, obj2):
+  L.value = L.value + 1
+  print(L.value)
+C.collisionEnd = hit</pre>
+        <div class='TODO'>
+          Puppy はどのような言語か？ 実際に簡単なデモをみながら、見ていこう。
+          
+          Block と Ball は、Puppy が提供する物体を基本クラスである。次のようにインスタンス化できる。（Puppy は、Python サブセットなので、new は必要ないことに注意）
+          
+          Ball(500,500)
+          Block(500, 950, width=1000)
+          
+          すると、左側にPuppy コンソールにボールとブロックが表示される。Puppy のクラスは、それが表現する物体をインスタンス化するのと同時に、画面に表示される。
+          
+          デモ1 （コードを入力しながら見せる）
+          
+          Puppyにおいて、Ball は、動く、しかも跳ねる丸い物体と定義されている。一方、Block は、動かない四角い物体となっている。
+          
+          なぜ跳ねるのか？　Puppy の実行環境は、物理エンジンと統合され、プログラムされた物体は物理法則の影響を受けるようになっているからである。
+          
+          なぜ物理エンジンなのか？子供向けプログラミングは、ロボットの制御を題材にすることが多い。これは、プログラムの動作が時間軸のある実世界の物体の動作として確認しやすいからである。Puppyの物理エンジンは、同様な理解しやすさを狙ったものである。
+          
+          Puppy とコーディングに戻ろう。Puppy は、コードを入力したら、その入力結果を実行されるプログラムで見ることができる。
+          
+          例えば、print 文を追加してみると:
+          
+          Ball(500,500)
+          Block(500, 950, width=1000)
+          print("Hello,world");
+          
+          デモ２ （コードを入力しながら見せる）
+          
+          既に書いたコードの軽微な変更であれば、実行を止めずにライブアップデートされる。
+          
+          Ball(500,500, image='bird.png')
+          Block(500, 950, width=1000, slop=0.1)
+          
+          デモ３ （コードを入力しながら見せる）
+          
+          このようにコードを書くことが、プログラムと即座にリンクされることで、コードを書くことがプログラムが動くまでの退屈な時間でなくなることを期待している。
+          
+          もう少し、複雑な例を見ていこう。
+          
+          ボールの跳ねた回数をカウントして表示するプログラムを作ってみよう。
+          
+          変数を表示するために、Label という物体を使う。
+          
+          Ball(500,500, image='bird.png')
+          Block(500, 950, width=1000, slop=0.1)
+          
+          C = Label(x,y, value=0)
+          def hit(x,y):
+          C.value = C.value + 1
+          print(C.value)
+          block.collisionEnd = hit
+          
+          
+          
+          デモ４
+          
+          もうここまで見ればおわかりであろう。
+          Puppy は、簡単なPython ながら簡単なゲームなら作ることができる記述力がある。
+          最後に、Puppy で作られたブロック崩しの例を紹介しておこう。
+          
+          デモ５
+
+        </div>
+
+        <h3>Puppy Virtual Machine</h3>
+        <div class='FIXME'>Liveについて詳しく</div>
+        <p>
+          Puppy Virtual Machine (Puppy VM) is an execution environment on the 2D physics engine.
+          We use the 2D physics engine javascript library called matter.js.
+          Therefore, Puppy VM acts as a matter.js wrapper that provides an API.
+          The following figure schematically represents Puppy VM.
+        </p>
+        <div class="caption">Puppy VM</div>
+        <img src='./image/PuppyVM.png' width="600" height="auto">
+        <p>
+          To draw an object on the canvas, you need to register the object in matter.js.
+          Then, matter.js repeatedly draws and calculates for the registered object.
+          Puppy VM provides the API of objects registration and changing parameters which registered objects have.
+          These operating objects API is called by the javascript code which Puppy is translated.
+          New objects declared in Puppy are registered in matter.js through API.
+          When you change the parameter of an object in Puppy, the parameter of the object registered in matter.js is also changed.
+          On the other hand, Puppy VM also provides the API to call from a user interface.
+          The "start" or "pause" API operate physics calculating and objects drawing on physics engine.
+          For example, when the button is pushed, the "start" API is called and order to run the physics engine.
+        </p>
+        <p>
+          Puppy VM has a feature to support live programming.
+          The "yield" feature makes for gradual execution.
+          The code interpreted by Puppy VM can insert a "yield" keyword, the entire of the code is executed by a "for" statement.
+          As a result, it is possible to make a delay in the execution and highlight of the executed code.
+          In an educational perspective, it helps to understand programming by confirming the correspondence between the executed code and the changes in the execution state.
+        </p>
+
+        <h3>Challenges and Conclusions</h3>
+        <div class='FIXME'>
+        <p>
+          The challenge for a better language is to implement garbage collector.
+          Objects that are not referenced should be free, however, the objects remain to register to the physics engine　at this version.
+          Thus, it leads to making redundant calculation and memory consumption.
+          Hence, we consider implementing the garbage collector to search for unreferenced objects and remove from the physics engine.
+        </p>
+        <p>
+          Another challenge is verification by beginners use.
+          We need to investigate whether to learn by Puppy is effective.
+          In particular, the crucial point is the practice of coding.
+          We will have continued to refinement Puppy for the bridge to the practical programming languages.
+        </p>
+        <p>
+          In this essay, we introduced Puppy with a live environment using a physics engine.
+          The development of Puppy open to the public as OSS on Github.
+          We believe that this tool helps to practice coding and make fun for many beginners.
+        </p>
+        </div>
+        <h3>Reference</h3>
+        <div class="bibtex_template">
+          <ol>
+            <li>
+              <div class="if author" style="font-weight: bold;">
+                <span class="if year">
+                  <span class="year"></span>,
+                </span>
+                <span class="author"></span>
+                <span class="if url" style="margin-left: 20px">
+                  <a class="url" style="color:black; font-size:10px">(view online)</a>
+                </span>
+              </div>
+              <div style="margin-left: 10px; margin-bottom:5px;">
+                <span class="title"></span>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div id="bibtex_display" bibtexkey="Scratch"></div>
+      </div>
+
+    </div>
+  </div>
+</body>
+
+</html>

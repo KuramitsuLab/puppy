@@ -33,6 +33,9 @@
             <div class='institution'>
               Japan Women's University
             </div>
+            <div class='e-mail'>
+              <!-- <a href=""></a> -->
+            </div>
           </div>
           <div class='author'>
             <div class='name'>
@@ -40,6 +43,9 @@
             </div>
             <div class='institution'>
               Japan Women's University
+            </div>
+            <div class='e-mail'>
+              <!-- <a href=""></a> -->
             </div>
           </div>
           <div class='author'>
@@ -58,122 +64,142 @@
 
       <div class="body">
         <h3>Abstract</h3>
+        <h3>Introduction</h3>
         <p>
-          近年の初等プログラミング教育の潮流は、SCRATCHに代表されるように、コードを書かなくてよいことである。代わりに、ブロックで制御構造などのプログラムを構築し、構文エラーなどに悩まされずに、プログラミングを体験することができる。
+          近年の初等プログラミング教育の潮流は、Scratchに代表されるように、コーディングを避けたプログラミング学習である。コードの代わりに、ブロックなどを用いて制御構造を組み立てて、構文エラーなどに悩まされずに、プログラミングを体験することができる。
           
           しかし、コーディングの楽しさはどのように学んだら良いのだろう？
           
-          我々は、プログラミングの本質のひとつはコーディングだと考え、コーディングの楽しさを伝えるため、新しい入門プログラミング環境Puppyを開発している。
+          我々は、プログラミングの本質のひとつはコーディングだと考え、コーディングの楽しさを伝えるため、コードベースのプログラミング教育環境Puppyを開発している。
           
           Puppy は、Python の文法と機能を制限し、短期間でプログラミングを体験できるように設計された子供向けのPython
           である。さらに、コーディングとプログラム実行の統合環境を備え、プログラムの実行は物体の動作と解釈されて、可視化してみることができる。
           
           ここまでは、よくある入門環境であろう。Puppy では、Puppy
-          のコーディングの楽しさを伝える鍵として、ライブコーディングの技法を取り込んでいる。理想を言えば、コーディングしたら、即座にプログラムに反映させることができれば、コーディング体験は大きく高まる。Puppy
-          では、そのようなコーディング体験の向上を目指して開発が進められている。
+          のコーディングの楽しさを伝える鍵として、ライブコーディングの技法を取り込んでいる。アイディアもシンプルである。コーディングしたら、即座にプログラム動作に反映させることができれば、コーディング体験は大きく高まるのではないだろうか？しかし、刻々と変化するプログラム状態から、コード変更を正確に反映させることは難しい。そこで、全体的な整合性が不十分であっても、変更箇所に焦点を当てる
+          Live Focus によって、変更箇所の直感的な理解を得られるようにしている。
           
           本稿は、Puppy の初期の開発状況をデモと共に報告する。
           本稿の構成は以下の通りである。
         </p>
-        <h3>Puppy</h3>
+        <h3>What is Puppy Like?</h3>
+        <div class='FIXME'>途中からwidthが200になっている</div>
         <p>
-          Puppy is an educational language that simplifies Python.
-          Puppy can be executed on a live programming environment called Puppy Playground.
-          Let's see how to run on the playground in the following demonstration.
+          <!-- Puppy はどのような言語か？ 実際に簡単なデモをみながら、見ていこう。 -->
+          What is Puppy like?
+          Let's see features of Puppy with some demos.
         </p>
-        <div class="caption">The demonstration of a bounding ball</div>
+        <p>
+          The Rectangle and Circle are basic classes that Puppy supplies standard.
+          Like Python, an instance of a class is created by the following code without a keyword of <i>new</i>.
+        </p>
+        <div class="caption">Creating instances of a rectangle and a circle</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
+Circle(500,100,width=150, restitution=1.0)</pre>
+        <p>
+          The live programming environment called Puppy Playground makes easy to try Puppy.
+          Let's try this code on Puppy Playground.
+        </p>
+        <div class="caption">The demo of a bounding ball</div>
         <video src='./video/bounding.mov' controls width="60%" height="auto"></video>
         <p>
-          As you can see, the playground makes easy to the programming of Puppy.
           On the left side of the playground is a canvas where the execution result of Puppy is visualized.
           When you write code in the editor, the execution result of the code is immediately displayed on the canvas.
-          In the above demonstration, the following code is written on the editor.
+          In the above demo, the rectangle object was stationary, whereas the circle object was bounding.
+          Why was the circle object bounding?
+          This is attributed to a physics engine in the canvas.
+          The physics engine makes objects on the canvas behave in the law of classical physics.
         </p>
-        <div class="caption">The Puppy code of a bounding ball</div>
-        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
-Circle(500,100,width=200, restitution=1.0)</pre>
         <p>
-          The <i>Rectangle</i> and <i>Circle</i> are functions that create an object on the canvas.
-          The argument of first and second are x and y coordinates on the canvas respectively.
-          The canvas has a Cartesian coordinate system the origin of which is at the top left.
-          Moreover, the horizontal axis is x and the vertical axis is y.
-          In this case, a rectangle centered at position (x, y) = (500, 950) is drawn on the canvas.
-          The drawn rectangle has a width of 1000 and a height of 100.
-          In addition, the <i>isStatic</i> property fixes the position of the rectangle.
-          Since objects on the canvas behave in the law of classical physics, the property makes not to be moved by forces such as gravity.
+          We expect an educational effect by introducing the physics engine.
+          Robot programming is often found in educational programming themes.
+          This is caused by the visualization in the real world help to understand program behaviors.
+          Therefore, Puppy expresses program behaviors in a virtual world close to reality.
         </p>
-        <div class='TODO'>
-          Puppy はどのような言語か？ 実際に簡単なデモをみながら、見ていこう。
-          
-          Block と Ball は、Puppy が提供する物体を基本クラスである。次のようにインスタンス化できる。（Puppy は、Python サブセットなので、new は必要ないことに注意）
-          
-          Ball(500,500)
-          Block(500, 950, width=1000)
-          
-          すると、左側にPuppy コンソールにボールとブロックが表示される。Puppy のクラスは、それが表現する物体をインスタンス化するのと同時に、画面に表示される。
-          
-          デモ1 （コードを入力しながら見せる）
-          
-          Puppyにおいて、Ball は、動く、しかも跳ねる丸い物体と定義されている。一方、Block は、動かない四角い物体となっている。
-          
-          なぜ跳ねるのか？　Puppy の実行環境は、物理エンジンと統合され、プログラムされた物体は物理法則の影響を受けるようになっているからである。
-          
-          なぜ物理エンジンなのか？子供向けプログラミングは、ロボットの制御を題材にすることが多い。これは、プログラムの動作が時間軸のある実世界の物体の動作として確認しやすいからである。Puppyの物理エンジンは、同様な理解しやすさを狙ったものである。
-          
-          Puppy とコーディングに戻ろう。Puppy は、コードを入力したら、その入力結果を実行されるプログラムで見ることができる。
-          
-          例えば、print 文を追加してみると:
-          
-          Ball(500,500)
-          Block(500, 950, width=1000)
-          print("Hello,world");
-          
-          デモ２ （コードを入力しながら見せる）
-          
-          既に書いたコードの軽微な変更であれば、実行を止めずにライブアップデートされる。
-          
-          Ball(500,500, image='bird.png')
-          Block(500, 950, width=1000, slop=0.1)
-          
-          デモ３ （コードを入力しながら見せる）
-          
-          このようにコードを書くことが、プログラムと即座にリンクされることで、コードを書くことがプログラムが動くまでの退屈な時間でなくなることを期待している。
-          
-          もう少し、複雑な例を見ていこう。
-          
-          ボールの跳ねた回数をカウントして表示するプログラムを作ってみよう。
-          
-          変数を表示するために、Label という物体を使う。
-          
-          Ball(500,500, image='bird.png')
-          Block(500, 950, width=1000, slop=0.1)
-          
-          C = Label(x,y, value=0)
-          def hit(x,y):
-          C.value = C.value + 1
-          print(C.value)
-          block.collisionEnd = hit
-          
-          
-          
-          デモ４
-          
-          もうここまで見ればおわかりであろう。
-          Puppy は、簡単なPython ながら簡単なゲームなら作ることができる記述力がある。
-          最後に、Puppy で作られたブロック崩しの例を紹介しておこう。
-          
-          デモ５
 
-        </div>
+        <p>
+          Let's go back to coding in Puppy.
+          Puppy has a print function as well as other languages.
+          Here's the code appending a print function to the previous one.
+        </p>
+
+        <div class='caption'>Appending a print function</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
+Circle(500,100,width=150, restitution=1.0)
+print('Hello World')</pre>
+        <p>
+          Puppy Playground displays "Hello World" such as the following demo.
+        </p>
+        <div class='caption'>The demo of appending a print function</div>
+        <video src='./video/bounding2.mov' controls width="60%" height="auto"></video>
+        <p>
+          The string of "Hello World" moved right to left on the canvas.
+          Even just displaying a string makes a fun experience.
+        </p>
+
+        <p>
+          In the case of appending a code at the tail, the execution is updated on live without stopping by Puppy Focus.
+          Similarly, if a rewriting code is little, the execution is updated on live.
+          The following demonstration shows live updating on Puppy Playground.
+        </p>
+
+        <div class='caption'>The demo of live updating</div>
+        <video src='./video/bounding3.mov' controls width="60%" height="auto"></video>
+        <p>
+          As you can see, the canvas was updated partially by some rewriting codes.
+          We aim to remove redundant time waiting for the execution unrelated to change.
+          It makes the coding experience more exciting.
+        </p>
+        <p>
+          The following code is the last code in the above demo.
+        </p>
+        <div class='caption'>The last code in the above demo</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
+Circle(500,100,width=150, restitution=1.5, image='bird.png')</pre>
+        <p>
+          In this code, two new properties <i>fillStyle</i> and <i>image</i> appeared.
+          Besides these, Puppy provides a lot of other properties.
+          Puppy Focus makes possible to try and check the properties easily.
+        </p>
+
+        <p>
+          Using an event property, we show a more complex example.
+          A collisionEnd property is one of the event properties.
+          A function registered this property is invoked by the event of the collision end.
+          The following code is counting collision between a circle and another object.
+        </p>
+
+        <div class='caption'>The code of counting collision</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
+C = Circle(500,100, width=150, restitution=1.5, image='bird.png')
+L = Label(100, 100, value=0)
+def hit(obj1, obj2):
+  L.value = L.value + 1
+  print(L.value)
+C.collisionEnd = hit</pre>
+        <p>
+          The <i>Lable</i> is a basic class for displaying a string.
+          The value set in <i>value</i> property is cast to a string and displayed.
+          Here is the demo of the code of counting collision.
+        </p>
+        <div class='caption'>The demo of counting collision</div>
+        <video src='./video/bounding4.mov' controls width="60%" height="auto"></video>
+        <p>
+          As described above, Puppy has the Python like syntax, for instance, an assignment statement, function declaration, member access, and so on.
+          Puppy is a simplification of Python; nevertheless, it is expressive enough to write a simple game.
+          Finally, we introduce breaking blocks game written in Puppy.
+        </p>
+        
+        <div class='TODO'>ブロック崩しのデモ</div>
 
         <h3>Puppy Virtual Machine</h3>
-        <div class='FIXME'>Liveについて詳しく</div>
         <p>
           Puppy Virtual Machine (Puppy VM) is an execution environment on the 2D physics engine.
           We use the 2D physics engine javascript library called matter.js.
           Therefore, Puppy VM acts as a matter.js wrapper that provides an API.
           The following figure schematically represents Puppy VM.
         </p>
+        
         <div class="caption">Puppy VM</div>
         <img src='./image/PuppyVM.png' width="600" height="auto">
         <p>
@@ -194,6 +220,22 @@ Circle(500,100,width=200, restitution=1.0)</pre>
           As a result, it is possible to make a delay in the execution and highlight of the executed code.
           In an educational perspective, it helps to understand programming by confirming the correspondence between the executed code and the changes in the execution state.
         </p>
+
+        <div class='TODO'>
+          Live Focus の実現方法
+          エディタの編集を監視しながら、ソースコードの差分を計算する。
+          差分を計算して、変更のパターンを分類する。
+          1. ソースコードの最後尾への追加の場合
+          2. ソースコードの途中変更
+          3. それ以外の変更
+          1 の場合は、プログラムの実行を止めることなく、
+          追加されたコードを追加実行する。
+          2 の場合は、変更箇所がパラメータの定数に関する箇所であれば、
+          プログラムの実行を止めることなく、定数パラメータを更新する
+          3の場合は、プログラムを再スタートする。
+          （機能追加か？ 編集箇所の動作に焦点を当てやすくするため、
+          　エディタのカーソル位置まで早送りする。wait() を入れない
+        </div>
 
         <h3>Challenges and Conclusions</h3>
         <div class='FIXME'>
