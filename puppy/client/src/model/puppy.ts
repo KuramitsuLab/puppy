@@ -3,6 +3,7 @@ import * as api from './api';
 import { myRender } from './render';
 import { PuppyConstructor, Shape, initVars, setShapeProperty } from './shape';
 import { selectLine, removeLine, editor } from '../view/editor';
+import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -458,13 +459,52 @@ export class Puppy {
           World.remove(this.engine.world, body);
         }
       },
-    },                                    options);
+    }, options);
     const x = this.world.width;
     const y = this.world.height * (Math.random() * 0.9 + 0.05);
     this.new_(this.vars['Label'], x, y, _options);
   }
 
+  public trace(log: {}) {
+    console.log(log);
+    //this.settings.trace(log);
+  }
+
+  /* operator */
+
+  public listAdd(x: [], y: []) {
+    return x.concat(y);
+  }
+
+  public anyMul(x, y) {
+    if (typeof x == 'string') {
+      let s = '';
+      for (let i = 0; i < y; i += 1) {
+        s += x;
+      }
+      return s;
+    }
+    if (Array.isArray(x)) {
+      let a = [];
+      for (let i = 0; i < y; i += 1) {
+        a = a.concat(x);
+      }
+      return a;
+    }
+    return x * y;
+  }
+
+  public anyIn(x: any, a: [any]) {
+    return a.indexOf(x) >= 0;
+  }
+
+
+
   /* built-in */
+
+  public int(x: any) {
+    return `${x}`;
+  }
 
   public str(x: any) {
     return `${x}`;
@@ -497,10 +537,40 @@ export class Puppy {
     return xs;
   }
 
-  /* string (method) */
+  /* string/array (method) */
+
+  public getindex(a: any, index: number) {
+    if (typeof a == 'string') {
+      return a.charAt((index + a.length) % a.length);
+    }
+    if (Array.isArray(a)) {
+      return a[(index + a.length) % a.length];
+    }
+    return undefined;
+  }
+
+  public slice(a: any, x: number, y?: number) {
+    if (typeof a == 'string') {
+      if (y == undefined) {
+        y = a.length;
+      }
+      return a.substr(x, y - x);
+    }
+    if (Array.isArray(a)) {
+      if (y == undefined) {
+        y = a.length;
+      }
+      return a.slice(x, y);
+    }
+    return undefined;
+  }
 
   public find(s: string, sub: string) {
     return s.indexOf(sub);
+  }
+
+  public join(s: string, list: [string]) {
+    return list.join(s);
   }
 
   /* list */
@@ -517,9 +587,61 @@ export class Puppy {
     return Array.from(lst, func);           // funcがダメ
   }
 
+  /* Matter.Body */
+
   public setPosition(body: Matter.Body, x: number, y: number) {
     Matter.Body.setPosition(body, { x, y });
   }
+
+  public applyForce(body: Matter.Body, x: number, y: number, fx: number, fy: number) {
+    Matter.Body.applyForce(body, { x, y }, { x: fx, y: fy });
+  }
+
+  public rotate(body: Matter.Body, angle: number, x?: number, y?: number) {
+    Matter.Body.rotate(body, angle);
+  }
+
+  public scale(body: Matter.Body, sx: number, sy: number, x?: number, y?: number) {
+    Matter.Body.scale(body, sx, sy);
+  }
+
+  public setAngle(body: Matter.Body, angle: number) {
+    Matter.Body.setAngle(body, angle);
+  }
+
+  public setVelocity(body: Matter.Body, x: number, y: number) {
+    Matter.Body.setVelocity(body, { x, y });
+  }
+
+  public setAngularVelocity(body: Matter.Body, velocity: number) {
+    Matter.Body.setAngularVelocity(body, velocity);
+  }
+
+  public setDensity(body: Matter.Body, density: number) {
+    Matter.Body.setDensity(body, density);
+  }
+
+  public setMass(body: Matter.Body, mass: number) {
+    Matter.Body.setMass(body, mass);
+  }
+
+  public setStatic(body: Matter.Body, flag: boolean) {
+    Matter.Body.setStatic(body, flag);
+  }
+
+  /** 
+  
+    '.applyForce': Symbol('puppy.applyForce', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int, ts.Int)),
+  '.rotate': Symbol('puppy.rotate', const, (ts.Void, ts.Matter, ts.Int, ts.Int_, ts.Int_)),
+  '.scale': Symbol('puppy.scale', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int_, ts.Int_)),
+  '.setAngle': Symbol('puppy.setAngle', const, (ts.Void, ts.Matter, ts.Int)),
+  '.setAngularVelocity': Symbol('puppy.setAngularVelocity', const, (ts.Void, ts.Matter, ts.Int)),
+  '.setDensity': Symbol('puppy.setDensity', const, (ts.Void, ts.Matter, ts.Int)),
+  '.setMass': Symbol('puppy.setMass', const, (ts.Void, ts.Matter, ts.Int)),
+  '.setStatic': Symbol('puppy.setStatic', const, (ts.Void, ts.Matter, ts.Bool)),
+  '.setVelocity': Symbol('puppy.setVelocity', const, (ts.Void, ts.Matter, ts.Int)),
+  */
+
 }
 
 /* puppy controller */
