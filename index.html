@@ -236,28 +236,29 @@ C.collisionEnd = hit</pre>
         </p>
 
         <h4>Live Focus</h4>
+        <p>
+          Puppy Playground introduces Live Focus, which supports coding to improve the user experience.
+          We will describe how to realize Live Focus.
+          An editor on the playground keep in to be observed, moreover, code deferences are calculated.
+          The code deferences are classified into the following three patterns.
+        </p>
 
-        <div class='TODO'>
-          Live Focus の実現方法
-          エディタの編集を監視しながら、ソースコードの差分を計算する。
-          差分を計算して、変更のパターンを分類する。
-          1. ソースコードの最後尾への追加の場合
-          2. ソースコードの途中変更
-          3. それ以外の変更
-          1 の場合は、プログラムの実行を止めることなく、
-          追加されたコードを追加実行する。
-          2 の場合は、変更箇所がパラメータの定数に関する箇所であれば、
-          プログラムの実行を止めることなく、定数パラメータを更新する
-          3の場合は、プログラムを再スタートする。
-          （機能追加か？ 編集箇所の動作に焦点を当てやすくするため、
-          　エディタのカーソル位置まで早送りする。wait() を入れない
+        <ol>
+          <li><p>Appending at the tail of a code.</p></li>
+          <li><p>Changing at the midway of a code.</p></li>
+          <li><p>Otherwise.</p></li>
+        </ol>
 
-          Puppy Playgroundはユーザ体験向上のためにLive Focusというコーディング支援をしている．
-          どのようにLive Focusを実現しているかを述べる．
-          プレイグラウンド上のエディタは常に編集が監視されており，ソースコードの差分を計算している．
-          差分によって変更のパターンを以下のように分類している．
+        <p>
+          In the case of pattern 1, the appended code is continuously executed from the previous execution without stopping the program execution.
+          In the case of pattern 2, if the changing point is the parameter, the parameter is updated without stopping the program execution.
+          In the case of pattern 3, the program execution starts from the beginning.
+        </p>
 
-        </div>
+        <p>
+          As a result, users can immediately watch the execution result reflected the change point of code.
+          Therefore, Live Focus makes clear the relation between code differences and execution state differences.
+        </p>
 
         <h3>Challenges and Conclusions</h3>
         <div class='FIXME'>
