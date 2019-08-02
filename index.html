@@ -66,21 +66,29 @@
         <h3>Abstract</h3>
         <h3>Introduction</h3>
         <p>
-          近年の初等プログラミング教育の潮流は、Scratchに代表されるように、コーディングを避けたプログラミング学習である。コードの代わりに、ブロックなどを用いて制御構造を組み立てて、構文エラーなどに悩まされずに、プログラミングを体験することができる。
-          
-          しかし、コーディングの楽しさはどのように学んだら良いのだろう？
-          
-          我々は、プログラミングの本質のひとつはコーディングだと考え、コーディングの楽しさを伝えるため、コードベースのプログラミング教育環境Puppyを開発している。
-          
-          Puppy は、Python の文法と機能を制限し、短期間でプログラミングを体験できるように設計された子供向けのPython
-          である。さらに、コーディングとプログラム実行の統合環境を備え、プログラムの実行は物体の動作と解釈されて、可視化してみることができる。
-          
-          ここまでは、よくある入門環境であろう。Puppy では、Puppy
-          のコーディングの楽しさを伝える鍵として、ライブコーディングの技法を取り込んでいる。アイディアもシンプルである。コーディングしたら、即座にプログラム動作に反映させることができれば、コーディング体験は大きく高まるのではないだろうか？しかし、刻々と変化するプログラム状態から、コード変更を正確に反映させることは難しい。そこで、全体的な整合性が不十分であっても、変更箇所に焦点を当てる
-          Live Focus によって、変更箇所の直感的な理解を得られるようにしている。
-          
-          本稿は、Puppy の初期の開発状況をデモと共に報告する。
-          本稿の構成は以下の通りである。
+          A recent trend in introductory programming education in high schools is programming without coding.
+          As seen in Scratch, students can build programs using GUI-based block components and learn a concept of programming without annoying syntax errors.
+        </p>
+        <p>
+          But, how do they learn the fun of coding?
+        </p>
+        <p>
+          We consider that coding is an essence of programming.
+          Live programming can be a key technique to learn a fun of coding for novice students.
+          Based on this idea, we have been developing a code-intensive programming environment, called Puppy.
+        </p>
+        <p>
+          Puppy is a Kid’s version of Python, which is designed to restrict Python’s syntax and complex functions in order to obtain richer programming experience in a short amount of time.
+          Besides, Puppy has an integrated environment of program execution on physics engine, where a rich motion of objects is simulated with a small amount of coding.
+        <p>
+          The idea behind live programming in Puppy is straightforward.
+          If a program execution reflects an intermediate result of coding, coding experience will be greatly improved for students.
+          Puppy introduces Live Focus, which highlights some changed program states resulting from code change.
+          Due to Live Focus, the students can learn an intuitive understanding of coding and program executions.
+        </p>
+        <p>
+          This paper reports the initial development status of Puppy with several demonstrations.
+          The paper proceeds as follows.
         </p>
         <h3>What is Puppy Like?</h3>
         <div class='FIXME'>途中からwidthが200になっている</div>
@@ -90,7 +98,7 @@
           Let's see features of Puppy with some demos.
         </p>
         <p>
-          The Rectangle and Circle are basic classes that Puppy supplies standard.
+          The <i>Rectangle</i> and <i>Circle</i> are basic classes that Puppy supplies standard.
           Like Python, an instance of a class is created by the following code without a keyword of <i>new</i>.
         </p>
         <div class="caption">Creating instances of a rectangle and a circle</div>
@@ -187,39 +195,44 @@ C.collisionEnd = hit</pre>
         <p>
           As described above, Puppy has the Python like syntax, for instance, an assignment statement, function declaration, member access, and so on.
           Puppy is a simplification of Python; nevertheless, it is expressive enough to write a simple game.
-          Finally, we introduce breaking blocks game written in Puppy.
+          Finally, we introduce a breaking blocks game written in Puppy.
         </p>
         
         <div class='TODO'>ブロック崩しのデモ</div>
 
         <h3>Inside Puppy</h3>
-        <h4>Puppy Virtual Machine</h4>
         <p>
-          Puppy Virtual Machine (Puppy VM) is an execution environment on the 2D physics engine.
-          We use the 2D physics engine javascript library called matter.js.
-          Therefore, Puppy VM acts as a matter.js wrapper that provides an API.
+          In this section, we illustrate the implementation of Puppy Playground.
+          The playground is implemented as a web application, thereby able to starting to write a Puppy code easily without building environment.
+        </p>
+        <p>
+          The playground provides a source code editor that supports live coding.
+          A Puppy code written on the editor is sent to a transcompile server, and so the server responds with a javascript code.
+          A response javascript code consists of operations of Puppy Virtual Machine (Puppy VM).
+          Puppy Virtual Machine executes the operations and visualizes its result with the 2D physics engine javascript library called matter.js.
+          Puppy VM provides API connecting to matter.js, thus it acts as a matter.js wrapper.
           The following figure schematically represents Puppy VM.
         </p>
         
         <div class="caption">Puppy VM</div>
         <img src='./image/PuppyVM.png' width="600" height="auto">
         <p>
-          To draw an object on the canvas, you need to register the object in matter.js.
+          Matter.js draws 2D rigid bodies in a canvas tag of HTML.
+          To draw the body, the registration of a javascript object to matter.js is required.
           Then, matter.js repeatedly draws and calculates for the registered object.
           Puppy VM provides the API of objects registration and changing parameters which registered objects have.
           These operating objects API is called by the javascript code which Puppy is translated.
-          New objects declared in Puppy are registered in matter.js through API.
-          When you change the parameter of an object in Puppy, the parameter of the object registered in matter.js is also changed.
+          A new instance of Puppy basic class is registered in matter.js through the <i>newObject</i> API.
+          When a user changes the parameter of the instance, the parameter of the instance registered in matter.js is also changed.
           On the other hand, Puppy VM also provides the API to call from a user interface.
-          The "start" or "pause" API operate physics calculating and objects drawing on physics engine.
-          For example, when the button is pushed, the "start" API is called and order to run the physics engine.
+          The <i>start</i> and <i>pause</i> API operate physics calculating.
+          For example, when the button is pushed, the <i>start</i> API is called and order to run the physics engine.
         </p>
         <p>
           Puppy VM has a feature to support live programming.
-          The "yield" feature makes for gradual execution.
-          The code interpreted by Puppy VM can insert a "yield" keyword, the entire of the code is executed by a "for" statement.
-          As a result, it is possible to make a delay in the execution and highlight of the executed code.
-          In an educational perspective, it helps to understand programming by confirming the correspondence between the executed code and the changes in the execution state.
+          The <i>yield</i> feature realizes gradual execution.
+          Puppy VM executes operations with a <i>for</i> statement, thereby gradual execution is possible by inserting a sleep per <i>yeild</i>.
+          In an educational perspective, it helps to understand programming, due to confirming the correspondence between the executed code and the changes in the execution state.
         </p>
 
         <h4>Live Focus</h4>
@@ -238,6 +251,12 @@ C.collisionEnd = hit</pre>
           3の場合は、プログラムを再スタートする。
           （機能追加か？ 編集箇所の動作に焦点を当てやすくするため、
           　エディタのカーソル位置まで早送りする。wait() を入れない
+
+          Puppy Playgroundはユーザ体験向上のためにLive Focusというコーディング支援をしている．
+          どのようにLive Focusを実現しているかを述べる．
+          プレイグラウンド上のエディタは常に編集が監視されており，ソースコードの差分を計算している．
+          差分によって変更のパターンを以下のように分類している．
+
         </div>
 
         <h3>Challenges and Conclusions</h3>
