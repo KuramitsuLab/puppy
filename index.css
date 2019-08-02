@@ -21,7 +21,7 @@ body {
 
 .authors .author {
   display: inline-block;
-  margin: 0 4em;
+  margin: 1em 4em;
 }
 
 .authors .author .institution {
@@ -66,4 +66,8 @@ pre.prettyprint {
 .FIXME:before {
   content: "FIXME : ";
   font-weight: bold;
+}
+
+#hidden {
+  visibility: hidden;
 }
