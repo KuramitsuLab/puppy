@@ -64,6 +64,15 @@
 
       <div class="body">
         <h3>Abstract</h3>
+        <p>
+          A recent trend in introductory programming education in high schools is programming without coding such as block programming.
+          However, practical programming needs to coding in almost cases.
+          Therefore, we consider that programming education should support coding rather than remove coding.
+        </p>
+        <p>
+          To support coding, the key technique can be live programming.
+          Based on this idea, we have been developing a code-intensive programming environment, called Puppy. Puppy is a Kid’s version of Python for live programming.
+        </p>
         <h3>Introduction</h3>
         <p>
           A recent trend in introductory programming education in high schools is programming without coding.
@@ -89,46 +98,43 @@
         <p>
           This essay reports the initial development status of Puppy with several demonstrations.
           The essay proceeds as follows.
+          We introduce Puppy with demonstrations that Puppy runs on a live programming environment.
+          We then describe the implementation of the live programming environment.
+          Finally, we discuss several challenges and conclusion of this essay.
         </p>
         <h3>What is Puppy Like?</h3>
         <div class='FIXME'>途中からwidthが200になっている．デモは入力しながら．</div>
         <p>
-          <!-- Puppy はどのような言語か？ 実際に簡単なデモをみながら、見ていこう。 -->
-          What is Puppy like?
-          Let's see features of Puppy with some demos.
+          What is Puppy Like?
+          Let us start with a simple example of Puppy programs.
         </p>
         <p>
-          The <i>Rectangle</i> and <i>Circle</i> are basic classes that Puppy supplies standard.
-          Like Python, an instance of a class is created by the following code without a keyword of <i>new</i>.
+          The <i>Rectangle</i> and <i>Circle</i> are basic classes that describe a shape of objects on Puppy.
+          Here, two objects are created with some physical properties.
         </p>
         <div class="caption">Creating instances of a rectangle and a circle</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
 Circle(500,100,width=150, restitution=1.0)</pre>
         <p>
-          The live programming environment called Puppy Playground makes easy to try Puppy.
-          Let's try this code on Puppy Playground.
+          The first two arguments represent an initial position of the object.
+          The <i>width</i> and <i>height</i> represent the size of the object.
+          Thr Puppy playground provides an editor on the right hand of the screen.
+          The left hand of the Puppy playground is a canvas, where the execution result of Puppy is shown.
+          Once, you type in the above code, puppy runs the code at the same time.
         </p>
-        <div class="caption">The demo of a bounding ball</div>
+        <div class="caption">Demo 1. A bounding circle</div>
         <video src='./video/bounding.mov' controls width="60%" height="auto"></video>
         <p>
-          On the left side of the playground is a canvas where the execution result of Puppy is visualized.
-          When you write code in the editor, the execution result of the code is immediately displayed on the canvas.
-          In the above demo, the rectangle object was stationary, whereas the circle object was bounding.
-          Why was the circle object bounding?
-          This is attributed to a physics engine in the canvas.
-          The physics engine makes objects on the canvas behave in the law of classical physics.
-        </p>
-        <p>
-          We expect an educational effect by introducing the physics engine.
-          Robot programming is often found in educational programming themes.
-          This is caused by the visualization in the real world help to understand program behaviors.
-          Therefore, Puppy expresses program behaviors in a virtual world close to reality.
+          In the above demonstration, the rectangle object does not move, whereas the circle object is bounding due to a physics engine integrated with the Puppy playground.
+          As shown above, the circle follows the law of classical dynamics such as gravity and restitution.
+          Why the Puppy playground include the physics engine?
+          Toy robot programming (such as in LEGO Mindstorms) is a favorite theme since students are likely to understand the state change of programs through the movement of a robot in the real world.
+          Likewise, the Puppy Playground simulates the real world with a mapping of program behaviors.
         </p>
 
         <p>
-          Let's go back to coding in Puppy.
-          Puppy has a print function as well as other languages.
-          Here's the code appending a print function to the previous one.
+          Let’s go back to live programming in Puppy.
+          Puppy has a nice print function. You may add a statement <i>print(‘Hello World’)</i> into the last line.
         </p>
 
         <div class='caption'>Appending a print function</div>
@@ -136,48 +142,41 @@ Circle(500,100,width=150, restitution=1.0)</pre>
 Circle(500,100,width=150, restitution=1.0)
 print('Hello World')</pre>
         <p>
-          Puppy Playground displays "Hello World" such as the following demo.
+          The Puppy playground displays “Hello World” as shown in the following video.
         </p>
-        <div class='caption'>The demo of appending a print function</div>
+        <div class='caption'>Demo 2. Appending a print function</div>
         <video src='./video/bounding2.mov' controls width="60%" height="auto"></video>
         <p>
-          The string of "Hello World" moved right to left on the canvas.
-          Even just displaying a string makes a fun experience.
+          The string of “Hello World” moves from the right to the left on the canvas. Even just printing a string makes a fun experience in Puppy.
+          In the above case, the program execution proceeds without stopping. Similarly, if you rewrite code slightly, the state of program is updated on live.
+          The following demonstration changes the restitution property in the editor.
         </p>
 
-        <p>
-          In the case of appending a code at the tail, the execution is updated on live without stopping by Live Focus.
-          Similarly, if a rewriting code is little, the execution is updated on live.
-          The following demonstration shows live updating on Puppy Playground.
-        </p>
-
-        <div class='caption'>The demo of live updating</div>
+        <div class='caption'>Demo 3. Live updating</div>
         <video src='./video/bounding3.mov' controls width="60%" height="auto"></video>
         <p>
-          As you can see, the canvas was updated partially by some rewriting codes.
-          We aim to remove redundant time waiting for the execution unrelated to change.
-          It makes the coding experience more exciting.
+          As you can see, the state of the program execution is updated in part by resulting from modified code.
+          We aim to remove redundant time waiting for confirm the modification results.
+          This will help students in understanding the relationship between code and the execution results.
         </p>
         <p>
-          The following code is the last code in the above demo.
+          Here is the last code in the above demonstration.
         </p>
         <div class='caption'>The last code in the above demo</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
 Circle(500,100,width=150, restitution=1.5, image='bird.png')</pre>
         <p>
-          In this code, two new properties <i>fillStyle</i> and <i>image</i> appeared.
-          Besides these, Puppy provides a lot of other properties.
-          Live Focus makes possible to try and check the properties easily.
+          In this code, two new properties <i>fillStyle</i> and <i>image</i> appear.
+          The Live Focus makes possible to try and check the properties easily.
         </p>
 
         <p>
-          Using an event property, we show a more complex example.
-          A collisionEnd property is one of the event properties.
-          A function registered this property is invoked by the event of the collision end.
-          The following code is counting collision between a circle and another object.
+          The <i>collisionEnd</i> property is a hook point for event handling.
+          A function registered in this property is invoked by the event of the end time of object collision in the physics engine.
+          The following code is counting a number of collisions between a circle and another object.
         </p>
 
-        <div class='caption'>The code of counting collision</div>
+        <div class='caption'>Counting a number of collisions</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
 C = Circle(500,100, width=150, restitution=1.5, image='bird.png')
 L = Label(100, 100, value=0)
@@ -186,15 +185,13 @@ def hit(obj1, obj2):
   print(L.value)
 C.collisionEnd = hit</pre>
         <p>
-          The <i>Lable</i> is a basic class for displaying a string.
-          The value set in <i>value</i> property is cast to a string and displayed.
-          Here is the demo of the code of counting collision.
+          The <i>Label</i> is another basic class for displaying a value in the specified location on the screen.
+          Here is a live version of counting a number of object collisions.
         </p>
-        <div class='caption'>The demo of counting collision</div>
+        <div class='caption'>Demo 4. Counting a number of collisions</div>
         <video src='./video/bounding4.mov' controls width="60%" height="auto"></video>
         <p>
-          As described above, Puppy has the Python like syntax, for instance, an assignment statement, function declaration, member access, and so on.
-          Puppy is a simplification of Python; nevertheless, it is expressive enough to write a simple game.
+          Puppy is an educational simplification of Python, while it is expressive enough to write a simple game.
           Finally, we introduce a breaking blocks game written in Puppy.
         </p>
         
@@ -202,8 +199,8 @@ C.collisionEnd = hit</pre>
 
         <h3>Inside Puppy</h3>
         <p>
-          In this section, we illustrate the implementation of Puppy Playground.
-          The playground is implemented as a web application, thereby able to starting to write a Puppy code easily without building environment.
+          In this section, we illustrate the implementation of the Puppy playground.
+          The playground is implemented as a web application, thereby it can be started to write a Puppy code easily without building environment.
         </p>
         <p>
           The playground provides a source code editor that supports live coding.
@@ -237,7 +234,7 @@ C.collisionEnd = hit</pre>
 
         <h4>Live Focus</h4>
         <p>
-          Puppy Playground introduces Live Focus, which supports coding to improve the user experience.
+          The Puppy playground introduces Live Focus, which supports coding to improve the user experience.
           We will describe how to realize Live Focus.
           An editor on the playground keep in to be observed, moreover, code deferences are calculated.
           The code deferences are classified into the following three patterns.
@@ -274,7 +271,7 @@ C.collisionEnd = hit</pre>
         <p>
           In this essay, we introduced Puppy using some demos on a prototype implementation.
           Puppy is simple, whereas it is expressive enough to learn programming.
-          In addition, Puppy Playground assists coding using live features.
+          In addition, the Puppy playground assists coding using live features.
           We described the implementation of Puppy Playground.
           If you want more detail, please access to <a href="https://github.com/KuramitsuLab/puppy"> the Puppy repository</a> on Github.
         </p>
