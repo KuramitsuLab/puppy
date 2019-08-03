@@ -4,6 +4,7 @@ body {
   font-weight: 300;
   letter-spacing: .01em;
   line-height: 1.6;
+  counter-reset:fig demo listing;
 }
 
 .all-contents {
@@ -48,6 +49,36 @@ pre.prettyprint {
 
 .caption:before {
   content: "▼ ";
+}
+
+.fig-caption {
+  font-size: 80%;
+  margin: 2px 0px 0px 0px;
+}
+
+.fig-caption:before {
+  counter-increment:fig;
+  content: "▲ Figure " counter(fig) ": ";
+}
+
+.listing-caption {
+  font-size: 80%;
+  margin: 2px 0px 0px 0px;
+}
+
+.listing-caption:before {
+  counter-increment:listing;
+  content: "▼ Listing " counter(listing) ": ";
+}
+
+.demo-caption {
+  font-size: 80%;
+  margin: 2px 0px 0px 0px;
+}
+
+.demo-caption:before {
+  counter-increment:demo;
+  content: "▲ Demo " counter(demo) ": ";
 }
 
 .TODO {

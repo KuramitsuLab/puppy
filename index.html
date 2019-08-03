@@ -66,17 +66,20 @@
         <h3>Abstract</h3>
         <p>
           A recent trend in introductory programming education in high schools is programming without coding such as block programming.
-          However, practical programming needs to coding in almost cases.
-          Therefore, we consider that programming education should support coding rather than remove coding.
+          However, practical programming requires coding skills.
+          We consider that live programming can be the key technique to learn to the fun of coding for novice students.
         </p>
         <p>
-          To support coding, the key technique can be live programming.
-          Based on this idea, we have been developing a code-intensive programming environment, called Puppy. Puppy is a Kid’s version of Python for live programming.
+          Based on this idea, we have been developing a code-intensive programming environment, called Puppy.
+          Puppy is a Kid's version of Python that runs on an integrated environment of program execution on a physics engine.
+          Even a small amount of coding can express a rich program.
+          In addition, the programming environment helps to understand coding and programming execution using live programming technique.
+          This essay reports the initial development status of Puppy with several demonstrations.
         </p>
         <h3>Introduction</h3>
         <p>
           A recent trend in introductory programming education in high schools is programming without coding.
-          As seen in Scratch, students can build programs using GUI-based block components and learn a concept of programming without annoying syntax errors.
+          As seen in Scratch<a href='#reference'>[1, 2]</a>, students can build programs using GUI-based block components and learn a concept of programming without annoying syntax errors.
         </p>
         <p>
           But, how do they learn the fun of coding?
@@ -112,18 +115,18 @@
           The <i>Rectangle</i> and <i>Circle</i> are basic classes that describe a shape of objects on Puppy.
           Here, two objects are created with some physical properties.
         </p>
-        <div class="caption">Creating instances of a rectangle and a circle</div>
+        <div class="listing-caption">Creating instances of a rectangle and a circle</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
 Circle(500,100,width=150, restitution=1.0)</pre>
         <p>
           The first two arguments represent an initial position of the object.
           The <i>width</i> and <i>height</i> represent the size of the object.
-          Thr Puppy playground provides an editor on the right hand of the screen.
+          The Puppy playground provides an editor on the right hand of the screen.
           The left hand of the Puppy playground is a canvas, where the execution result of Puppy is shown.
           Once, you type in the above code, puppy runs the code at the same time.
         </p>
-        <div class="caption">Demo 1. A bounding circle</div>
         <video src='./video/bounding.mov' controls width="60%" height="auto"></video>
+        <div class="demo-caption">A bounding circle</div>
         <p>
           In the above demonstration, the rectangle object does not move, whereas the circle object is bounding due to a physics engine integrated with the Puppy playground.
           As shown above, the circle follows the law of classical dynamics such as gravity and restitution.
@@ -137,23 +140,23 @@ Circle(500,100,width=150, restitution=1.0)</pre>
           Puppy has a nice print function. You may add a statement <i>print(‘Hello World’)</i> into the last line.
         </p>
 
-        <div class='caption'>Appending a print function</div>
+        <div class='listing-caption'>Appending a print function</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true)
 Circle(500,100,width=150, restitution=1.0)
 print('Hello World')</pre>
         <p>
           The Puppy playground displays “Hello World” as shown in the following video.
         </p>
-        <div class='caption'>Demo 2. Appending a print function</div>
         <video src='./video/bounding2.mov' controls width="60%" height="auto"></video>
+        <div class='demo-caption'>Appending a print function</div>
         <p>
           The string of “Hello World” moves from the right to the left on the canvas. Even just printing a string makes a fun experience in Puppy.
           In the above case, the program execution proceeds without stopping. Similarly, if you rewrite code slightly, the state of program is updated on live.
           The following demonstration changes the restitution property in the editor.
         </p>
 
-        <div class='caption'>Demo 3. Live updating</div>
         <video src='./video/bounding3.mov' controls width="60%" height="auto"></video>
+        <div class='demo-caption'>Live updating</div>
         <p>
           As you can see, the state of the program execution is updated in part by resulting from modified code.
           We aim to remove redundant time waiting for confirm the modification results.
@@ -162,7 +165,7 @@ print('Hello World')</pre>
         <p>
           Here is the last code in the above demonstration.
         </p>
-        <div class='caption'>The last code in the above demo</div>
+        <div class='listing-caption'>The last code in the above demo</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
 Circle(500,100,width=150, restitution=1.5, image='bird.png')</pre>
         <p>
@@ -176,7 +179,7 @@ Circle(500,100,width=150, restitution=1.5, image='bird.png')</pre>
           The following code is counting a number of collisions between a circle and another object.
         </p>
 
-        <div class='caption'>Counting a number of collisions</div>
+        <div class='listing-caption'>Counting a number of collisions</div>
         <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=true, fillStyle='green')
 C = Circle(500,100, width=150, restitution=1.5, image='bird.png')
 L = Label(100, 100, value=0)
@@ -188,8 +191,8 @@ C.collisionEnd = hit</pre>
           The <i>Label</i> is another basic class for displaying a value in the specified location on the screen.
           Here is a live version of counting a number of object collisions.
         </p>
-        <div class='caption'>Demo 4. Counting a number of collisions</div>
         <video src='./video/bounding4.mov' controls width="60%" height="auto"></video>
+        <div class='demo-caption'>Counting a number of collisions</div>
         <p>
           Puppy is an educational simplification of Python, while it is expressive enough to write a simple game.
           Finally, we introduce a breaking blocks game written in Puppy.
@@ -211,8 +214,8 @@ C.collisionEnd = hit</pre>
           The following figure schematically represents Puppy VM.
         </p>
         
-        <div class="caption">Puppy VM</div>
         <img src='./image/PuppyVM.png' width="600" height="auto">
+        <div class="fig-caption">Puppy VM</div>
         <p>
           Matter.js draws 2D rigid bodies in a canvas tag of HTML.
           To draw the body, the registration of a javascript object to matter.js is required.
@@ -269,32 +272,32 @@ C.collisionEnd = hit</pre>
           For instance, if a user mouse over the parameter of a rigid body, the playground explain by visual in the rigid body.
         </p>
         <p>
-          In this essay, we introduced Puppy using some demos on a prototype implementation.
+          In this essay, we introduced Puppy with several demonstrations on a prototype implementation.
           Puppy is simple, whereas it is expressive enough to learn programming.
-          In addition, the Puppy playground assists coding using live features.
-          We described the implementation of Puppy Playground.
+          In addition, the Puppy playground assists coding using live programming technique.
+          Finally, we described the implementation of Puppy Playground and how to realize live programming.
           If you want more detail, please access to <a href="https://github.com/KuramitsuLab/puppy"> the Puppy repository</a> on Github.
         </p>
-        <h3>Reference</h3>
+        <h3 id='reference'>Reference</h3>
         <div class="bibtex_template">
-          <ol>
-            <li>
-              <div class="if author" style="font-weight: bold;">
-                <span class="if year">
-                  <span class="year"></span>,
-                </span>
-                <span class="author"></span>
-                <span class="if url" style="margin-left: 20px">
-                  <a class="url" style="color:black; font-size:10px">(view online)</a>
-                </span>
-              </div>
-              <div style="margin-left: 10px; margin-bottom:5px;">
-                <span class="title"></span>
-              </div>
-            </li>
-          </ol>
+          <li>
+            <div class="if author" style="font-weight: bold;">
+              <span class="if year">
+                <span class="year"></span>,
+              </span>
+              <span class="author"></span>
+              <span class="if url" style="margin-left: 20px">
+                <a class="url" style="color:black; font-size:10px">(view online)</a>
+              </span>
+            </div>
+            <div style="margin-left: 10px; margin-bottom:5px;">
+              <span class="title"></span>
+            </div>
+          </li>
         </div>
-        <div id="bibtex_display" bibtexkey="Scratch"></div>
+        <ol>
+          <div id="bibtex_display" bibtexkey="Scratch"></div>
+        </ol>
       </div>
 
     </div>
