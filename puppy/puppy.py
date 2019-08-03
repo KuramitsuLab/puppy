@@ -459,6 +459,7 @@ KEYWORDS = {
     'fontStyle': 'fontStyle',
     'clicked': 'clicked',
     'isStatic': 'isStatic',
+    'collisionEnd': 'collisionEnd',
 
     # 日本語名
     '名前': 'name',
@@ -496,6 +497,7 @@ KEYWORDTYPES = {
     'fontColor': ts.String,
     'clicked': (ts.Void, ts.Matter),
     'move': (ts.Void, ts.Matter, ts.Int),
+    'collisionEnd': (ts.Void, ts.Matter, ts.Matter)
 }
 
 
