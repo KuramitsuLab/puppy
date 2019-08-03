@@ -3,6 +3,7 @@ import * as api from './api';
 import { myRender } from './render';
 import { PuppyConstructor, Shape, initVars, setShapeProperty } from './shape';
 import { selectLine, removeLine, editor } from '../view/editor';
+import { format } from 'path';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -464,6 +465,34 @@ export class Puppy {
     this.new_(this.vars['Label'], x, y, _options);
   }
 
+  public async input(console?: string) {
+    this.runner.enabled = false;
+    const awaitForClick = target => {
+      return new Promise(resolve => { // 処理A
+        const listener = resolve;     // 処理B
+        target.addEventListener('click', listener, { once: true }); // 処理C
+      });
+    };
+    const text = document.getElementById('inputtext') as HTMLInputElement;
+    const f = async () => {
+      const target = document.querySelector('#submitInput');
+      let Text = '';
+      document.getElementById('submitInput').onclick = () => {
+        document.getElementById('myOverlay').style.display = 'none';
+        Text = text.value;
+        text.value = '';
+      };
+      await awaitForClick(target);
+      return Text;
+    };
+
+    text.placeholder = console ? console :'Input here';
+    document.getElementById('myOverlay').style.display = 'block';
+    const x = await f();
+    this.runner.enabled = true;
+    return x;
+  }
+
   /* built-in */
 
   public str(x: any) {
@@ -498,6 +527,9 @@ export class Puppy {
   }
 
   /* string (method) */
+  public anyMul(x, y) {
+    return x * y;
+  }
 
   public find(s: string, sub: string) {
     return s.indexOf(sub);
