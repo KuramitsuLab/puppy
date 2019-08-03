@@ -203,14 +203,14 @@ C.collisionEnd = hit</pre>
         <h3>Inside Puppy</h3>
         <p>
           In this section, we illustrate the implementation of the Puppy playground.
-          The playground is implemented as a web application, thereby it can be started to write a Puppy code easily without building environment.
+          The playground is implemented as a web application, thereby it makes possible to start writing a Puppy code easily without building environment.
         </p>
         <p>
-          The playground provides a source code editor that supports live coding.
-          A Puppy code written on the editor is sent to a transcompile server, and so the server responds with a javascript code.
-          A response javascript code consists of operations of Puppy Virtual Machine (Puppy VM).
-          Puppy VM executes the operations and visualizes its result with the 2D physics engine javascript library called matter.js.
-          Puppy VM provides API connecting to matter.js, thus it acts as a matter.js wrapper.
+          The Puppy playground has a source code editor.
+          A Puppy code written on the editor is sent to a transcompile server, and so the server responds with the javascript code translated from Puppy.
+          The javascript code consists of operations for Puppy Virtual Machine (Puppy VM).
+          Puppy VM executes the operations and visualizes its result by the 2D physics engine javascript library called matter.js.
+          Puppy VM provides API for connecting to matter.js, thus it acts as a matter.js wrapper.
           The following figure schematically represents Puppy VM.
         </p>
         
@@ -218,21 +218,22 @@ C.collisionEnd = hit</pre>
         <div class="fig-caption">Puppy VM</div>
         <p>
           Matter.js draws 2D rigid bodies in a canvas tag of HTML.
-          To draw the body, the registration of a javascript object to matter.js is required.
+          To draw the body, a javascript object requires to be registered to matter.js.
           Then, matter.js repeatedly draws and calculates for the registered object.
           Puppy VM provides the API of objects registration and changing parameters which registered objects have.
-          These operating objects API is called by the javascript code which Puppy is translated.
+          These operating objects API are called by the javascript code translated from Puppy.
           A new instance of Puppy basic class is registered in matter.js through the <i>newObject</i> API.
-          When a user changes the parameter of the instance, the parameter of the instance registered in matter.js is also changed.
-          On the other hand, Puppy VM also provides the API to call from a user interface.
-          The <i>start</i> and <i>pause</i> API operate physics calculating.
-          For example, when the button is pushed, the <i>start</i> API is called and order to run the physics engine.
+          When a user changes the parameter of the instance, the parameter of the javascript object registered in matter.js is also changed.
+          On the other hand, Puppy VM also provides the API to call from a user interface in the Puppy playground.
+          The <i>start</i> and <i>pause</i> API operate physics calculate.
+          For example, the Puppy playground has the button using the <i>start</i> API to run the physics engine.
         </p>
         <p>
           Puppy VM has a feature to support live programming.
           The <i>yield</i> feature realizes gradual execution.
-          Puppy VM executes operations with a <i>for</i> statement, thereby gradual execution is possible by inserting a sleep per <i>yeild</i>.
-          In an educational perspective, it helps to understand programming, due to confirming the correspondence between the executed code and the changes in the execution state.
+          A <i>yield</i> keyword is inserted in the javascript code translated from Puppy.
+          Puppy VM wait a few seconds after each the <i>yield</i> keyword.
+          Hence, the Puppy playground can visualize gradually changing of the program execution.
         </p>
 
         <h4>Live Focus</h4>
