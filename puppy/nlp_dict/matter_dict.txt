@@ -4,9 +4,13 @@
 
 # color
 赤,赤い 　　{"color": "#ff0000"}
+青,青い 　　{"color": "#0000ff"}
+黒,黒い 　　{"color": "#000000"}
+白,白い 　　{"color": "#ffffff"}
 
 # restitution
 跳ねる,弾む {"restitution": 0.8}
+跳ねすぎ,弾みすぎ {"restitution": 2.0}
 よく跳ねる,よく弾む {"restitution": 1.5}
 少し跳ねる,少し弾む {"restitution": 0.4}
 跳ねない,弾まない   {"restitution": 0.0}

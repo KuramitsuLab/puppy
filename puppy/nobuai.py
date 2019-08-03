@@ -73,69 +73,88 @@ def init_wordvec(path='nlp_dict/entity_vector.model.bin'):
     model_path = getRootPath(path)
     if not model_path.exists():
         print('hiyoko is not available')
-        return lambda x: None
+        return lambda x, pinfo, property=None: None
     from gensim.models import KeyedVectors
-    model = KeyedVectors.load_word2vec_format(str(model_path), binary=True)
+    model = KeyedVectors.load_word2vec_format(
+        str(model_path), limit=500000, binary=True)
+    base = [x for x in KnowledgeBase.keys() if x in model]
+    domains = {}
 
-    def find_from_model(w):
+    def domain(property):
+        if property is None:
+            return base
+        if not property in domains:
+            domains[property] = [
+                x for x in base if property in KnowledgeBase[x]]
+        return domains[property]
+
+    def find_from_model(w, pinfo, property=None):
         if w not in model:
             return None
-        sim_max = 0
-        key_max = ''
-        for key in KnowledgeBase.keys():
-            if key not in model:
-                continue
-            sim = model.similarity(w, key)
+        sim_max = 0.0
+        sim_w = None
+        for w2 in domain(property):
+            sim = model.similarity(w, w2)
             if sim > sim_max:
                 sim_max = sim
-                key_max = key
-        return key_max
+                sim_w = w2
+        if sim_w is not None:
+            print('@word2vec', w, sim_w, sim_max)
+            pinfo(f'「{w}」は{sim_w}(類似度{sim_max:.4})と解釈されました')
+        return sim_w
 
     return find_from_model
 
 
 load_KnowledgeBase('nlp_dict/matter_dict.txt')
 load_SimpleDictionary('nlp_dict/color_dict.txt', 'color', '色')
-def find_sim(x): return None
+find_sim = init_wordvec('nlp_dict/entity_vector.model.bin')
 # print(KnowledgeBase)
 
 
 Empty = {}
 
 
-def find_data(phrase: str):
+def suffix(w):
+    if w.endswith('の'):
+        return w[:-1]
+    return w
+
+
+def find_data(phrase: str, pinfo, property=None):
     prefix = ''
-    key = phrase
-    while len(key) > 0:
-        if key in KnowledgeBase:
-            return merge(KnowledgeBase[key], find_data(prefix))
+    w = phrase
+    while len(w) > 0:
+        if w in KnowledgeBase:
+            return merge(KnowledgeBase[w], find_data(suffix(prefix), pinfo, None))
         # wordvec で 近似する
-        keysim = find_sim(key)
-        if keysim is not None:
-            return merge(KnowledgeBase[keysim], find_data(prefix))
+        simw = find_sim(w, pinfo, property)
+        if simw is not None:
+            return merge(KnowledgeBase[simw], find_data(suffix(prefix), pinfo, None))
         # n-gramする
-        prefix += key[0]
-        key = key[1:]
+        prefix += w[0]
+        w = w[1:]
     return Empty
 
 
-def find_value(key, property, default=None):
-    data = find_data(key)
+def find_value(key, property, pinfo, default=None):
+    data = find_data(key, pinfo, property)
     if property in data:
         return data[property]
     return default
 
 
-def conv_phrase(phrase, d):
+def conv_phrase(phrase, pinfo, d):
     if 'は' in phrase:
         pos = phrase.find('は')
         key = phrase[0:pos]
-        key = find_value(key, 'property', key)
-        value = find_value(phrase[pos+1:], property)
-        if value is not None:
-            d[property] = value
-            return
-    found = find_data(phrase)
+        key = find_value(key, 'property', pinfo, key)
+        if key is not None:
+            value = find_value(phrase[pos+1:], key, pinfo)
+            if value is not None:
+                d[key] = value
+                return
+    found = find_data(phrase, pinfo)
     if len(found) == 0:
         print('@見つかりません', phrase)
     for key in found:
@@ -143,9 +162,16 @@ def conv_phrase(phrase, d):
 
 
 def conv(*phrases):
+    def pinfo(x): return None
     d = {}
     for phrase in phrases:
-        conv_phrase(phrase, d)
+        conv_phrase(phrase, pinfo, d)
+    return d
+
+
+def conv2(phrase, pinfo=lambda x: None):
+    d = {}
+    conv_phrase(phrase, pinfo, d)
     return d
 
 

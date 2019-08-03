@@ -459,7 +459,7 @@ export class Puppy {
           World.remove(this.engine.world, body);
         }
       },
-    }, options);
+    },                                    options);
     const x = this.world.width;
     const y = this.world.height * (Math.random() * 0.9 + 0.05);
     this.new_(this.vars['Label'], x, y, _options);
@@ -467,7 +467,7 @@ export class Puppy {
 
   public trace(log: {}) {
     console.log(log);
-    //this.settings.trace(log);
+    // this.settings.trace(log);
   }
 
   /* operator */
@@ -497,8 +497,6 @@ export class Puppy {
   public anyIn(x: any, a: [any]) {
     return a.indexOf(x) >= 0;
   }
-
-
 
   /* built-in */
 
@@ -629,8 +627,8 @@ export class Puppy {
     Matter.Body.setStatic(body, flag);
   }
 
-  /** 
-  
+  /**
+
     '.applyForce': Symbol('puppy.applyForce', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int, ts.Int)),
   '.rotate': Symbol('puppy.rotate', const, (ts.Void, ts.Matter, ts.Int, ts.Int_, ts.Int_)),
   '.scale': Symbol('puppy.scale', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int_, ts.Int_)),

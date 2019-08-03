@@ -680,7 +680,7 @@ def KeywordArgument(env, t, out, used_keys=None):
 
 
 def checkNLPMatter(env, name, t):
-    option = nlp.conv(name)
+    option = nlp.conv2(name, lambda x: pinfo(env, t, x))
     if not 'shape' in option:
         pwarn(env, t, 'はっきりと物体の形状を指定してください')
         option['shape'] = 'Circle'
@@ -691,7 +691,8 @@ def checkNLPMatter(env, name, t):
 def NLPSymbol(env, t, out, used_keys=None):
     phrase = t.asString()
     if '@target' in env:
-        option = nlp.conv(f"{env['@target']}は{phrase}")
+        option = nlp.conv2(f"{env['@target']}は{phrase}",
+                           lambda x: pinfo(env, t, x))
         if len(option) == 1:
             val = option[option.keys()[0]]
             pinfo(env, t, f'{phrase}は{repr(val)}')
@@ -700,7 +701,7 @@ def NLPSymbol(env, t, out, used_keys=None):
             pwarn(env, t, f'「{phrase}」は解釈できません')
             return emitUndefined(env, t, out)
     else:
-        option = nlp.conv(phrase)
+        option = nlp.conv2(phrase, lambda x: pinfo(env, t, x))
         if len(option) == 0:
             pwarn(env, t, f'「{phrase}」は解釈できません')
             return ts.Void
@@ -719,7 +720,7 @@ def emitOption(env, t, key, value, out, used_keys):
     out.append("'" + key + "': ")
     emitValue(env, value, out)
     out.append(',')
-    addLives(env, key, value, trace(env, t))
+    #addLives(env, key, value, trace(env, t))
 
 
 def emitValue(env, val, out):
