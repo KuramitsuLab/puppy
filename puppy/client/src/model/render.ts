@@ -91,7 +91,7 @@ export const myRender = (render) => {
           }
         }
 
-        if (part.value) {
+        if (part.value !== undefined) { // Make to show null and 0.
           if (part.ref) {
             part.value = part.ref();
           }
