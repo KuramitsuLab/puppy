@@ -465,7 +465,7 @@ export class Puppy {
     this.new_(this.vars['Label'], x, y, _options);
   }
 
-  public async input() {
+  public async input(console?: string) {
     this.runner.enabled = false;
     const awaitForClick = target => {
       return new Promise(resolve => { // 処理A
@@ -473,26 +473,24 @@ export class Puppy {
         target.addEventListener('click', listener, { once: true }); // 処理C
       });
     };
-
+    const text = document.getElementById('inputtext') as HTMLInputElement;
     const f = async () => {
       const target = document.querySelector('#submitInput');
       let Text = '';
       document.getElementById('submitInput').onclick = () => {
-        const text = document.getElementById('inputtext') as HTMLInputElement;
         document.getElementById('myOverlay').style.display = 'none';
         Text = text.value;
+        text.value = '';
       };
       await awaitForClick(target);
       return Text;
     };
 
+    text.placeholder = console ? console :'Input here';
     document.getElementById('myOverlay').style.display = 'block';
     const x = await f();
     this.runner.enabled = true;
-    console.log(x);
     return x;
-    // const x = await f();
-    // console.log('##', x);
   }
 
   /* built-in */
