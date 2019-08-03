@@ -209,16 +209,16 @@ C.collisionEnd = hit</pre>
           A Puppy code written on the editor is sent to a transcompile server, and so the server responds with the javascript code translated from Puppy.
           The javascript code consists of operations for Puppy Virtual Machine (Puppy VM).
           Puppy VM executes the operations and visualizes its result by the 2D physics engine javascript library called matter.js.
-          Puppy VM provides API for connecting to matter.js, thus it acts as a matter.js wrapper.
+          Puppy VM provides API to connect matter.js, thus it acts as a matter.js wrapper.
           The following figure schematically represents Puppy VM.
         </p>
         
         <img src='./image/PuppyVM.png' width="600" height="auto">
         <div class="fig-caption">Puppy VM</div>
         <p>
-          Matter.js draws 2D rigid bodies in a canvas tag of HTML.
+          Matter.js draws 2D rigid bodies in a canvas HTML element.
           To draw the body, a javascript object requires to be registered to matter.js.
-          Then, matter.js repeatedly draws and calculates for the registered object.
+          Then, matter.js repeatedly draws and calculates the registered object.
           Puppy VM provides the API of objects registration and changing parameters which registered objects have.
           These operating objects API are called by the javascript code translated from Puppy.
           A new instance of Puppy basic class is registered in matter.js through the <i>newObject</i> API.
