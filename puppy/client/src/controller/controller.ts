@@ -128,6 +128,12 @@ const initPage = () => {
 
 /* event */
 
+document.getElementById('submitInput').onclick = () => {
+  const text = document.getElementById('inputtext') as HTMLInputElement;
+  console.log(text.value);
+  document.getElementById('myOverlay').style.display = 'none';
+};
+
 document.getElementById('base').onclick = () => {
   session.removeItem('/settings/');
   if (path.startsWith('/Puppy')) {
