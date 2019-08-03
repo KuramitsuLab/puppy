@@ -238,7 +238,7 @@ C.collisionEnd = hit</pre>
 
         <h4>Live Focus</h4>
         <p>
-          The Puppy playground introduces Live Focus, which supports coding to improve the user experience.
+          The Puppy playground introduces Live Focus, which supports coding to improve coding experience.
           We will describe how to realize Live Focus.
           An editor on the playground keep in to be observed, moreover, code deferences are calculated.
           The code deferences are classified into the following three patterns.
@@ -251,14 +251,13 @@ C.collisionEnd = hit</pre>
         </ol>
 
         <p>
-          In the case of pattern 1, the appended code is continuously executed from the previous execution without stopping the program execution.
-          In the case of pattern 2, if the changing point is the parameter, the parameter is updated without stopping the program execution.
+          In the case of pattern 1, the appended code is continuously executed without stopping the program execution.
+          In the case of pattern 2, if the changed part is a parameter, the parameter is updated without stopping the program execution.
           In the case of pattern 3, the program execution starts from the beginning.
         </p>
 
         <p>
-          As a result, users can immediately watch the execution result reflected the change point of code.
-          Therefore, Live Focus makes clear the relation between code differences and execution state differences.
+          Consequently, Live Focus highlights some changed program states resulting from code change.
         </p>
 
         <h3>Challenges and Conclusions</h3>
