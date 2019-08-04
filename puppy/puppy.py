@@ -367,6 +367,7 @@ IMPORT_MATH = {
 
 BUILDIN = {
     'math.': IMPORT_MATH,
+    'input': Symbol('await puppy.input', const, (ts.String, ts.String_)),
     'print': Symbol('puppy.print', const, (ts.Void, 'any', ts.EmptyOption)),
 
     # 返値, 引数.. None はなんでもいい
@@ -983,7 +984,7 @@ return {{
 {lives}
   ],
 {diffcode}
-  main: function*(puppy){{
+  main: async function*(puppy){{
 {main}
   }},
   lines: [{lines}],

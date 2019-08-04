@@ -191,9 +191,14 @@ const togglePlay = (t: number) => {
   playPanel.innerHTML = `<i class="fa fa-pause"></i> ${t | 0} `;
 };
 
+const ftrace = (log: {}) => {
+
+};
+
 initPuppy({
   canvas: 'puppy-screen',
   eachUpdate: togglePlay,
+  ftrace,
 });
 
 document.getElementById('play').onclick = () => {

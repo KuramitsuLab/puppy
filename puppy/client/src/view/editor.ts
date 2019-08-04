@@ -84,7 +84,6 @@ terminal.setOption('showLineNumbers', false);
 
 const runmarkers = [];
 export const selectLine = (start: number, end :number) => {
-  console.log(start, end);
   if (runmarkers.length > 0) {
     for (const m of runmarkers) {
       editor.session.removeMarker(m);

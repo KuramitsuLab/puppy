@@ -7,8 +7,54 @@
   <link rel="stylesheet" type="text/css" href="/github-markdown.css">
   <link rel="stylesheet" href="/css/all.min.css">
   <!-- https://uxmilk.jp/52837 -->
-  <link href="https://fonts.googleapis.com/css?family=Bangers rel=" stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Bangers" rel="stylesheet">
   <style>
+
+    .overlay {
+      height: 100%;
+      width: 100%;
+      display: none;
+      position: fixed;
+      z-index: 30;
+      top: 0;
+      left: 0;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0, 0.3);
+    }
+
+    .overlay-content {
+      position: relative;
+      top: 46%;
+      width: 80%;
+      text-align: center;
+      margin-top: 30px;
+      margin: auto;
+    }
+
+    .overlay input[type=text] {
+      padding: 20px;
+      font-size: 18px;
+      border: none;
+      float: left;
+      width: 80%;
+      background: white;
+    }
+    .overlay input[type=text]:hover {
+      background: #f1f1f1;
+    }
+
+    .overlay button {
+      float: left;
+      width: 6%;
+      padding: 19.5px;
+      background:#CAF2F3;
+      border: none;
+      cursor: pointer;
+    }
+    .overlay button:hover {
+      background: #2196F3
+    }
+
     .btn {
       background-color: DodgerBlue;
       /*background-color: pink;*/
@@ -175,13 +221,21 @@
     .running-line {
       position: absolute;
       background: rgba(152, 251, 152, 0.925);
-      z-index: 20;
     }
   </style>
 
 </head>
 
 <body>
+  <div id="myOverlay" class="overlay">
+      <div class="overlay-content">
+        <form name="inputform">
+          <input type="text" id="inputtext" placeholder="Input here"　autocomplete="nope" value="">
+          <button type="button" id="submitInput"><img src="../image/puppylogo.png" width="30" height="20"></button>
+        </form>
+      </div>
+  </div>
+
   <div id="top" style="padding:8px 0;">
     <button id="base" class="btn cs"><i class="fa fa-shapes"></i> <span id='name'>Puppy</span> </button>
     <button class="btn"><i class="fa fa-folder"></i> <span id="page-title">Sample</span> </button>

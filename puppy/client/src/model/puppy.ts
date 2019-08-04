@@ -4,6 +4,7 @@ import { myRender } from './render';
 import { PuppyConstructor, Shape, initVars, setShapeProperty } from './shape';
 import { selectLine, removeLine, editor } from '../view/editor';
 import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
+import { format } from 'path';
 
 const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -31,6 +32,7 @@ export type PuppyCode = {
 
 export type PuppySettings = {
   canvas: string;
+  ftrace: (log: {}) => void;
   eachUpdate?: (time: number) => void;
 };
 
@@ -42,8 +44,19 @@ type PuppyWorld = {
   viewHeight: number;
   view: { min: Matter.Vector, max: Matter.Vector },
   colorScheme: [string];
-  gravity: Matter.Vector;
+
+  opacity: number; /* Default 1.0 */
+
   font: string;
+  gravity: Matter.Vector;
+
+  density: number; /* Default: 0.001 */
+  friction: number; /* Default: 0.1 */
+  airFriction: number; /* Default: 0.01 */
+  frictionStatic: number; /* Default: 0.5 */
+  motion: number; /* Default: 0 */
+  restitution: number; /* 0 */
+
 };
 
 const PuppyColorScheme = {
@@ -134,11 +147,18 @@ export class Puppy {
       background: code.world['background'] || 'white',
       gravity: code.world['gravitiy'] || { x: 0.0, y: 1.0 },
       colorScheme: chooseColorScheme(code.world['colorScheme'] || ''),
+      opacity: code.world['opacity'] || 1.0,
       font: code.world['font'] || "bold 60px 'Arial'",
       view: code.world['view'] || {
         min: pos,
         max: { x: pos.x + vwidth, y: pos.y + vheight },
       },
+      density: code.world['density'] || 0.001,
+      friction: code.world['friction'] || 0.1,
+      airFriction: code.world['airFriction'] || 0.01,
+      frictionStatic: code.world['frictionStatic'] || 0.5,
+      motion: code.world['motion'] || 0,
+      restitution: code.world['restitution'] || 0,
     };
   }
 
@@ -446,6 +466,34 @@ export class Puppy {
     return body;
   }
 
+  public async input(console?: string) {
+    this.runner.enabled = false;
+    const awaitForClick = target => {
+      return new Promise(resolve => { // 処理A
+        const listener = resolve;     // 処理B
+        target.addEventListener('click', listener, { once: true }); // 処理C
+      });
+    };
+    const text = document.getElementById('inputtext') as HTMLInputElement;
+    const f = async () => {
+      const target = document.querySelector('#submitInput');
+      let Text = '';
+      document.getElementById('submitInput').onclick = () => {
+        document.getElementById('myOverlay').style.display = 'none';
+        Text = text.value;
+        text.value = '';
+      };
+      await awaitForClick(target);
+      return Text;
+    };
+
+    text.placeholder = console ? console : 'Input here';
+    document.getElementById('myOverlay').style.display = 'block';
+    const x = await f();
+    this.runner.enabled = true;
+    return x;
+  }
+
   public print(text: string, options = {}) {
     const width = this.world.width;
     const _options: Shape = Common.extend({
@@ -477,7 +525,7 @@ export class Puppy {
   }
 
   public anyMul(x, y) {
-    if (typeof x == 'string') {
+    if (typeof x === 'string') {
       let s = '';
       for (let i = 0; i < y; i += 1) {
         s += x;
@@ -538,7 +586,7 @@ export class Puppy {
   /* string/array (method) */
 
   public getindex(a: any, index: number) {
-    if (typeof a == 'string') {
+    if (typeof a === 'string') {
       return a.charAt((index + a.length) % a.length);
     }
     if (Array.isArray(a)) {
@@ -548,7 +596,7 @@ export class Puppy {
   }
 
   public slice(a: any, x: number, y?: number) {
-    if (typeof a == 'string') {
+    if (typeof a === 'string') {
       if (y == undefined) {
         y = a.length;
       }
@@ -627,29 +675,19 @@ export class Puppy {
     Matter.Body.setStatic(body, flag);
   }
 
-  /**
-
-    '.applyForce': Symbol('puppy.applyForce', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int, ts.Int)),
-  '.rotate': Symbol('puppy.rotate', const, (ts.Void, ts.Matter, ts.Int, ts.Int_, ts.Int_)),
-  '.scale': Symbol('puppy.scale', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int_, ts.Int_)),
-  '.setAngle': Symbol('puppy.setAngle', const, (ts.Void, ts.Matter, ts.Int)),
-  '.setAngularVelocity': Symbol('puppy.setAngularVelocity', const, (ts.Void, ts.Matter, ts.Int)),
-  '.setDensity': Symbol('puppy.setDensity', const, (ts.Void, ts.Matter, ts.Int)),
-  '.setMass': Symbol('puppy.setMass', const, (ts.Void, ts.Matter, ts.Int)),
-  '.setStatic': Symbol('puppy.setStatic', const, (ts.Void, ts.Matter, ts.Bool)),
-  '.setVelocity': Symbol('puppy.setVelocity', const, (ts.Void, ts.Matter, ts.Int)),
-  */
-
 }
 
 /* puppy controller */
 
 let puppy_settings = {
   canvas: 'puppy-screen',
+  ftrace: (log: {}) => { },
 };
 
-export const initPuppy = (settings: PuppySettings) => {
-  puppy_settings = settings;
+export const initPuppy = (settings?: PuppySettings) => {
+  if (settings) {
+    puppy_settings = settings;
+  }
 };
 
 export const runPuppy = (puppy: Puppy, code: PuppyCode, alwaysRun: boolean) => {
