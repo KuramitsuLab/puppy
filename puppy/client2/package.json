@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/ace": "0.0.42",
     "@types/jest": "24.0.16",
     "@types/node": "12.6.9",
     "@types/react": "16.8.24",
@@ -10,6 +11,7 @@
     "@types/react-dom": "16.8.5",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
+    "ace-builds": "^1.4.5",
     "bootstrap": "^4.3.1",
     "eslint-plugin-react": "^7.14.3",
     "husky": "^3.0.2",
