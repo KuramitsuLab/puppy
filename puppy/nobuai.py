@@ -75,7 +75,7 @@ def load_SimpleDictionary(path, property, suffix=None):
 def init_wordvec(path='nlp_dict/entity_vector.model.bin'):
     model_path = getRootPath(path)
     if not model_path.exists():
-        print('hiyoko is not available')
+        print('nobuai is not available')
         return lambda x, pinfo, property=None: None
     from gensim.models import KeyedVectors
     model = KeyedVectors.load_word2vec_format(
@@ -111,7 +111,8 @@ def init_wordvec(path='nlp_dict/entity_vector.model.bin'):
 
 load_KnowledgeBase('nlp_dict/matter_dict.txt')
 load_SimpleDictionary('nlp_dict/color_dict.txt', 'color', '色')
-find_sim = init_wordvec('nlp_dict/entity_vector.model.bin')
+#find_sim = init_wordvec('nlp_dict/entity_vector.model.bin')
+find_sim = init_wordvec('nlp_dict/word2vec.model.bin')
 # print(KnowledgeBase)
 
 
