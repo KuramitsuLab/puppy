@@ -40,20 +40,19 @@
     }
 
     .overlay input[type=text]:hover {
-      background: #f1f1f1;
+      /* background: #f1f1f1; */
+      background: rgba(0, 0, 0, 0.5);
+      color: yellowgreen;
     }
 
-    .overlay button {
+    .overlay .btn {
       float: left;
       width: 6%;
-      padding: 19.5px;
+      padding: 20px;
+      font-size: 18px;
       background: #CAF2F3;
       border: none;
       cursor: pointer;
-    }
-
-    .overlay button:hover {
-      background: #2196F3
     }
 
     .btn {
@@ -226,17 +225,9 @@
 </head>
 
 <body>
-  <div id="myOverlay" class="overlay">
-    <div class="overlay-content">
-      <form name="inputform">
-        <input type="text" id="inputtext" placeholder="Input here" autocomplete="nope" value="">
-        <button type="button" id="submitInput"><img src="../image/puppylogo.png" width="30" height="20"></button>
-      </form>
-    </div>
-  </div>
 
   <div id="top" style="padding:8px 0;">
-    <button id="base" class="btn cs"><i class="fa fa-shapes"></i> <span id='name'>Puppy</span> </button>
+    <button id="base" class="btn"><i class="fa fa-shapes"></i> <span id='name'>Puppy</span> </button>
     <button id="prev-problem" class="btn"> &laquo;</button>
     <button id="next-problem" class="btn"> &raquo;</button>
     <!--
@@ -245,10 +236,21 @@
 
     <span style="float:right;">
       <span id="framesize"></span>
+      <!--
       <button class="btn"><i class="fa fa-user"></i> Login </button>
       <button class="btn"><i class="fa fa-share"></i> Share </button>
+      -->
       <button class="btn"><i class="fa fa-bars"></i> </button>
     </span>
+  </div>
+
+  <div id="myOverlay" class="overlay fade">
+    <form id="input-form" class="overlay-content">
+      <input id="input-text" type="text" placeholder="Input here" autocomplete="nope" value="">
+      <!--
+        <button type="button" id="submitInput" class="btn"><i class="fa fa-paw"></i></button>
+        -->
+    </form>
   </div>
 
   <div id="main" style="display: flex; flex-wrap: nowrap; margin: 0; padding: 0">

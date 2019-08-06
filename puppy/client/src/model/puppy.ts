@@ -465,7 +465,41 @@ export class Puppy {
     return body;
   }
 
-  public async input(console?: string) {
+  public async input(msg?: string) {
+    const overlay = document.getElementById('myOverlay');
+    const form = document.getElementById('input-form');
+    // const formMsg = document.getElementById('input-message');
+    const formText = document.getElementById('input-text') as HTMLInputElement;
+    this.runner.enabled = false;
+
+    const awaitForClick = target => {
+      return new Promise(resolve => { // 処理A
+        const listener = resolve;     // 処理B
+        target.addEventListener('submit', listener, { once: true }); // 処理C
+      });
+    };
+    const asyncInput = async () => {
+      let text = '';
+      form.onsubmit = () => {
+        overlay.style.display = 'none';
+        text = formText.value;
+        formText.value = '';
+        return false;
+      };
+      await awaitForClick(form);
+      return text;
+    };
+
+    formText.placeholder = msg ? msg : '';
+    overlay.style.display = 'block';
+    const x = await asyncInput();
+    this.runner.enabled = true;
+    this.waitForRun(0.5);
+    console.log(`input ${x}`);
+    return x;
+  }
+
+  public async input0(console?: string) {
     this.runner.enabled = false;
     const awaitForClick = target => {
       return new Promise(resolve => { // 処理A
@@ -490,6 +524,7 @@ export class Puppy {
     document.getElementById('myOverlay').style.display = 'block';
     const x = await f();
     this.runner.enabled = true;
+    this.waitForRun(0.5);
     return x;
   }
 
