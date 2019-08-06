@@ -90,8 +90,8 @@ const onClick = (key: string, f: () => void) => {
 
 const initPage = () => {
   const course = getCourse();
-  console.log(`course: ${course}`);
   const page_json = session.getItem(`/settings/${course}`);
+  chooseColorScheme('pop');
   if (page_json) {
     page = JSON.parse(page_json);
     loadPage(page);
@@ -106,7 +106,8 @@ const initPage = () => {
       return;
     });
   }
-  chooseColorScheme('pop');
+  const doc = document.getElementById('name');
+  doc.innerHTML = course.substring(1);
   // if (page['type'] === 'sumomo') {
   //   const doc = document.getElementById('name');
   //   doc.innerHTML = 'Sumomo';
@@ -129,10 +130,10 @@ const initPage = () => {
 
 const loadPage = (page: {}) => {
   const problem = getProblem();
-  if (page[problem]) {
-    const doc = document.getElementById('page-title');
-    doc.innerHTML = page[problem].title;
-  }
+  // if (page[problem]) {
+  //   const doc = document.getElementById('page-title');
+  //   doc.innerHTML = page[problem].title;
+  // }
   const doc = document.getElementById('problem');
   loadFile(`/problem${problem}`).then((s: string) => {
     doc.innerHTML = marked(s);
