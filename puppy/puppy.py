@@ -3,9 +3,7 @@ from collections import namedtuple
 from pegpy.tpeg import grammar, generate, STDLOG
 import hashlib
 import puppytypes as ts
-
-# 文法を直したいときは
-# pegpy/grammar/puppy.tpeg を編集する
+import nobuai as nlp
 
 peg = grammar('puppy2.tpeg')
 parser = generate(peg)
@@ -26,10 +24,6 @@ def popenv(env, key, prev):
         del env[key]
     else:
         env[key] = prev
-
-# print(t.tag)
-# for label, subtree in t:
-#   print(label, subtree)
 
 
 def Source(env, t, out):
@@ -371,18 +365,42 @@ IMPORT_MATH = {
     'gcd': Symbol('puppy.gcd', const, ts.Math2FuncType),
 }
 
+IMPORT_RANDOM = {
+    'random': Symbol('Math.random', const, (ts.Int,)),
+}
+
 BUILDIN = {
     'math.': IMPORT_MATH,
+    'random.': IMPORT_RANDOM,
     'input': Symbol('await puppy.input', const, (ts.String, ts.String_)),
     'print': Symbol('puppy.print', const, (ts.Void, 'any', ts.EmptyOption)),
+
     # 返値, 引数.. None はなんでもいい
     'len': Symbol('puppy.len', const, (ts.Int, 'list|str')),
     # 可変長引数
     'range': Symbol('puppy.range', const, (ts.ListInt, ts.Int, ts.Int_, ts.Int_)),
     # append
     '.append': Symbol('puppy.append', const, (ts.Void, ts.ListA, ts.A)),
-    # クラス
+
+    # random
+    'int': Symbol('puppy.int', const, (ts.Int, 'bool|number|str')),
+    'float': Symbol('puppy.float', const, (ts.Float, 'bool|number|str')),
+    'str': Symbol('puppy.str', const, (ts.String, 'any')),
+    'random': Symbol('Math.random', const, (ts.Int,)),
+
+    # 物体メソッド
     '.setPosition': Symbol('puppy.setPosition', const, (ts.Void, ts.Matter, ts.Int, ts.Int)),
+    '.applyForce': Symbol('puppy.applyForce', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int, ts.Int)),
+    '.rotate': Symbol('puppy.rotate', const, (ts.Void, ts.Matter, ts.Int, ts.Int_, ts.Int_)),
+    '.scale': Symbol('puppy.scale', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int_, ts.Int_)),
+    '.setAngle': Symbol('puppy.setAngle', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setAngularVelocity': Symbol('puppy.setAngularVelocity', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setDensity': Symbol('puppy.setDensity', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setMass': Symbol('puppy.setMass', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setStatic': Symbol('puppy.setStatic', const, (ts.Void, ts.Matter, ts.Bool)),
+    '.setVelocity': Symbol('puppy.setVelocity', const, (ts.Void, ts.Matter, ts.Int)),
+
+    # クラス
     'World': Symbol('world', const, ts.MatterTypes),
     'Circle': Symbol('Circle', const, ts.MatterTypes),
     'Rectangle': Symbol('Rectangle', const, ts.MatterTypes),
@@ -436,61 +454,78 @@ def VarDecl(env, t, out):
 
 
 KEYWORDS = {
+    'x': 'position.x', 'y': 'position.y',
     'width': 'width',
     'height': 'height',
-    'image': 'image',
-    'strokeStyle': 'strokeStyle',
-    'lineWidth': 'lineWidth',
-    'fillStyle': 'fillStyle',
     'restitution': 'restitution',
-    'angle': 'angle',
+    'angle': 'angle', 'inertia': 'inertia',
+    'mass': 'mass', 'density': 'density', 'area': 'area',
     'friction': 'friction', 'frictionStatic': 'frictionStatic',
     'airFriction': 'airFriction',
-    'torque': "torque",
+    'torque': 'torque',
     'stiffness': 'stiffness',
-    'isSensor': 'isSensor',
     'damping': 'damping',
-    'font': 'font',
-    'fontStyle': 'fontStyle',
-    'clicked': 'clicked',
     'isStatic': 'isStatic',
+    'isSensor': 'isSensor',
+    'clicked': 'clicked',
+    'move': 'move',
+    'opacity': 'opacity', 'alpha': 'opacity',
+    'image': 'image', 'texture': 'image',
+    'strokeStyle': 'strokeStyle',
+    'lineWidth': 'lineWidth',
+    'fillStyle': 'fillStyle', 'color': 'fillStyle',
+
+    'font': 'font',
+    'fontColor': 'fontColor',
+    'textAlign': 'textAlign',
+    'value': 'value',
+    'capture': 'capture',
 
     # 日本語名
     '名前': 'name',
-    '幅': 'width', '横幅': 'width', '縦': 'width',
-    '高さ': 'height', '横': 'height',
+    '幅': 'width', '横幅': 'width', '横': 'width',
+    '高さ': 'height', '縦': 'height',
     '傾き': 'angle',
-    '質量': 'mass', '密度': 'density', '体積': 'area', '容積': 'area',
+    '質量': 'mass', '密度': 'density', '管制': 'inertia',
+    '体積': 'area', '容積': 'area', '面積': 'area',
     '摩擦係数': 'friction', '静止摩擦係数': 'frictionStatic',
     '空気摩擦係数': 'airFriction',
+    '摩擦': 'friction', '静止摩擦': 'frictionStatic', '空気摩擦': 'airFriction',
     '反発係数': 'restitution', '跳ね返り係数': 'restitution', 'はねかえり係数': 'restitution',
     '回転力': "torque", 'トルク': "torque",
     '剛性': 'stiffness', 'ばね定数': 'stiffness',
     'センサー': 'isSensor',
     '減衰': 'damping',
     'フォント': 'font',
+    'フォント色': 'fontColor',
 }
 
 KEYWORDTYPES = {
-    'width': ts.Int,
-    'height': ts.Int,
+    'width': ts.Int, 'height': ts.Int,
+    'x': ts.Int, 'y': ts.Int,
     'image': ts.String,
-    'strokeStyle': ts.String,
+    'strokeStyle': 'number|str',
     'lineWidth': ts.Int,
-    'fillStyle': ts.String,
+    'fillStyle': 'number|str',
     'restitution': ts.Float,  # float と int は同じ
     'angle': ts.Float,
-    'friction': ts.Float,
-    'frictionStatic': ts.Float,
-    'airFriction': ts.Float,
-    'torque': ts.Float,
-    'stiffness': ts.Float,
+    'position': ts.Matter,
+    'mass': ts.Int, 'density': ts.Int, 'area': ts.Int,
+    'friction': ts.Float, 'frictionStatic': ts.Float, 'airFriction': ts.Float,
+    'torque': ts.Float, 'stiffness': ts.Float,
     'isSensor': ts.Bool,
+    'isStatic': ts.Bool,
     'damping': ts.Float,
-    'font': ts.String,
-    'fontColor': ts.String,
+    'in': (ts.Void, ts.Matter, ts.Matter),
+    'out': (ts.Void, ts.Matter, ts.Matter),
+    'over': (ts.Void, ts.Matter, ts.Matter),
     'clicked': (ts.Void, ts.Matter),
     'move': (ts.Void, ts.Matter, ts.Int),
+    'font': ts.String,
+    'fontColor': 'number|str',
+    'textAlign': 'textAlign',
+    'value': 'bool|number|str',
+    'capture': ('bool|number|str'),
 }
 
 
@@ -568,9 +603,12 @@ def ApplyExpr(env, t, out):
         types = vari.types
         if name == 'world':
             set_World(env, t, types[-1])
-            return 'matter'
+            return ts.Matter
+    elif t['name'].tag == 'NLPSymbol':
+        name, types = checkNLPMatter(env, name, t)
     else:
-        _, types = guess_Matter(env, name, t)
+        perror(env, t['name'], f'タイプミス？ {name} 未定義な関数名です')
+        return ts.Type()  # To avoid error
 
     if ts.isMatterFunc(types):
         outter = pushenv(env, '@funcname', name)
@@ -589,11 +627,6 @@ def ApplyExpr(env, t, out):
             env['@yield'] = trace(env, t)
             env['@oid'] += 1
     return types[0]
-
-
-def guess_Matter(env, name, t):
-    return ('Circle', ts.MatterTypes)
-
 
 def scope(env, key, val, f):
     outer = pushenv(env, key, val)
@@ -635,7 +668,7 @@ def emitArguments(env, t, args, types, prev, out):
                 pwarn(env, sub, 'この引数は使われません')
         for k in types[tidx]:
             if k not in used_keys:
-                out.append(f"'{k}': {options[k]},")
+                emitOption(env, t, k, options[k], out, used_keys)
         out.append(f"'trace': {trace(env, t)},")
         out.append(f"'oid': {env['@oid']},")
         out.append('}')
@@ -654,42 +687,69 @@ def KeywordArgument(env, t, out, used_keys=None):
             pinfo(env, t, f'{name} => {KEYWORDS[name]}')
         name = KEYWORDS[name]
     out2 = []
-    scope(env, '@key', name, lambda: check(
+    scope(env, '@target', name, lambda: check(
         KEYWORDTYPES.get(name, 'any'), env, t['value'], out2))
     value = ''.join(out2)
     emitOption(env, t['name'], name, value, out, used_keys)
     return ts.Void
 
 
-def emitOption(env, t, key, value, out, used_keys):
-    if key in used_keys:
-        pwarn(env, t, f'{key}は重複！！．こちらは無視することにします')
-        return
-    used_keys[key] = key
-    out.append("'" + key + "': " + value + ',')
-    addLives(env, key, value, trace(env, t))
-
+def checkNLPMatter(env, name, t):
+    option = nlp.conv2(name, lambda x: pinfo(env, t, x))
+    if not 'shape' in option:
+        pwarn(env, t, 'はっきりと物体の形状を指定してください')
+        option['shape'] = 'Circle'
+        option['value'] = name
+        option['font'] = '36px'
+    return (option['shape'], (ts.Matter, ts.Int, ts.Int, option))
 
 def NLPSymbol(env, t, out, used_keys=None):
     phrase = t.asString()
-    if '@funcname' in env:
-        k = env.get('@key', '')
-        k, v = nobuKeyVal(env['@funcname'], k, phrase)
-        out.append(f"'{k}': {v},")
-        options = env.get('@options', ts.EmptyOption)
-        if k in options:
-            del options[k]
+    if '@target' in env:
+        option = nlp.conv2(f"{env['@target']}は{phrase}",
+                           lambda x: pinfo(env, t, x))
+        if len(option) == 1:
+            val = option[option.keys()[0]]
+            pinfo(env, t, f'{phrase}は{repr(val)}')
+            return emitValue(env, val, out)
+        else:
+            pwarn(env, t, f'「{phrase}」は解釈できません')
+            return emitUndefined(env, t, out)
+    else:
+        option = nlp.conv2(phrase, lambda x: pinfo(env, t, x))
+        if len(option) == 0:
+            pwarn(env, t, f'「{phrase}」は解釈できません')
+            return ts.Void
+        else:
+            for key in option:
+                emitOption(env, t, key, option[key], out, used_keys)
         return ts.Void
-    v = nlpExpr(env.get('@target', ''), phrase)
-    out.append(v)
 
 
-def nobuKeyVal(funcname, key='unknown', phrase='"?"'):
-    return (key, phrase)
+def emitOption(env, t, key, value, out, used_keys):
+    key = KEYWORDS[key] if key in KEYWORDS else key
+    if key in used_keys:
+        pwarn(env, t, f'{key}は重複！！．こちらは無視します')
+        return
+    used_keys[key] = key
+    out.append("'" + key + "': ")
+    emitValue(env, value, out)
+    out.append(',')
+    #addLives(env, key, value, trace(env, t))
 
 
-def nlpExpr(varname, phrase='"?"'):
-    return phrase
+def emitValue(env, val, out):
+    if isinstance(val, str):
+        if (val.startswith("'") and val.endswith("'")) or (val.startswith('"') and val.endswith('"')):
+            out.append(val)
+        else:
+            out.append(repr(val))
+        return ts.String
+    if isinstance(val, bool):
+        out.append('true' if val else 'false')
+        return ts.Bool
+    out.append(str(val))
+    return ts.Int
 
 
 def IfStmt(env, t, out):
@@ -864,10 +924,11 @@ def hasErrors(env):
             return True
     return False
 
+
 def diffCode(prev, cur):
     prev = prev.split('\n')
     cur = cur.split('\n')
-    plen, clen = len(prev)-1, len(cur)-1 # 最後は空行
+    plen, clen = len(prev)-1, len(cur)-1  # 最後は空行
     print('@diff1', plen, clen)
     if plen >= clen:
         return ''
@@ -887,6 +948,7 @@ def diffCode(prev, cur):
     diffcode = diffcode.replace('; yield', '; //yield')
     print('@diffcode', diffcode)
     return diffcode
+
 
 def addLives(env, key, value, _trace):
     env['@lives'].append((env['@oid'], key, value, _trace))
@@ -954,11 +1016,13 @@ def makeCode(s, errors=[]):
     global prev_code, prev_lives
     env, code = transpile(s, errors)
     diffcode, lives = '', []
+    ''' disable live 
     if not hasErrors(env):
         diffcode = diffCode(prev_code, code)
         lives = diffLives(prev_lives, env['@lives'])
         prev_code = code
         prev_lives = env['@lives']
+    '''
     code = puppyVMCode(env, code, diffcode, lives)
     print(code)
     return code
@@ -970,7 +1034,7 @@ def makeCode(s, errors=[]):
 
 
 if __name__ == "__main__":
-    source = '''range(1,2,3**2).append(1+2)\n'''
+    source = '''ガム(500,500,ぴょん,色は緑)\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
