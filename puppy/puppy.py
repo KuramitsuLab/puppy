@@ -365,8 +365,13 @@ IMPORT_MATH = {
     'gcd': Symbol('puppy.gcd', const, ts.Math2FuncType),
 }
 
+IMPORT_RANDOM = {
+    'random': Symbol('Math.random', const, (ts.Int,)),
+}
+
 BUILDIN = {
     'math.': IMPORT_MATH,
+    'random.': IMPORT_RANDOM,
     'input': Symbol('await puppy.input', const, (ts.String, ts.String_)),
     'print': Symbol('puppy.print', const, (ts.Void, 'any', ts.EmptyOption)),
 
@@ -376,6 +381,12 @@ BUILDIN = {
     'range': Symbol('puppy.range', const, (ts.ListInt, ts.Int, ts.Int_, ts.Int_)),
     # append
     '.append': Symbol('puppy.append', const, (ts.Void, ts.ListA, ts.A)),
+
+    # random
+    'int': Symbol('puppy.int', const, (ts.Int, 'bool|number|str')),
+    'float': Symbol('puppy.float', const, (ts.Float, 'bool|number|str')),
+    'str': Symbol('puppy.str', const, (ts.String, 'any')),
+    'random': Symbol('Math.random', const, (ts.Int,)),
 
     # 物体メソッド
     '.setPosition': Symbol('puppy.setPosition', const, (ts.Void, ts.Matter, ts.Int, ts.Int)),
@@ -593,8 +604,11 @@ def ApplyExpr(env, t, out):
         if name == 'world':
             set_World(env, t, types[-1])
             return ts.Matter
-    else:
+    elif t['name'].tag == 'NLPSymbol':
         name, types = checkNLPMatter(env, name, t)
+    else:
+        perror(env, t['name'], f'タイプミス？ {name} 未定義な関数名です')
+        return ts.Type()  # To avoid error
 
     if ts.isMatterFunc(types):
         outter = pushenv(env, '@funcname', name)
@@ -726,7 +740,10 @@ def emitOption(env, t, key, value, out, used_keys):
 
 def emitValue(env, val, out):
     if isinstance(val, str):
-        out.append(repr(val))
+        if (val.startswith("'") and val.endswith("'")) or (val.startswith('"') and val.endswith('"')):
+            out.append(val)
+        else:
+            out.append(repr(val))
         return ts.String
     if isinstance(val, bool):
         out.append('true' if val else 'false')

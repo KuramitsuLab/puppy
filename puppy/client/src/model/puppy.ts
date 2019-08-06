@@ -49,7 +49,6 @@ type PuppyWorld = {
 
   font: string;
   gravity: Matter.Vector;
-
   density: number; /* Default: 0.001 */
   friction: number; /* Default: 0.1 */
   airFriction: number; /* Default: 0.01 */
@@ -498,7 +497,7 @@ export class Puppy {
     const width = this.world.width;
     const _options: Shape = Common.extend({
       shape: 'label',
-      value: `${text}`,
+      value: this.str(text),
       created: this.getTimeStamp(),
       move: (body, time: number) => {
         const px = width - 100 * (time - body['created']) * 0.003;
@@ -549,10 +548,38 @@ export class Puppy {
   /* built-in */
 
   public int(x: any) {
-    return `${x}`;
+    if (typeof x === 'number') {
+      return x | 0;
+    }
+    if (typeof x === 'string') {
+      return Number.parseInt(x);
+    }
+    if (typeof x === 'boolean') {
+      return x ? 1 : 0;
+    }
+    return x | 0;
+  }
+
+  public float(x: any) {
+    if (typeof x === 'number') {
+      return x;
+    }
+    if (typeof x === 'string') {
+      return Number.parseFloat(x);
+    }
+    if (typeof x === 'boolean') {
+      return x ? 1.0 : 0.0;
+    }
+    return x;
   }
 
   public str(x: any) {
+    if (typeof x === 'boolean') {
+      return x ? 'True' : 'False';
+    }
+    if (Array.isArray(x)) {
+      return '[' + x.map((x) => this.str(x)).join(', ') + ']';
+    }
     return `${x}`;
   }
 
@@ -566,18 +593,33 @@ export class Puppy {
     else if (z !== undefined) {
       start = x;
       end = y;
-      step = z;
+      step = z === 0 ? 1 : z;
     }
     else {
       start = x;
       end = y;
     }
     const xs = [];
-    for (let i = start; i < end; i += step) {
-      xs.push(i);
-      if (xs.length > 100000) {
-        // safety break
-        break;
+    if (start <= end) {
+      if (step < 0) {
+        step = -step;
+      }
+      for (let i = start; i < end; i += step) {
+        xs.push(i);
+        if (xs.length > 100000) { // safety break
+          break;
+        }
+      }
+    }
+    else {
+      if (step > 0) {
+        step = -step;
+      }
+      for (let i = start; i > end; i += step) {
+        xs.push(i);
+        if (xs.length > 100000) { // safety break
+          break;
+        }
       }
     }
     return xs;

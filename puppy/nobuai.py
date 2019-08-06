@@ -53,20 +53,23 @@ def load_KnowledgeBase(path):
 def load_SimpleDictionary(path, property, suffix=None):
     with open(path) as f:
         for line in f:
-            key, value = line.split()
-            if suffix is not None and key.endswith(suffix):
-                key = key[:-len(suffix)]
-            value = f'{{"{property}": "{value}"}}'
-            if key in KnowledgeBase:
-                KnowledgeBase[key] = merge(KnowledgeBase[key], value)
-            else:
-                KnowledgeBase[key] = value
-            if suffix is not None:
-                key += suffix
+            if line.startswith('#'):
+                continue
+            if ' ' in line or '\t' in line:
+                key, value = line.split()
+                if suffix is not None and key.endswith(suffix):
+                    key = key[:-len(suffix)]
+                value = f'{{"{property}": "{value}"}}'
                 if key in KnowledgeBase:
                     KnowledgeBase[key] = merge(KnowledgeBase[key], value)
                 else:
                     KnowledgeBase[key] = value
+                if suffix is not None:
+                    key += suffix
+                    if key in KnowledgeBase:
+                        KnowledgeBase[key] = merge(KnowledgeBase[key], value)
+                    else:
+                        KnowledgeBase[key] = value
 
 
 def init_wordvec(path='nlp_dict/entity_vector.model.bin'):
@@ -145,16 +148,19 @@ def find_value(key, property, pinfo, default=None):
 
 
 def conv_phrase(phrase, pinfo, d):
-    if 'は' in phrase:
+    # ある性質についての表現か調べる. 例. 色は赤
+    if 'は' in phrase:  # Ad hoc な実装
         pos = phrase.find('は')
-        key = phrase[0:pos]
+        key = phrase[0:pos]    # 色
         key = find_value(key, 'property', pinfo, key)
-        if key is not None:
+        if key is not None:  # もし性質が辞書にあったら、
+            # key='color' になっている値の方を変換する
             value = find_value(phrase[pos+1:], key, pinfo)
             if value is not None:
                 d[key] = value
                 return
-    found = find_data(phrase, pinfo)
+    # 特定の性質でない
+    found = find_data(phrase, pinfo, None)
     if len(found) == 0:
         print('@見つかりません', phrase)
     for key in found:
@@ -162,7 +168,7 @@ def conv_phrase(phrase, pinfo, d):
 
 
 def conv(*phrases):
-    def pinfo(x): return None
+    def pinfo(x): return print(x)
     d = {}
     for phrase in phrases:
         conv_phrase(phrase, pinfo, d)
