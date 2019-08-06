@@ -3,6 +3,7 @@ import * as api from './api';
 import { myRender } from './render';
 import { PuppyConstructor, Shape, initVars, setShapeProperty } from './shape';
 import { selectLine, removeLine, editor } from '../view/editor';
+import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 import { format } from 'path';
 
 const Bodies = Matter.Bodies;
@@ -31,6 +32,7 @@ export type PuppyCode = {
 
 export type PuppySettings = {
   canvas: string;
+  ftrace: (log: {}) => void;
   eachUpdate?: (time: number) => void;
 };
 
@@ -42,8 +44,18 @@ type PuppyWorld = {
   viewHeight: number;
   view: { min: Matter.Vector, max: Matter.Vector },
   colorScheme: [string];
-  gravity: Matter.Vector;
+
+  opacity: number; /* Default 1.0 */
+
   font: string;
+  gravity: Matter.Vector;
+  density: number; /* Default: 0.001 */
+  friction: number; /* Default: 0.1 */
+  airFriction: number; /* Default: 0.01 */
+  frictionStatic: number; /* Default: 0.5 */
+  motion: number; /* Default: 0 */
+  restitution: number; /* 0 */
+
 };
 
 const PuppyColorScheme = {
@@ -134,11 +146,18 @@ export class Puppy {
       background: code.world['background'] || 'white',
       gravity: code.world['gravitiy'] || { x: 0.0, y: 1.0 },
       colorScheme: chooseColorScheme(code.world['colorScheme'] || ''),
+      opacity: code.world['opacity'] || 1.0,
       font: code.world['font'] || "bold 60px 'Arial'",
       view: code.world['view'] || {
         min: pos,
         max: { x: pos.x + vwidth, y: pos.y + vheight },
       },
+      density: code.world['density'] || 0.001,
+      friction: code.world['friction'] || 0.1,
+      airFriction: code.world['airFriction'] || 0.01,
+      frictionStatic: code.world['frictionStatic'] || 0.5,
+      motion: code.world['motion'] || 0,
+      restitution: code.world['restitution'] || 0,
     };
   }
 
@@ -446,25 +465,6 @@ export class Puppy {
     return body;
   }
 
-  public print(text: string, options = {}) {
-    const width = this.world.width;
-    const _options: Shape = Common.extend({
-      shape: 'label',
-      value: `${text}`,
-      created: this.getTimeStamp(),
-      move: (body, time: number) => {
-        const px = width - 100 * (time - body['created']) * 0.003;
-        Matter.Body.setPosition(body, { x: px, y: body.position.y });
-        if (px < -1) {
-          World.remove(this.engine.world, body);
-        }
-      },
-    },                                    options);
-    const x = this.world.width;
-    const y = this.world.height * (Math.random() * 0.9 + 0.05);
-    this.new_(this.vars['Label'], x, y, _options);
-  }
-
   public async input(console?: string) {
     this.runner.enabled = false;
     const awaitForClick = target => {
@@ -486,16 +486,100 @@ export class Puppy {
       return Text;
     };
 
-    text.placeholder = console ? console :'Input here';
+    text.placeholder = console ? console : 'Input here';
     document.getElementById('myOverlay').style.display = 'block';
     const x = await f();
     this.runner.enabled = true;
     return x;
   }
 
+  public print(text: string, options = {}) {
+    const width = this.world.width;
+    const _options: Shape = Common.extend({
+      shape: 'label',
+      value: this.str(text),
+      created: this.getTimeStamp(),
+      move: (body, time: number) => {
+        const px = width - 100 * (time - body['created']) * 0.003;
+        Matter.Body.setPosition(body, { x: px, y: body.position.y });
+        if (px < -1) {
+          World.remove(this.engine.world, body);
+        }
+      },
+    },                                    options);
+    const x = this.world.width;
+    const y = this.world.height * (Math.random() * 0.9 + 0.05);
+    this.new_(this.vars['Label'], x, y, _options);
+  }
+
+  public trace(log: {}) {
+    console.log(log);
+    // this.settings.trace(log);
+  }
+
+  /* operator */
+
+  public listAdd(x: [], y: []) {
+    return x.concat(y);
+  }
+
+  public anyMul(x, y) {
+    if (typeof x === 'string') {
+      let s = '';
+      for (let i = 0; i < y; i += 1) {
+        s += x;
+      }
+      return s;
+    }
+    if (Array.isArray(x)) {
+      let a = [];
+      for (let i = 0; i < y; i += 1) {
+        a = a.concat(x);
+      }
+      return a;
+    }
+    return x * y;
+  }
+
+  public anyIn(x: any, a: [any]) {
+    return a.indexOf(x) >= 0;
+  }
+
   /* built-in */
 
+  public int(x: any) {
+    if (typeof x === 'number') {
+      return x | 0;
+    }
+    if (typeof x === 'string') {
+      return Number.parseInt(x);
+    }
+    if (typeof x === 'boolean') {
+      return x ? 1 : 0;
+    }
+    return x | 0;
+  }
+
+  public float(x: any) {
+    if (typeof x === 'number') {
+      return x;
+    }
+    if (typeof x === 'string') {
+      return Number.parseFloat(x);
+    }
+    if (typeof x === 'boolean') {
+      return x ? 1.0 : 0.0;
+    }
+    return x;
+  }
+
   public str(x: any) {
+    if (typeof x === 'boolean') {
+      return x ? 'True' : 'False';
+    }
+    if (Array.isArray(x)) {
+      return '[' + x.map((x) => this.str(x)).join(', ') + ']';
+    }
     return `${x}`;
   }
 
@@ -509,30 +593,72 @@ export class Puppy {
     else if (z !== undefined) {
       start = x;
       end = y;
-      step = z;
+      step = z === 0 ? 1 : z;
     }
     else {
       start = x;
       end = y;
     }
     const xs = [];
-    for (let i = start; i < end; i += step) {
-      xs.push(i);
-      if (xs.length > 100000) {
-        // safety break
-        break;
+    if (start <= end) {
+      if (step < 0) {
+        step = -step;
+      }
+      for (let i = start; i < end; i += step) {
+        xs.push(i);
+        if (xs.length > 100000) { // safety break
+          break;
+        }
+      }
+    }
+    else {
+      if (step > 0) {
+        step = -step;
+      }
+      for (let i = start; i > end; i += step) {
+        xs.push(i);
+        if (xs.length > 100000) { // safety break
+          break;
+        }
       }
     }
     return xs;
   }
 
-  /* string (method) */
-  public anyMul(x, y) {
-    return x * y;
+  /* string/array (method) */
+
+  public getindex(a: any, index: number) {
+    if (typeof a === 'string') {
+      return a.charAt((index + a.length) % a.length);
+    }
+    if (Array.isArray(a)) {
+      return a[(index + a.length) % a.length];
+    }
+    return undefined;
+  }
+
+  public slice(a: any, x: number, y?: number) {
+    if (typeof a === 'string') {
+      if (y == undefined) {
+        y = a.length;
+      }
+      return a.substr(x, y - x);
+    }
+    if (Array.isArray(a)) {
+      if (y == undefined) {
+        y = a.length;
+      }
+      return a.slice(x, y);
+    }
+    return undefined;
   }
 
   public find(s: string, sub: string) {
     return s.indexOf(sub);
+  }
+
+  public join(s: string, list: [string]) {
+    return list.join(s);
   }
 
   /* list */
@@ -549,19 +675,61 @@ export class Puppy {
     return Array.from(lst, func);           // funcがダメ
   }
 
+  /* Matter.Body */
+
   public setPosition(body: Matter.Body, x: number, y: number) {
     Matter.Body.setPosition(body, { x, y });
   }
+
+  public applyForce(body: Matter.Body, x: number, y: number, fx: number, fy: number) {
+    Matter.Body.applyForce(body, { x, y }, { x: fx, y: fy });
+  }
+
+  public rotate(body: Matter.Body, angle: number, x?: number, y?: number) {
+    Matter.Body.rotate(body, angle);
+  }
+
+  public scale(body: Matter.Body, sx: number, sy: number, x?: number, y?: number) {
+    Matter.Body.scale(body, sx, sy);
+  }
+
+  public setAngle(body: Matter.Body, angle: number) {
+    Matter.Body.setAngle(body, angle);
+  }
+
+  public setVelocity(body: Matter.Body, x: number, y: number) {
+    Matter.Body.setVelocity(body, { x, y });
+  }
+
+  public setAngularVelocity(body: Matter.Body, velocity: number) {
+    Matter.Body.setAngularVelocity(body, velocity);
+  }
+
+  public setDensity(body: Matter.Body, density: number) {
+    Matter.Body.setDensity(body, density);
+  }
+
+  public setMass(body: Matter.Body, mass: number) {
+    Matter.Body.setMass(body, mass);
+  }
+
+  public setStatic(body: Matter.Body, flag: boolean) {
+    Matter.Body.setStatic(body, flag);
+  }
+
 }
 
 /* puppy controller */
 
 let puppy_settings = {
   canvas: 'puppy-screen',
+  ftrace: (log: {}) => { },
 };
 
-export const initPuppy = (settings: PuppySettings) => {
-  puppy_settings = settings;
+export const initPuppy = (settings?: PuppySettings) => {
+  if (settings) {
+    puppy_settings = settings;
+  }
 };
 
 export const runPuppy = (puppy: Puppy, code: PuppyCode, alwaysRun: boolean) => {

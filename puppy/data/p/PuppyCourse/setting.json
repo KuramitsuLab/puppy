@@ -1,0 +1,44 @@
+{
+  "type": "puppy",
+  "viewlist": [
+    "problem-view",
+    "puppy-view",
+    "image-view",
+    "terminal-view"
+  ],
+  "viewmode": "problem-view",
+  "list": [
+    "/PuppyCourse/Welcome",
+    "/PuppyCourse/Hello",
+    "/PuppyCourse/ManyHello",
+    "/PuppyCourse/Calc",
+    "/PuppyCourse/Var",
+    "/PuppyCourse/Input",
+    "/PuppyCourse/Dice",
+    "/PuppyCourse/IfStmt"
+  ],
+  "/PuppyCourse/Welcome": {
+    "title": "はじめに"
+  },
+  "/PuppyCourse/Hello": {
+    "title": "Hello World"
+  },
+  "/PuppyCourse/ManyHello": {
+    "title": "たくさん表示しよう"
+  },
+  "/PuppyCourse/Calc": {
+    "title": "計算してみる"
+  },
+  "/PuppyCourse/Var": {
+    "title": "変数を使いましょう"
+  },
+  "/PuppyCourse/Input": {
+    "title": "ユーザからの入力"
+  },
+  "/PuppyCourse/Dice": {
+    "title": "サイコロ"
+  },
+  "/Puppy/IfStmt": {
+    "title": "条件分岐"
+  }
+}
