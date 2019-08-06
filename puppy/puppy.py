@@ -1016,11 +1016,13 @@ def makeCode(s, errors=[]):
     global prev_code, prev_lives
     env, code = transpile(s, errors)
     diffcode, lives = '', []
+    ''' disable live 
     if not hasErrors(env):
         diffcode = diffCode(prev_code, code)
         lives = diffLives(prev_lives, env['@lives'])
         prev_code = code
         prev_lives = env['@lives']
+    '''
     code = puppyVMCode(env, code, diffcode, lives)
     print(code)
     return code
