@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { Engine, World, Bodies } from 'matter-js';
 
+import Editor from '../Editor/Editor';
+
 const Main: React.FC = () => {
   useEffect(() => {
     const engine = Engine.create(document.getElementById('puppy-screen')!);
@@ -18,6 +20,7 @@ const Main: React.FC = () => {
     ]);
 
     Engine.run(engine);
+    console.log('Create Puppy!');
   });
 
   return (
@@ -27,7 +30,7 @@ const Main: React.FC = () => {
           <div id="puppy-screen"></div>
         </Col>
         <Col>
-          <div id="editor"></div>
+          <Editor />
         </Col>
       </Row>
     </div>

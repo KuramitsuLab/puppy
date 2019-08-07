@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
+import MonacoEditor from 'react-monaco-editor';
 
 const Editor: React.FC = () => {
-  return <div id="editor"></div>;
+  const [code, setCode] = useState('');
+
+  return (
+    <MonacoEditor
+      width="800"
+      height="600"
+      language="python"
+      value={code}
+      onChange={setCode}
+    />
+  );
 };
 
 export default Editor;
