@@ -27,24 +27,30 @@
     "title": "Hello World"
   },
   "/PuppyCourse/ManyHello": {
-    "title": "たくさん表示しよう"
+    "title": "順序"
   },
   "/PuppyCourse/Calc": {
-    "title": "計算してみる"
+    "title": "計算"
   },
   "/PuppyCourse/Var": {
-    "title": "変数を使いましょう"
+    "title": "変数"
   },
   "/PuppyCourse/Input": {
-    "title": "ユーザからの入力"
+    "title": "入力"
   },
   "/PuppyCourse/Dice": {
-    "title": "サイコロ"
+    "title": "乱数"
+  },
+  "/Puppy/DiceFunc": {
+    "title": "関数"
   },
   "/Puppy/IfStmt": {
     "title": "条件分岐"
   },
-  "/Puppy/IfStmt": {
-    "title": "条件分岐"
+  "/Puppy/ForStmt": {
+    "title": "繰り返し"
+  },
+  "/Puppy/Domino": {
+    "title": "ドミノ倒し"
   }
 }
