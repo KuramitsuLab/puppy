@@ -25,6 +25,8 @@ const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const MONACO_DIR = path.resolve(__dirname, '../node_modules/monaco-editor');
 
 const postcssNormalize = require('postcss-normalize');
 
@@ -308,7 +310,7 @@ module.exports = function(webpackEnv) {
               options: {
                 formatter: require.resolve('react-dev-utils/eslintFormatter'),
                 eslintPath: require.resolve('eslint'),
-                
+                fix: true,
               },
               loader: require.resolve('eslint-loader'),
             },
@@ -451,6 +453,12 @@ module.exports = function(webpackEnv) {
                 },
                 'sass-loader'
               ),
+            },
+            // Monaco CSS
+            {
+              test: /\.css$/,
+              include: MONACO_DIR,
+              use: ['style-loader', 'css-loader'],
             },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
@@ -608,6 +616,11 @@ module.exports = function(webpackEnv) {
           // The formatter is invoked directly in WebpackDevServerUtils during development
           formatter: isEnvProduction ? typescriptFormatter : undefined,
         }),
+        // For Monaco Editor
+        new MonacoWebpackPlugin({
+          // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+          languages: ['python']
+        })
     ].filter(Boolean),
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.

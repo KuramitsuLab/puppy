@@ -1,14 +1,27 @@
 import React from 'react';
 // import logo from './logo.svg';
 import './App.css';
+import { Container, Row, Col } from 'react-bootstrap';
 import Header from './components/Header/Header';
-import Main from './components/Main/Main';
+import Editor from './components/Editor/Editor';
+import PuppyScreen from './components/PuppyScreen/PuppyScreen';
 
 const App: React.FC = () => {
   return (
     <div className="App">
-      <Header />
-      <Main />
+      <Container className="container">
+        <Row>
+          <Header />
+        </Row>
+        <Row style={{ height: '100%' }}>
+          <Col id="left-col" xs={6}>
+            <PuppyScreen />
+          </Col>
+          <Col id="right-col" xs={6}>
+            <Editor />
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
