@@ -161,12 +161,12 @@ document.getElementById('openbook').onclick = () => showView('problem-view');
 /* event */
 
 document.getElementById('base').onclick = () => {
-  if (path.startsWith('/Puppy')) {
-    location.href = '/ITPP/01A';
-  }
-  else {
-    location.href = '/Puppy/Welcome';
-  }
+  // if (path.startsWith('/Puppy')) {
+  //   location.href = '/ITPP/01A';
+  // }
+  // else {
+  //   location.href = '/Puppy/Welcome';
+  // }
 };
 
 const submitBuild: (path: string) => Promise<string> = (path) => {

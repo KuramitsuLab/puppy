@@ -15,7 +15,10 @@
     "/PuppyCourse/Var",
     "/PuppyCourse/Input",
     "/PuppyCourse/Dice",
-    "/PuppyCourse/IfStmt"
+    "/PuppyCourse/DiceFunc",
+    "/PuppyCourse/IfStmt",
+    "/PuppyCourse/ForStmt",
+    "/PuppyCourse/Domino"
   ],
   "/PuppyCourse/Welcome": {
     "title": "はじめに"
@@ -37,6 +40,9 @@
   },
   "/PuppyCourse/Dice": {
     "title": "サイコロ"
+  },
+  "/Puppy/IfStmt": {
+    "title": "条件分岐"
   },
   "/Puppy/IfStmt": {
     "title": "条件分岐"
