@@ -10,9 +10,7 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <Container className="container">
-        <Row>
-          <Header />
-        </Row>
+        <Header />
         <Row id="main-row">
           <Col id="left-col" xs={6}>
             <PuppyScreen />
