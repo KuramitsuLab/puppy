@@ -13,7 +13,7 @@ const App: React.FC = () => {
         <Row>
           <Header />
         </Row>
-        <Row style={{ height: '100%' }}>
+        <Row id="main-row">
           <Col id="left-col" xs={6}>
             <PuppyScreen />
           </Col>

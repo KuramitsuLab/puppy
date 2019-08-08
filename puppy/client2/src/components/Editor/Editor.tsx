@@ -9,12 +9,17 @@ const Editor: React.FC = () => {
   const options = {
     selectOnLineNumbers: true,
     fontSize: 30,
-    wordWrap: 'on' as 'on'
+    wordWrap: 'on' as 'on',
   };
 
+  let timer: NodeJS.Timeout;
+
   addEventListener('resize', () => {
-    setWidth(document.getElementById('right-col')!.clientWidth);
-    setHeight(document.getElementById('right-col')!.clientHeight);
+    clearTimeout(timer!);
+    timer = setTimeout(function() {
+      setWidth(document.getElementById('right-col')!.clientWidth);
+      setHeight(document.getElementById('right-col')!.clientHeight);
+    }, 300);
   });
 
   useEffect(() => {

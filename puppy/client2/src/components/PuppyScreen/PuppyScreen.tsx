@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Engine, World, Bodies, Render } from 'matter-js';
+import { Button } from 'react-bootstrap';
+import './PuppyScreen.css';
+
+const PuppyFooter: React.FC = () => {
+  return (
+    <div className="puppy-footer">
+      <Button>Run</Button>
+    </div>
+  );
+};
 
 const engine = Engine.create();
 
@@ -9,9 +19,9 @@ World.add(engine.world, [
     render: {
       fillStyle: '#977559', // 塗りつぶす色: CSSの記述法で指定
       strokeStyle: 'rgba(0, 0, 0, 0)', // 線の色: CSSの記述法で指定
-      lineWidth: 0
-    }
-  })
+      lineWidth: 0,
+    },
+  }),
 ]);
 
 Engine.run(engine);
@@ -20,29 +30,33 @@ let render: Render | null = null;
 let canvas: HTMLElement | null = null;
 
 const PuppyScreen: React.FC = () => {
-  const [height, setHeight] = useState(500);
-  const [width, setWidth] = useState(500);
+  const [, setState] = useState({});
 
+  let timer: NodeJS.Timeout | null = null;
   addEventListener('resize', () => {
-    canvas!.setAttribute('width', width.toString());
-    canvas!.setAttribute('height', height.toString());
-    setWidth(document.getElementById('left-col')!.clientWidth);
-    setHeight(document.getElementById('left-col')!.clientHeight);
+    clearTimeout(timer!);
+    timer = setTimeout(function() {
+      const w = document.getElementById('left-col')!.clientWidth;
+      const h = document.getElementById('left-col')!.clientHeight;
+      canvas!.setAttribute('width', w.toString());
+      canvas!.setAttribute('height', h.toString());
+      render!.options.width = w;
+      render!.options.height = h;
+      setState({});
+    }, 300);
   });
 
   useEffect(() => {
     const w = document.getElementById('left-col')!.clientWidth;
     const h = document.getElementById('left-col')!.clientHeight;
-    setWidth(w);
-    setHeight(h);
     const renderOptions = {
       element: document.getElementById('puppy-screen')!,
       engine: engine,
       options: {
         width: w,
         height: h,
-        background: 'white'
-      }
+        background: 'white',
+      },
     };
     if (render) {
       Render.stop(render);
@@ -51,10 +65,16 @@ const PuppyScreen: React.FC = () => {
     }
     render = Render.create(renderOptions);
     canvas = render.canvas;
+    setState({});
     Render.run(render!);
   }, []);
 
-  return <div id="puppy-screen"></div>;
+  return (
+    <>
+      <div id="puppy-screen"></div>
+      <PuppyFooter />
+    </>
+  );
 };
 
 export default PuppyScreen;
