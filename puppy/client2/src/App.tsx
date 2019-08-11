@@ -4,7 +4,7 @@ import './App.css';
 import { Container, Row, Col } from 'react-bootstrap';
 import Header from './components/Header/Header';
 import Editor from './components/Editor/Editor';
-import PuppyScreen from './components/PuppyScreen/PuppyScreen';
+import PuppyScreen from './components/Puppy/PuppyScreen';
 
 const App: React.FC = () => {
   return (

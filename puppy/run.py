@@ -102,7 +102,7 @@ def dist_build(d):
     return send_file("output.txt")
 
 
-@app.route('/compile', methods=['POST'])
+@app.route('/api/compile', methods=['POST'])
 def transcompile():
     inputText = request.data
     return Response(makeCode(inputText.decode('utf-8'), []), mimetype='application/javascript')
