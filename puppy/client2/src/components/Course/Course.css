@@ -1,0 +1,17 @@
+#puppy-course {
+  width: 100%;
+  position: absolute;
+  padding: 10px 10px 10px 15px;
+}
+
+.course-header {
+  background: rgb(255,255,255);
+}
+
+.course-body {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.course-all {
+  background: transparent;
+}

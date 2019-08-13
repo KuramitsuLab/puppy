@@ -7,11 +7,15 @@ import {
   faPlay,
   faExpand,
   faBookOpen,
+  faBook,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { puppy, trancepiler } from '../Editor/Editor';
+import { SetState } from '../../react-app-env';
 
-const PuppyFooter: React.FC = () => {
+type PuppyFooterProps = { isCourse: boolean; setIsCourse: SetState<boolean> };
+
+const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
   const onClick = () => {
     trancepiler(true);
   };
@@ -24,14 +28,16 @@ const PuppyFooter: React.FC = () => {
       <Button variant="dark">
         <FontAwesomeIcon icon={faExpand} />
       </Button>
-      <Button variant="dark">
-        <FontAwesomeIcon icon={faBookOpen} />
+      <Button variant="dark" onClick={() => props.setIsCourse(!props.isCourse)}>
+        <FontAwesomeIcon icon={props.isCourse ? faBook : faBookOpen} />
       </Button>
     </div>
   );
 };
 
-const PuppyScreen: React.FC = () => {
+type PuppyScreenProps = { isCourse: boolean; setIsCourse: SetState<boolean> };
+
+const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
   const [, setState] = useState({});
 
   let timer: NodeJS.Timeout | null = null;
@@ -41,8 +47,8 @@ const PuppyScreen: React.FC = () => {
       timer = null;
     }
     timer = setTimeout(function() {
-      const w = document.getElementById('left-col')!.clientWidth;
-      const h = document.getElementById('left-col')!.clientHeight;
+      const w = document.getElementById('puppy-screen')!.clientWidth;
+      const h = document.getElementById('puppy-screen')!.clientHeight;
       if (puppy) {
         puppy.resize(w, h);
       }
@@ -53,7 +59,7 @@ const PuppyScreen: React.FC = () => {
   return (
     <>
       <div id="puppy-screen"></div>
-      <PuppyFooter />
+      <PuppyFooter isCourse={props.isCourse} setIsCourse={props.setIsCourse} />
     </>
   );
 };
