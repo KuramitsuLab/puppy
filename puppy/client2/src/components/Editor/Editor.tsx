@@ -4,6 +4,10 @@ import * as monacoEditor from 'monaco-editor';
 import './Editor.css';
 import { PuppyCode, Puppy, runPuppy } from '../Puppy/vm/vm';
 
+import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+
 type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
 
 const zenkaku =
@@ -76,16 +80,43 @@ const gene_trancepiler: (
 
 export let trancepiler = gene_trancepiler('');
 
+type EditorFooterProps = {
+  setFontSize: React.Dispatch<React.SetStateAction<number>>;
+  fontSize: number;
+};
+
+const EditorFooter: React.FC<EditorFooterProps> = (
+  props: EditorFooterProps
+) => {
+  const fontPlus = () => {
+    props.setFontSize(props.fontSize + 3);
+  };
+  const fontMinus = () => {
+    props.setFontSize(Math.max(12, props.fontSize - 3));
+  };
+  return (
+    <div id="editor-footer">
+      <Button onClick={fontPlus}>
+        <FontAwesomeIcon icon={faPlus} />
+      </Button>
+      <Button onClick={fontMinus}>
+        <FontAwesomeIcon icon={faMinus} />
+      </Button>
+    </div>
+  );
+};
+
 const Editor: React.FC = () => {
   const [code, setCode] = useState('');
   const [width, setWidth] = useState(500);
   const [height, setHeight] = useState(500);
   const [codeEditor, setCodeEditor] = useState(null as CodeEditor | null);
   const [decoration, setDecoration] = useState([] as string[]);
+  const [fontSize, setFontSize] = useState(30);
 
   const editorOptions = {
     selectOnLineNumbers: true,
-    fontSize: 30,
+    fontSize,
     wordWrap: 'on' as 'on',
   };
 
@@ -138,15 +169,18 @@ const Editor: React.FC = () => {
   };
 
   return (
-    <MonacoEditor
-      width={width}
-      height={height}
-      language="python"
-      value={code}
-      options={editorOptions}
-      onChange={codeOnChange}
-      editorDidMount={editorDidMount}
-    />
+    <div id="puppy-editor">
+      <MonacoEditor
+        width={width}
+        height={height}
+        language="python"
+        value={code}
+        options={editorOptions}
+        onChange={codeOnChange}
+        editorDidMount={editorDidMount}
+      />
+      <EditorFooter setFontSize={setFontSize} fontSize={fontSize} />
+    </div>
   );
 };
 

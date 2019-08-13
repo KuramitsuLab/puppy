@@ -1,11 +1,11 @@
-.puppy-footer {
+#puppy-footer {
   position: absolute;
   width: 100%;
   text-align: right;
   bottom: 68px;
 }
 
-.puppy-footer button {
+#puppy-footer button {
   margin: 0 2px 0 2px;
 }
 

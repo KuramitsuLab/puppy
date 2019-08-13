@@ -16,7 +16,7 @@ const PuppyFooter: React.FC = () => {
     trancepiler(true);
   };
   return (
-    <div className="puppy-footer">
+    <div id="puppy-footer">
       <Button variant="dark" onClick={onClick}>
         <FontAwesomeIcon icon={faPlay} />
         {' Play'}

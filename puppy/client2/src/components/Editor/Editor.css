@@ -1,3 +1,15 @@
+#editor-footer {
+  position: absolute;
+  width: 100%;
+  text-align: right;
+  bottom: 68px;
+  padding: 0 20px 0 0;
+}
+
+#editor-footer button {
+  margin: 0 2px 0 2px;
+}
+
 .zenkakuClass {
 	background: lightcoral;
 }
