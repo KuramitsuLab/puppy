@@ -7,6 +7,7 @@ import { PuppyCode, Puppy, runPuppy } from '../Puppy/vm/vm';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { SetState } from '../../react-app-env';
 
 type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
 
@@ -81,7 +82,7 @@ const gene_trancepiler: (
 export let trancepiler = gene_trancepiler('');
 
 type EditorFooterProps = {
-  setFontSize: React.Dispatch<React.SetStateAction<number>>;
+  setFontSize: SetState<number>;
   fontSize: number;
 };
 

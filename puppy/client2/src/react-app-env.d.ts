@@ -2,6 +2,8 @@
 /// <reference types="react" />
 /// <reference types="react-dom" />
 
+import React from 'react';
+
 declare namespace NodeJS {
   interface ProcessEnv {
     readonly NODE_ENV: 'development' | 'production' | 'test';
@@ -64,3 +66,7 @@ declare module '*.module.sass' {
   const classes: { [key: string]: string };
   export default classes;
 }
+
+// React Hooks
+
+declare type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
