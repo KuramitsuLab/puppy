@@ -120,6 +120,9 @@ const Editor: React.FC = () => {
 
   const codeOnChange = (new_code: string) => {
     setCode(new_code);
+    if (codeEditor) {
+      checkZenkaku(codeEditor);
+    }
     if (editorTimer) {
       clearTimeout(editorTimer);
       editorTimer = null;
@@ -127,9 +130,6 @@ const Editor: React.FC = () => {
     editorTimer = setTimeout(() => {
       trancepiler = gene_trancepiler(new_code);
       // trancepiler(false);
-      if (codeEditor) {
-        checkZenkaku(codeEditor);
-      }
     }, 1000);
   };
 

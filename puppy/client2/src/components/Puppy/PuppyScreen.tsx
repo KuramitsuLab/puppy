@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 // import { Engine, World, Bodies, Render } from 'matter-js';
 import { Button } from 'react-bootstrap';
 import './PuppyScreen.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faPlay,
+  faExpand,
+  faBookOpen,
+} from '@fortawesome/free-solid-svg-icons';
 
 import { puppy, trancepiler } from '../Editor/Editor';
 
@@ -11,7 +17,16 @@ const PuppyFooter: React.FC = () => {
   };
   return (
     <div className="puppy-footer">
-      <Button onClick={onClick}>Run</Button>
+      <Button variant="dark" onClick={onClick}>
+        <FontAwesomeIcon icon={faPlay} />
+        {' Play'}
+      </Button>
+      <Button variant="dark">
+        <FontAwesomeIcon icon={faExpand} />
+      </Button>
+      <Button variant="dark">
+        <FontAwesomeIcon icon={faBookOpen} />
+      </Button>
     </div>
   );
 };
@@ -21,7 +36,10 @@ const PuppyScreen: React.FC = () => {
 
   let timer: NodeJS.Timeout | null = null;
   addEventListener('resize', () => {
-    clearTimeout(timer!);
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
     timer = setTimeout(function() {
       const w = document.getElementById('left-col')!.clientWidth;
       const h = document.getElementById('left-col')!.clientHeight;
@@ -34,7 +52,7 @@ const PuppyScreen: React.FC = () => {
 
   return (
     <>
-      <div id="puppy-screen" style={{ width: '100%', height: '100%' }}></div>
+      <div id="puppy-screen"></div>
       <PuppyFooter />
     </>
   );

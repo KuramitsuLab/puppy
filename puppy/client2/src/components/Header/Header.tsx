@@ -4,8 +4,16 @@ import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 const Header: React.FC = () => {
   return (
     <div className="Header" id="puppy-header">
-      <Navbar bg="light" expand="lg">
-        <Navbar.Brand href="#home">Puppy</Navbar.Brand>
+      <Navbar bg="white" variant="light" expand="lg">
+        <Navbar.Brand href="#home">
+          <img
+            src="./image/puppyLogo.png"
+            width="25"
+            height="25"
+            className="d-inline-block align-top"
+          />
+          {' Puppy'}
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
