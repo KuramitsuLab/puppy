@@ -15,3 +15,11 @@
 .course-all {
   background: transparent;
 }
+
+.card-header-left {
+  text-align: left
+}
+
+.card-header-right {
+  text-align: right
+}

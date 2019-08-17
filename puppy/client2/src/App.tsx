@@ -7,7 +7,13 @@ import Editor from './components/Editor/Editor';
 import PuppyScreen from './components/Puppy/PuppyScreen';
 import Course from './components/Course/Course';
 
-const App: React.FC = () => {
+type QueryParams = {
+  problem?: string;
+};
+
+type AppProps = { qs: QueryParams };
+
+const App: React.FC<AppProps> = (props: AppProps) => {
   const [isCourse, setIsCourse] = useState(true);
   return (
     <div className="App">
@@ -15,7 +21,11 @@ const App: React.FC = () => {
         <Header />
         <Row id="main-row">
           <Col id="left-col" xs={6}>
-            {isCourse ? <Course /> : null}
+            {isCourse ? (
+              <Course
+                problem={props.qs.problem ? props.qs.problem : '/Puppy/Welcome'}
+              />
+            ) : null}
             <PuppyScreen isCourse={isCourse} setIsCourse={setIsCourse} />
           </Col>
           <Col id="right-col" xs={6}>
