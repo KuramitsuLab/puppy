@@ -12,7 +12,7 @@ def initTypeVars():
 def newTypeVar():
     global VARID
     VARID += 1
-    return '_' + str(VARID)
+    return f'_{VARID}'
 
 
 def unique(t, a=newTypeVar(), b=newTypeVar()):
@@ -91,6 +91,9 @@ class Type:
     def __eq__(self, a):
         return self.__str__() == str(a)
 
+    def isVarType(self):
+        return '_' in self.name
+
     def match(self, given):
         pats, vat = str(self), str(given)
         if pats.endswith('?'):
@@ -106,18 +109,24 @@ class Type:
         return True
 
 
+def newType(v='__'):
+    if isinstance(v, Type):
+        return v
+    if isinstance(v, tuple):
+        return tuple(map(newType, v))
+    return Type()
+
+
 def matchType(t, t2):
     if isinstance(t, str):
-        if t == 'any':
+        print('matchType', t, t2, type(t2))
+        if t == 'any' or t2.isVarType():
             return True
-        res = False
+        u2 = str(t2)
         for u in t.split('|'):
-            u2 = str(t2)
             if u2.startswith(u):
                 return True
-            if '_' in u2:
-                res = True
-        return res
+        return False
     if isinstance(t, Type) and isinstance(t2, Type):
         return t.match(t2)
     if isinstance(t, tuple) and isinstance(t2, tuple) and len(t) == len(t2):
@@ -256,7 +265,7 @@ TYPEDICT = {
     'float': Float,
     'string': String,
     'str': String,
-    'list[int]': Int,
+    'list[int]': ListInt,
     'object': Matter,
 }
 

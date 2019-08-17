@@ -12,23 +12,41 @@ const = True
 mutable = False
 Symbol = namedtuple('Symbol', 'target local types')
 
+class Env(dict):
+    __slots__ = ['parent']
+    def __init__(self, parent=None):
+        self.parent = parent
+    
+    def newLocal(self): 
+        return Env(self)
+    
+    def __getitem__(self, key):
+        if key in self:
+            return self[key]
+        if self.parent is None:
+            return None
+        else:
+            self.parent[key]
+    
+    def getroot(self):
+        p = self.parent
+        while p.parent is not None:
+            p = p.parent
+        return p
 
-def pushenv(env, key, val):
-    p = env.get(key, None)
-    env[key] = val
-    return p
+    def __getattr__(self, key):
+        p = self.getroot()
+        return p.get('@'+key, None)
 
+    def __setattr__(self, key, value):
+        p = self.getroot()
+        p['@'+key] = value
 
-def popenv(env, key, prev):
-    if prev == None:
-        del env[key]
-    else:
-        env[key] = prev
-
+def exists(x): return x is not None
 
 def Source(env, t, out):
     for _, subtree in t:
-        out.append(env['@indent'])
+        out.append(env.indent)
         conv(env, subtree, out)
         emitAutoYield(env, out)
     return ts.Void
@@ -523,7 +541,7 @@ KEYWORDTYPES = {
     'move': (ts.Void, ts.Matter, ts.Int),
     'font': ts.String,
     'fontColor': 'number|str',
-    'textAlign': 'textAlign',
+    'textAlign': ts.String,
     'value': 'bool|number|str',
     'capture': ('bool|number|str'),
 }
@@ -551,7 +569,7 @@ def GetExpr(env, t, out):
     else:
         name = KEYWORDS[name]
         out.append(name)
-        return KEYWORDTYPES[name]
+        return ts.newType(KEYWORDTYPES[name])
 
 
 def IndexExpr(env, t, out):
@@ -688,7 +706,8 @@ def KeywordArgument(env, t, out, used_keys=None):
         name = KEYWORDS[name]
     out2 = []
     scope(env, '@target', name, lambda: check(
-        KEYWORDTYPES.get(name, 'any'), env, t['value'], out2))
+        
+        .get(name, 'any'), env, t['value'], out2))
     value = ''.join(out2)
     emitOption(env, t['name'], name, value, out, used_keys)
     return ts.Void
