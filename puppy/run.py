@@ -47,7 +47,7 @@ def dist_settings(d):
 
 @app.route('/api/problem/<path:d>')
 def dist_problem(d):
-    path = getRootPath() / 'p' / d / ('index.md')
+    path = getRootPath() / 'cources' / d / ('index.md')
     return send_file(str(path))
 
 
