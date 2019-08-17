@@ -63,15 +63,18 @@ def strType(pat):
         return '(' + ','.join(map(strType, pat[1:])) + ')=>'+strType(pat[0])
     if isinstance(pat, Type):
         pat = pat.name
-    if pat is None:
-        return 'None(FIXME)'
-    if pat.startswith('list['):
-        return f'list[{strType(pat[5:-1])}]'
-    if pat in VARS:
-        ts = VARS[pat]
-        if isinstance(ts, str):
-            return ts
-    return pat
+    if isinstance(pat, str):
+        if pat.startswith('list['):
+            return f'list[{strType(pat[5:-1])}]'
+        if pat in VARS:
+            ts = VARS[pat]
+            if isinstance(ts, str):
+                return ts
+        return pat
+    if isinstance(pat, dict):
+        return '**options'
+    print('@FIXME', pat)
+    return str(pat)
 
 
 class Type:
