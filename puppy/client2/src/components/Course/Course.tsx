@@ -26,7 +26,16 @@ const loadFile: (path: string) => Promise<string> = path => {
 };
 
 type CourseProps = {
-  problem: string;
+  course: string;
+  page: number;
+};
+
+type Course = {
+  course: string;
+  list: {
+    path: string;
+    title: string;
+  }[];
 };
 
 const Course: React.FC<CourseProps> = (props: CourseProps) => {
@@ -34,29 +43,53 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
     '# Hello World \n\n Rendered by **marked**'
   );
 
-  useEffect(() => {
-    loadFile(`api/problem${props.problem}`).then((con: string) =>
-      setContent(con)
+  const [course, setCourse] = useState({ course: '', list: [] } as Course);
+
+  const loadContent = (path: string) =>
+    loadFile(`/api/problem/${props.course}/${path}`).then((content: string) =>
+      setContent(content)
     );
-  }, []);
+
+  useEffect(() => {
+    loadFile(`/api/setting/${props.course}`)
+      .then((s: string) => {
+        const _course = JSON.parse(s) as Course;
+        setCourse(_course);
+        loadContent(_course.list[0].path);
+      })
+      .catch((msg: string) => {
+        console.log(`ERR ${msg}`);
+      });
+  }, [props.course]);
+
+  useEffect(() => {
+    if (course.list.length !== 0) {
+      loadContent(course.list[props.page % course.list.length].path);
+    }
+  }, [props.page]);
 
   return (
     <div id="puppy-course">
       <Card className="course-all">
         <Card.Header className="course-header">
           <Row>
-            <Col className="card-header-left" xs={4}>
-              <a href="?problem=Left">
-                <FontAwesomeIcon icon={faChevronLeft} />
-                {' Left'}
-              </a>
+            <Col className="card-header-left" xs={6}>
+              {course.list && course.list.length !== 0 && props.page !== 0 ? (
+                <a href={`#${props.page - 1}`}>
+                  <FontAwesomeIcon icon={faChevronLeft} />
+                  {` ${course.list[props.page - 1].title}`}
+                </a>
+              ) : null}
             </Col>
-            <Col className="card-header-center" xs={4}></Col>
-            <Col className="card-header-right" xs={4}>
-              <a href="?problem=Right">
-                {'Right '}
-                <FontAwesomeIcon icon={faChevronRight} />
-              </a>
+            <Col className="card-header-right" xs={6}>
+              {course.list &&
+              course.list.length !== 0 &&
+              props.page !== course.list.length - 1 ? (
+                <a href={`#${props.page + 1}`}>
+                  {`${course.list[props.page + 1].title} `}
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </a>
+              ) : null}
             </Col>
           </Row>
         </Card.Header>

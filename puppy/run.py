@@ -37,17 +37,17 @@ def dist(d):
 # sumomo
 
 
-@app.route('/setting/<path:d>')
+@app.route('/api/setting/<path:d>')
 def dist_settings(d):
     if '/' in d:
         d = d.split('/')[0]
-    path = getRootPath() / 'p' / d / ('setting.json')
+    path = getRootPath() / 'courses' / d / ('setting.json')
     return send_file(str(path))
 
 
 @app.route('/api/problem/<path:d>')
 def dist_problem(d):
-    path = getRootPath() / 'cources' / d / ('index.md')
+    path = getRootPath() / 'courses' / d / ('index.md')
     return send_file(str(path))
 
 

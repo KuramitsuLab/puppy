@@ -16,7 +16,14 @@ const queryParser = (query: string) =>
 
 ReactDOM.render(
   <Router>
-    <Route render={props => <App qs={queryParser(props.location.search)} />} />
+    <Route
+      render={props => (
+        <App
+          qs={queryParser(props.location.search)}
+          hash={props.location.hash}
+        />
+      )}
+    />
   </Router>,
   document.getElementById('root')
 );

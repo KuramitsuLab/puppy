@@ -8,10 +8,10 @@ import PuppyScreen from './components/Puppy/PuppyScreen';
 import Course from './components/Course/Course';
 
 type QueryParams = {
-  problem?: string;
+  course?: string;
 };
 
-type AppProps = { qs: QueryParams };
+type AppProps = { qs: QueryParams; hash: string };
 
 const App: React.FC<AppProps> = (props: AppProps) => {
   const [isCourse, setIsCourse] = useState(true);
@@ -23,7 +23,8 @@ const App: React.FC<AppProps> = (props: AppProps) => {
           <Col id="left-col" xs={6}>
             {isCourse ? (
               <Course
-                problem={props.qs.problem ? props.qs.problem : '/Puppy/Welcome'}
+                course={props.qs.course ? props.qs.course : 'Puppy'}
+                page={props.hash !== '' ? parseInt(props.hash.substr(1)) : 0}
               />
             ) : null}
             <PuppyScreen isCourse={isCourse} setIsCourse={setIsCourse} />
