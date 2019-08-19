@@ -41,45 +41,38 @@ const checkError = (code: PuppyCode) => {
   return true;
 };
 
-const gene_trancepiler: (
-  source: string
-) => (alwaysRun: boolean) => Promise<void> = source => {
-  const trancepile = (alwaysRun: boolean) =>
-    fetch('/api/compile', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/text; charset=utf-8',
-      },
-      body: source,
+export const trancepile = (source: string, alwaysRun: boolean) =>
+  fetch('/api/compile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text; charset=utf-8',
+    },
+    body: source,
+  })
+    .then((res: Response) => {
+      if (res.ok) {
+        return res.text();
+      }
+      throw new Error(res.statusText);
     })
-      .then((res: Response) => {
-        if (res.ok) {
-          return res.text();
+    .then((js: string) => {
+      try {
+        const code = Function(js)(); // Eval javascript code
+        if (!checkError(code)) {
+          session.setItem(`/sample${path}`, source);
+          puppy = runPuppy(puppy!, code, alwaysRun);
         }
-        throw new Error(res.statusText);
-      })
-      .then((js: string) => {
-        try {
-          const code = Function(js)(); // Eval javascript code
-          if (!checkError(code)) {
-            session.setItem(`/sample${path}`, source);
-            puppy = runPuppy(puppy!, code, alwaysRun);
-          }
-        } catch (e) {
-          // alert(`トランスパイルにしっぱいしています ${e}`);
-          // editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
-          console.log(js);
-          console.log(`FAIL TO TRANSCOMPILE ${e}`);
-          console.log(e);
-        }
-      })
-      .catch((msg: string) => {
-        alert(`Puppy is down!! ${msg}`);
-      });
-  return trancepile;
-};
-
-export let trancepiler = gene_trancepiler('');
+      } catch (e) {
+        // alert(`トランスパイルにしっぱいしています ${e}`);
+        // editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
+        console.log(js);
+        console.log(`FAIL TO TRANSCOMPILE ${e}`);
+        console.log(e);
+      }
+    })
+    .catch((msg: string) => {
+      alert(`Puppy is down!! ${msg}`);
+    });
 
 type EditorFooterProps = {
   setFontSize: SetState<number>;
@@ -107,8 +100,12 @@ const EditorFooter: React.FC<EditorFooterProps> = (
   );
 };
 
-const Editor: React.FC = () => {
-  const [code, setCode] = useState('');
+type EditorProps = {
+  code: string;
+  setCode: SetState<string>;
+};
+
+const Editor: React.FC<EditorProps> = (props: EditorProps) => {
   const [width, setWidth] = useState(500);
   const [height, setHeight] = useState(500);
   const [codeEditor, setCodeEditor] = useState(null as CodeEditor | null);
@@ -151,7 +148,7 @@ const Editor: React.FC = () => {
   };
 
   const codeOnChange = (new_code: string) => {
-    setCode(new_code);
+    props.setCode(new_code);
     if (codeEditor) {
       checkZenkaku(codeEditor);
     }
@@ -160,8 +157,7 @@ const Editor: React.FC = () => {
       editorTimer = null;
     }
     editorTimer = setTimeout(() => {
-      trancepiler = gene_trancepiler(new_code);
-      // trancepiler(false);
+      trancepile(new_code, false);
     }, 1000);
   };
 
@@ -175,7 +171,7 @@ const Editor: React.FC = () => {
         width={width}
         height={height}
         language="python"
-        value={code}
+        value={props.code}
         options={editorOptions}
         onChange={codeOnChange}
         editorDidMount={editorDidMount}

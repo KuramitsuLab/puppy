@@ -10,14 +10,18 @@ import {
   faBook,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { puppy, trancepiler } from '../Editor/Editor';
+import { puppy, trancepile } from '../Editor/Editor';
 import { SetState } from '../../react-app-env';
 
-type PuppyFooterProps = { isCourse: boolean; setIsCourse: SetState<boolean> };
+type PuppyFooterProps = {
+  isCourse: boolean;
+  setIsCourse: SetState<boolean>;
+  code: string;
+};
 
 const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
   const onClick = () => {
-    trancepiler(true);
+    trancepile(props.code, true);
   };
   return (
     <div id="puppy-footer">
@@ -35,7 +39,11 @@ const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
   );
 };
 
-type PuppyScreenProps = { isCourse: boolean; setIsCourse: SetState<boolean> };
+type PuppyScreenProps = {
+  isCourse: boolean;
+  setIsCourse: SetState<boolean>;
+  code: string;
+};
 
 const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
   const [, setState] = useState({});
@@ -59,7 +67,11 @@ const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
   return (
     <>
       <div id="puppy-screen"></div>
-      <PuppyFooter isCourse={props.isCourse} setIsCourse={props.setIsCourse} />
+      <PuppyFooter
+        isCourse={props.isCourse}
+        setIsCourse={props.setIsCourse}
+        code={props.code}
+      />
     </>
   );
 };

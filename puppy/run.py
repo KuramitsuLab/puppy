@@ -51,12 +51,12 @@ def dist_problem(d):
     return send_file(str(path))
 
 
-@app.route('/sample/<path:d>')
+@app.route('/api/sample/<path:d>')
 def dist_sample(d):
     file = getRootPath() / 'u' / uid() / (d.replace('/', '-') + '.py')
     if file.exists():
         return send_file(str(file))
-    path = getRootPath() / 'p' / d / ('sample.py')
+    path = getRootPath() / 'courses' / d / ('sample.py')
     return send_file(str(path))
 
 

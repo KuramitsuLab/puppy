@@ -7,6 +7,8 @@ import {
   faChevronLeft,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { SetState } from '../../react-app-env';
+
 import './Course.css';
 import './github-markdown.css';
 
@@ -28,6 +30,7 @@ const loadFile: (path: string) => Promise<string> = path => {
 type CourseProps = {
   course: string;
   page: number;
+  setCode: SetState<string>;
 };
 
 type Course = {
@@ -50,12 +53,18 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
       setContent(content)
     );
 
+  const loadSample = (path: string) =>
+    loadFile(`/api/sample/${props.course}/${path}`).then((content: string) =>
+      props.setCode(content)
+    );
+
   useEffect(() => {
     loadFile(`/api/setting/${props.course}`)
       .then((s: string) => {
         const _course = JSON.parse(s) as Course;
         setCourse(_course);
         loadContent(_course.list[0].path);
+        loadSample(_course.list[0].path);
       })
       .catch((msg: string) => {
         console.log(`ERR ${msg}`);
@@ -65,6 +74,7 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
   useEffect(() => {
     if (course.list.length !== 0) {
       loadContent(course.list[props.page % course.list.length].path);
+      loadSample(course.list[props.page % course.list.length].path);
     }
   }, [props.page]);
 
