@@ -20,16 +20,33 @@ type PuppyFooterProps = {
 };
 
 const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
-  const onClick = () => {
-    trancepile(props.code, true);
+  const fullscreen = () => {
+    if (puppy != null) {
+      const canvas = puppy.getCanvas();
+      if (canvas) {
+        // FIXME
+        if (canvas['webkitRequestFullscreen']) {
+          canvas['webkitRequestFullscreen'](); // Chrome15+, Safari5.1+, Opera15+
+        } else if (canvas['mozRequestFullScreen']) {
+          canvas['mozRequestFullScreen'](); // FF10+
+        } else if (canvas['msRequestFullscreen']) {
+          canvas['msRequestFullscreen'](); // IE11+
+        } else if (canvas['requestFullscreen']) {
+          canvas['requestFullscreen'](); // HTML5 Fullscreen API仕様
+        } else {
+          // alert('ご利用のブラウザはフルスクリーン操作に対応していません');
+          return;
+        }
+      }
+    }
   };
   return (
     <div id="puppy-footer">
-      <Button variant="dark" onClick={onClick}>
+      <Button variant="dark" onClick={() => trancepile(props.code, true)}>
         <FontAwesomeIcon icon={faPlay} />
         {' Play'}
       </Button>
-      <Button variant="dark">
+      <Button variant="dark" onClick={fullscreen}>
         <FontAwesomeIcon icon={faExpand} />
       </Button>
       <Button variant="dark" onClick={() => props.setIsCourse(!props.isCourse)}>

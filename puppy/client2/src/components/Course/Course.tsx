@@ -46,7 +46,7 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
       );
       loadSample(props.course.list[props.page % props.course.list.length].path);
     }
-  });
+  }, [props.page, props.coursePath, props.course]);
 
   return (
     <div id="puppy-course">
