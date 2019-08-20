@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 import { SetState } from '../../react-app-env';
+import { trancepile } from '../Editor/Editor';
 
 import './Course.css';
 import './github-markdown.css';
@@ -54,9 +55,10 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
     );
 
   const loadSample = (path: string) =>
-    loadFile(`/api/sample/${props.course}/${path}`).then((content: string) =>
-      props.setCode(content)
-    );
+    loadFile(`/api/sample/${props.course}/${path}`).then((content: string) => {
+      props.setCode(content);
+      trancepile(content, false);
+    });
 
   useEffect(() => {
     loadFile(`/api/setting/${props.course}`)
