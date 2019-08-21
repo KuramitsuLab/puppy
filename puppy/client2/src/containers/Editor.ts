@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { ReduxState, ReduxActions } from '../store';
 import Editor from '../components/Editor/Editor';
+import { trancepile } from '../modules/operations';
 import {
   setCode,
   setSize,
@@ -15,22 +16,25 @@ const mapStateToProps = (state: ReduxState) => ({
   height: state.editor.height,
   codeEditor: state.editor.codeEditor,
   decoration: state.editor.decoration,
+  theme: state.editor.theme,
   fontSize: state.editor.fontSize,
   code: state.editor.code,
+  puppy: state.puppy.puppy,
 });
 
-const mapDispathToProps = (dispath: (action: ReduxActions) => void) => ({
-  setCode: (code: string) => dispath(setCode(code)),
-  setSize: (width: number, height: number) => dispath(setSize(width, height)),
+const mapDispatchToProps = (dispatch: (action: ReduxActions) => void) => ({
+  setCode: (code: string) => dispatch(setCode(code)),
+  setSize: (width: number, height: number) => dispatch(setSize(width, height)),
   setCodeEditor: (codeEditor: CodeEditor | null) =>
-    dispath(setCodeEditor(codeEditor)),
-  setDecoration: (decoration: string[]) => dispath(setDecoration(decoration)),
-  setFontSize: (fontSize: number) => dispath(setFontSize(fontSize)),
+    dispatch(setCodeEditor(codeEditor)),
+  setDecoration: (decoration: string[]) => dispatch(setDecoration(decoration)),
+  setFontSize: (fontSize: number) => dispatch(setFontSize(fontSize)),
+  trancepile: trancepile(dispatch),
 });
 
 export const EditorContainer = connect(
   mapStateToProps,
-  mapDispathToProps
+  mapDispatchToProps
 )(Editor);
 
 export default EditorContainer;

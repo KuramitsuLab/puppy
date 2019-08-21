@@ -65,8 +65,9 @@ export type PuppyScreenProps = PuppyFooterProps & {
   setSize: (width: number, height: number) => void;
 };
 
+let timer: NodeJS.Timeout | null = null;
+
 const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
-  let timer: NodeJS.Timeout | null = null;
   addEventListener('resize', () => {
     if (timer) {
       clearTimeout(timer);

@@ -8,7 +8,7 @@ enum EditorActionTypes {
   SET_CODEEDITOR = 'SET_CODEEDITOR',
   SET_FONTSIZE = 'SET_FONTSIZE',
   SET_DECORATION = 'SET_DECORATION',
-  SET_BACKGROUND = 'SETBACKGROUND',
+  SET_THEME = 'SETTHEME',
 }
 
 interface SetSizeAction extends Action {
@@ -85,17 +85,17 @@ export const setDecoration = (decoration: string[]): SetDecorationAction => ({
   },
 });
 
-interface SetBackgroundAction extends Action {
-  type: EditorActionTypes.SET_BACKGROUND;
+interface SetThemeAction extends Action {
+  type: EditorActionTypes.SET_THEME;
   payload: {
-    background: string;
+    theme: string;
   };
 }
 
-export const setBackground = (background: string): SetBackgroundAction => ({
-  type: EditorActionTypes.SET_BACKGROUND,
+export const setTheme = (theme: string): SetThemeAction => ({
+  type: EditorActionTypes.SET_THEME,
   payload: {
-    background,
+    theme,
   },
 });
 
@@ -105,16 +105,16 @@ export type EditorActions =
   | SetCodeEditorAction
   | SetFontSizeAction
   | SetDecorationAction
-  | SetBackgroundAction;
+  | SetThemeAction;
 
 export type EditorState = {
   width: number;
   height: number;
   code: string;
   codeEditor: CodeEditor | null;
+  theme: string;
   fontSize: number;
   decoration: string[];
-  background: string;
 };
 
 const initialState: EditorState = {
@@ -122,9 +122,9 @@ const initialState: EditorState = {
   height: 500,
   code: '',
   codeEditor: null,
+  theme: 'vs',
   fontSize: 30,
   decoration: [],
-  background: 'white',
 };
 
 export const editorReducer = (state = initialState, action: EditorActions) => {
@@ -143,8 +143,8 @@ export const editorReducer = (state = initialState, action: EditorActions) => {
       return { ...state, fontSize: action.payload.value };
     case EditorActionTypes.SET_DECORATION:
       return { ...state, decoration: action.payload.decoration };
-    case EditorActionTypes.SET_BACKGROUND:
-      return { ...state, background: action.payload.background };
+    case EditorActionTypes.SET_THEME:
+      return { ...state, theme: action.payload.theme };
     default:
       return state;
   }

@@ -1,4 +1,4 @@
-import { setBackground, setCode } from './editor';
+import { setTheme, setCode } from './editor';
 import { CourseShape, setCourse, setContent } from './course';
 import { setPuppy } from './puppy';
 import { PuppyCode, Puppy, runPuppy } from '../components/Puppy/vm/vm';
@@ -22,9 +22,10 @@ const checkError = (
     // editor.getSession().setAnnotations(annos);
   }
   if (error_count === 0) {
+    dispatch(setTheme('vs'));
     return false;
   }
-  dispatch(setBackground('rgba(254,244,244,0.7)'));
+  dispatch(setTheme('error'));
   // editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
   return true;
 };
