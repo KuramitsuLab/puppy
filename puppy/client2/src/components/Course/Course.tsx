@@ -7,7 +7,7 @@ import {
   faChevronLeft,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Puppy } from '../Puppy/vm/vm';
+import { Puppy } from '../../vm/vm';
 
 import { CourseShape } from '../../modules/course';
 

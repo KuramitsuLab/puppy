@@ -3,7 +3,7 @@ import { ReduxState, ReduxActions } from '../store';
 import { setVisible } from '../modules/course';
 import { setSize } from '../modules/puppy';
 import { trancepile } from '../modules/operations';
-import PuppyScreen from '../components/Puppy/PuppyScreen';
+import PuppyScreen from '../components/PuppyScreen/PuppyScreen';
 
 const mapStateToProps = (state: ReduxState) => ({
   isCourseVisible: state.course.visible,

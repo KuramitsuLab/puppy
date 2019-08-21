@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import * as monacoEditor from 'monaco-editor';
 import './Editor.css';
-import { Puppy } from '../Puppy/vm/vm';
+import { Puppy } from '../../vm/vm';
 
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

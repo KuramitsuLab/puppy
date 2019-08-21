@@ -1,5 +1,5 @@
 import React from 'react';
-import { Puppy } from '../Puppy/vm/vm';
+import { Puppy } from '../../vm/vm';
 import { Button } from 'react-bootstrap';
 import './PuppyScreen.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

@@ -1,7 +1,7 @@
 import { setTheme, setCode } from './editor';
 import { CourseShape, setCourse, setContent } from './course';
 import { setPuppy } from './puppy';
-import { PuppyCode, Puppy, runPuppy } from '../components/Puppy/vm/vm';
+import { PuppyCode, Puppy, runPuppy } from '../vm/vm';
 import { ReduxActions } from '../store';
 
 const session = window.sessionStorage;

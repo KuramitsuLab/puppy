@@ -1,5 +1,5 @@
 import { Action } from 'redux';
-import { Puppy } from '../components/Puppy/vm/vm';
+import { Puppy } from '../vm/vm';
 
 enum PuppyActionTypes {
   SET_SIZE = 'SET_SIZE',
