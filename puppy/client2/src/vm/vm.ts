@@ -539,6 +539,7 @@ export const chooseColorScheme = (key: string) => {
   );
   for (let i = 0; i < targets.length; i += 1) {
     targets[i].style.backgroundColor = cs[i % cs.length];
+    targets[i].style.borderColor = cs[i % cs.length];
   }
   return cs;
 };

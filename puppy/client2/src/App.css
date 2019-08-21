@@ -5,6 +5,10 @@
   max-width: 100vw;
 }
 
+.btn-primary:focus {
+  box-shadow: initial;
+}
+
 #main-row {
   height: calc(100% - 56px);
   width: 100%;

@@ -41,20 +41,14 @@ const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
   };
   return (
     <div id="puppy-footer">
-      <Button
-        variant="dark"
-        onClick={() => props.trancepile(props.puppy, props.code, true)}
-      >
+      <Button onClick={() => props.trancepile(props.puppy, props.code, true)}>
         <FontAwesomeIcon icon={faPlay} />
         {' Play'}
       </Button>
-      <Button variant="dark" onClick={fullscreen}>
+      <Button onClick={fullscreen}>
         <FontAwesomeIcon icon={faExpand} />
       </Button>
-      <Button
-        variant="dark"
-        onClick={() => props.setIsCourseVisible(!props.isCourseVisible)}
-      >
+      <Button onClick={() => props.setIsCourseVisible(!props.isCourseVisible)}>
         <FontAwesomeIcon icon={props.isCourseVisible ? faBook : faBookOpen} />
       </Button>
     </div>
