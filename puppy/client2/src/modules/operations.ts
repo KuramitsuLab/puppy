@@ -8,7 +8,7 @@ const session = window.sessionStorage;
 const path = location.pathname;
 
 const checkError = (
-  dispath: (action: ReduxActions) => void,
+  dispatch: (action: ReduxActions) => void,
   code: PuppyCode
 ) => {
   let error_count = 0;
@@ -24,12 +24,12 @@ const checkError = (
   if (error_count === 0) {
     return false;
   }
-  dispath(setBackground('rgba(254,244,244,0.7)'));
+  dispatch(setBackground('rgba(254,244,244,0.7)'));
   // editorPanel.style.backgroundColor = 'rgba(254,244,244,0.7)';
   return true;
 };
 
-export const trancepile = (dispath: (action: ReduxActions) => void) => (
+export const trancepile = (dispatch: (action: ReduxActions) => void) => (
   puppy: Puppy | null,
   source: string,
   alwaysRun: boolean
@@ -50,9 +50,9 @@ export const trancepile = (dispath: (action: ReduxActions) => void) => (
     .then((js: string) => {
       try {
         const code = Function(js)(); // Eval javascript code
-        if (!checkError(dispath, code)) {
+        if (!checkError(dispatch, code)) {
           session.setItem(`/sample${path}`, source);
-          setPuppy(runPuppy(puppy!, code, alwaysRun));
+          dispatch(setPuppy(runPuppy(puppy!, code, alwaysRun)));
         }
       } catch (e) {
         // alert(`トランスパイルにしっぱいしています ${e}`);
@@ -95,18 +95,20 @@ export const fetchSetting = (dispath: (action: ReduxActions) => void) => (
       console.log(`ERR ${msg}`);
     });
 
-export const fetchContent = (dispath: (action: ReduxActions) => void) => (
+export const fetchContent = (dispatch: (action: ReduxActions) => void) => (
   coursePath: string,
   path: string
 ): Promise<void> =>
   loadFile(`/api/problem/${coursePath}/${path}`).then((content: string) =>
-    dispath(setContent(content))
+    dispatch(setContent(content))
   );
 
-export const fetchSample = (dispath: (action: ReduxActions) => void) => (
+export const fetchSample = (dispatch: (action: ReduxActions) => void) => (
+  puppy: Puppy | null,
   coursePath: string,
   path: string
 ): Promise<void> =>
   loadFile(`/api/sample/${coursePath}/${path}`).then((sample: string) => {
-    dispath(setCode(sample));
+    dispatch(setCode(sample));
+    trancepile(dispatch)(puppy, sample, false);
   });

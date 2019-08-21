@@ -11,6 +11,7 @@ const mapStateToProps = (
   ownProps: { qs: QueryParams; hash: string }
 ) => ({
   course: state.course.course,
+  puppy: state.puppy.puppy,
   coursePath: ownProps.qs.course ? ownProps.qs.course : 'Puppy',
   page: ownProps.hash !== '' ? parseInt(ownProps.hash.substr(1)) : 0,
   content: state.course.content,

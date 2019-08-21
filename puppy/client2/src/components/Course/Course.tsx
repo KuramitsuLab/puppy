@@ -7,6 +7,8 @@ import {
   faChevronLeft,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { Puppy } from '../Puppy/vm/vm';
+
 import { CourseShape } from '../../modules/course';
 
 import './Course.css';
@@ -15,6 +17,7 @@ import './github-markdown.css';
 type CourseProps = {
   course: CourseShape;
   coursePath: string;
+  puppy: Puppy | null;
   page: number;
   content: string;
   visible: boolean;
@@ -22,7 +25,7 @@ type CourseProps = {
   setContent: (content: string) => void;
   setCourse: (course: CourseShape) => void;
   fetchContent: (coursePath: string, path: string) => void;
-  fetchSample: (coursePath: string, path: string) => void;
+  fetchSample: (puppy: Puppy | null, coursePath: string, path: string) => void;
   fetchSetting: (coursePath: string) => void;
 };
 
@@ -34,6 +37,7 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
         props.course.list[props.page % props.course.list.length].path
       );
       props.fetchSample(
+        props.puppy,
         props.coursePath,
         props.course.list[props.page % props.course.list.length].path
       );
@@ -42,7 +46,7 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
 
   useEffect(() => {
     props.fetchSetting(props.coursePath);
-  }, [props.course]);
+  }, [props.coursePath]);
 
   return (
     <div
