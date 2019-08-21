@@ -1,0 +1,153 @@
+import { Action } from 'redux';
+import * as monacoEditor from 'monaco-editor';
+export type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
+
+enum EditorActionTypes {
+  SET_SIZE = 'SET_SIZE',
+  SET_CODE = 'SET_CODE',
+  SET_CODEEDITOR = 'SET_CODEEDITOR',
+  SET_FONTSIZE = 'SET_FONTSIZE',
+  SET_DECORATION = 'SET_DECORATION',
+  SET_BACKGROUND = 'SETBACKGROUND',
+}
+
+interface SetSizeAction extends Action {
+  type: EditorActionTypes.SET_SIZE;
+  payload: {
+    width: number;
+    height: number;
+  };
+}
+
+export const setSize = (width: number, height: number): SetSizeAction => ({
+  type: EditorActionTypes.SET_SIZE,
+  payload: {
+    width,
+    height,
+  },
+});
+
+interface SetCodeAction extends Action {
+  type: EditorActionTypes.SET_CODE;
+  payload: {
+    code: string;
+  };
+}
+
+export const setCode = (code: string): SetCodeAction => ({
+  type: EditorActionTypes.SET_CODE,
+  payload: {
+    code,
+  },
+});
+
+interface SetCodeEditorAction extends Action {
+  type: EditorActionTypes.SET_CODEEDITOR;
+  payload: {
+    codeEditor: CodeEditor | null;
+  };
+}
+
+export const setCodeEditor = (
+  codeEditor: CodeEditor | null
+): SetCodeEditorAction => ({
+  type: EditorActionTypes.SET_CODEEDITOR,
+  payload: {
+    codeEditor,
+  },
+});
+
+interface SetFontSizeAction extends Action {
+  type: EditorActionTypes.SET_FONTSIZE;
+  payload: {
+    value: number;
+  };
+}
+
+export const setFontSize = (value: number): SetFontSizeAction => ({
+  type: EditorActionTypes.SET_FONTSIZE,
+  payload: {
+    value,
+  },
+});
+
+interface SetDecorationAction extends Action {
+  type: EditorActionTypes.SET_DECORATION;
+  payload: {
+    decoration: string[];
+  };
+}
+
+export const setDecoration = (decoration: string[]): SetDecorationAction => ({
+  type: EditorActionTypes.SET_DECORATION,
+  payload: {
+    decoration,
+  },
+});
+
+interface SetBackgroundAction extends Action {
+  type: EditorActionTypes.SET_BACKGROUND;
+  payload: {
+    background: string;
+  };
+}
+
+export const setBackground = (background: string): SetBackgroundAction => ({
+  type: EditorActionTypes.SET_BACKGROUND,
+  payload: {
+    background,
+  },
+});
+
+export type EditorActions =
+  | SetCodeAction
+  | SetSizeAction
+  | SetCodeEditorAction
+  | SetFontSizeAction
+  | SetDecorationAction
+  | SetBackgroundAction;
+
+export type EditorState = {
+  width: number;
+  height: number;
+  code: string;
+  codeEditor: CodeEditor | null;
+  fontSize: number;
+  decoration: string[];
+  background: string;
+};
+
+const initialState: EditorState = {
+  width: 500,
+  height: 500,
+  code: '',
+  codeEditor: null,
+  fontSize: 30,
+  decoration: [],
+  background: 'white',
+};
+
+export const editorReducer = (state = initialState, action: EditorActions) => {
+  switch (action.type) {
+    case EditorActionTypes.SET_SIZE:
+      return {
+        ...state,
+        width: action.payload.width,
+        height: action.payload.height,
+      };
+    case EditorActionTypes.SET_CODE:
+      return { ...state, code: action.payload.code };
+    case EditorActionTypes.SET_CODEEDITOR:
+      return { ...state, codeEditor: action.payload.codeEditor };
+    case EditorActionTypes.SET_FONTSIZE:
+      return { ...state, fontSize: action.payload.value };
+    case EditorActionTypes.SET_DECORATION:
+      return { ...state, decoration: action.payload.decoration };
+    case EditorActionTypes.SET_BACKGROUND:
+      return { ...state, background: action.payload.background };
+    default:
+      return state;
+  }
+};
+
+export default editorReducer;

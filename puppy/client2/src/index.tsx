@@ -1,8 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import './index.css';
 import App from './App';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { store } from './store';
+
+export type QueryParams = {
+  course?: string;
+};
 
 const queryParser = (query: string) =>
   query
@@ -15,15 +21,17 @@ const queryParser = (query: string) =>
     }, {});
 
 ReactDOM.render(
-  <Router>
-    <Route
-      render={props => (
-        <App
-          qs={queryParser(props.location.search)}
-          hash={props.location.hash}
-        />
-      )}
-    />
-  </Router>,
+  <Provider store={store}>
+    <Router>
+      <Route
+        render={props => (
+          <App
+            qs={queryParser(props.location.search)}
+            hash={props.location.hash}
+          />
+        )}
+      />
+    </Router>
+  </Provider>,
   document.getElementById('root')
 );

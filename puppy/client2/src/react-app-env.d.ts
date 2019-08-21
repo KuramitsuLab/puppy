@@ -67,6 +67,3 @@ declare module '*.module.sass' {
   export default classes;
 }
 
-// React Hooks
-
-declare type SetState<T> = React.Dispatch<React.SetStateAction<T>>;

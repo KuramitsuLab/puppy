@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { CourseShape } from '../../App';
+import { CourseShape } from '../../modules/course';
 
-type HeaderProps = {
+export type HeaderProps = {
   course: CourseShape;
 };
 

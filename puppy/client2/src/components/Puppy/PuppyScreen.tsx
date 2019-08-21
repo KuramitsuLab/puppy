@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-// import { Engine, World, Bodies, Render } from 'matter-js';
+import React from 'react';
+import { Puppy } from '../Puppy/vm/vm';
 import { Button } from 'react-bootstrap';
 import './PuppyScreen.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,19 +10,18 @@ import {
   faBook,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { puppy, trancepile } from '../Editor/Editor';
-import { SetState } from '../../react-app-env';
-
 type PuppyFooterProps = {
-  isCourse: boolean;
-  setIsCourse: SetState<boolean>;
+  isCourseVisible: boolean;
+  setIsCourseVisible: (visible: boolean) => void;
   code: string;
+  puppy: Puppy | null;
+  trancepile: (puppy: Puppy | null, code: string, alwaysRun: boolean) => void;
 };
 
 const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
   const fullscreen = () => {
-    if (puppy != null) {
-      const canvas = puppy.getCanvas();
+    if (props.puppy != null) {
+      const canvas = props.puppy.getCanvas();
       if (canvas) {
         // FIXME
         if (canvas['webkitRequestFullscreen']) {
@@ -42,29 +41,31 @@ const PuppyFooter: React.FC<PuppyFooterProps> = (props: PuppyFooterProps) => {
   };
   return (
     <div id="puppy-footer">
-      <Button variant="dark" onClick={() => trancepile(props.code, true)}>
+      <Button
+        variant="dark"
+        onClick={() => props.trancepile(props.puppy, props.code, true)}
+      >
         <FontAwesomeIcon icon={faPlay} />
         {' Play'}
       </Button>
       <Button variant="dark" onClick={fullscreen}>
         <FontAwesomeIcon icon={faExpand} />
       </Button>
-      <Button variant="dark" onClick={() => props.setIsCourse(!props.isCourse)}>
-        <FontAwesomeIcon icon={props.isCourse ? faBook : faBookOpen} />
+      <Button
+        variant="dark"
+        onClick={() => props.setIsCourseVisible(!props.isCourseVisible)}
+      >
+        <FontAwesomeIcon icon={props.isCourseVisible ? faBook : faBookOpen} />
       </Button>
     </div>
   );
 };
 
-type PuppyScreenProps = {
-  isCourse: boolean;
-  setIsCourse: SetState<boolean>;
-  code: string;
+export type PuppyScreenProps = PuppyFooterProps & {
+  setSize: (width: number, height: number) => void;
 };
 
 const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
-  const [, setState] = useState({});
-
   let timer: NodeJS.Timeout | null = null;
   addEventListener('resize', () => {
     if (timer) {
@@ -74,10 +75,7 @@ const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
     timer = setTimeout(function() {
       const w = document.getElementById('puppy-screen')!.clientWidth;
       const h = document.getElementById('puppy-screen')!.clientHeight;
-      if (puppy) {
-        puppy.resize(w, h);
-      }
-      setState({});
+      props.setSize(w, h);
     }, 300);
   });
 
@@ -85,9 +83,11 @@ const PuppyScreen: React.FC<PuppyScreenProps> = (props: PuppyScreenProps) => {
     <>
       <div id="puppy-screen"></div>
       <PuppyFooter
-        isCourse={props.isCourse}
-        setIsCourse={props.setIsCourse}
+        isCourseVisible={props.isCourseVisible}
+        setIsCourseVisible={props.setIsCourseVisible}
         code={props.code}
+        puppy={props.puppy}
+        trancepile={props.trancepile}
       />
     </>
   );

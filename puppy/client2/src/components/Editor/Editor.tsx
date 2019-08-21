@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import * as monacoEditor from 'monaco-editor';
 import './Editor.css';
@@ -7,9 +7,8 @@ import { PuppyCode, Puppy, runPuppy } from '../Puppy/vm/vm';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
-import { SetState } from '../../react-app-env';
 
-type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
+import { CodeEditor } from '../../modules/editor';
 
 const zenkaku =
   '[！　”＃＄％＆’（）＊＋，－．／：；＜＝＞？＠［＼￥］＾＿‘｛｜｝～￣' +
@@ -75,7 +74,7 @@ export const trancepile = (source: string, alwaysRun: boolean) =>
     });
 
 type EditorFooterProps = {
-  setFontSize: SetState<number>;
+  setFontSize: (fontSize: number) => void;
   fontSize: number;
 };
 
@@ -100,21 +99,24 @@ const EditorFooter: React.FC<EditorFooterProps> = (
   );
 };
 
-type EditorProps = {
+export type EditorProps = {
+  width: number;
+  height: number;
+  codeEditor: CodeEditor | null;
+  decoration: string[];
+  fontSize: number;
   code: string;
-  setCode: SetState<string>;
+  setCode: (code: string) => void;
+  setSize: (width: number, height: number) => void;
+  setCodeEditor: (codeEditor: CodeEditor | null) => void;
+  setDecoration: (decoration: string[]) => void;
+  setFontSize: (fontSize: number) => void;
 };
 
 const Editor: React.FC<EditorProps> = (props: EditorProps) => {
-  const [width, setWidth] = useState(500);
-  const [height, setHeight] = useState(500);
-  const [codeEditor, setCodeEditor] = useState(null as CodeEditor | null);
-  const [decoration, setDecoration] = useState([] as string[]);
-  const [fontSize, setFontSize] = useState(30);
-
   const editorOptions = {
     selectOnLineNumbers: true,
-    fontSize,
+    fontSize: props.fontSize,
     wordWrap: 'on' as 'on',
   };
 
@@ -124,15 +126,19 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
   addEventListener('resize', () => {
     clearTimeout(resizeTimer!);
     resizeTimer = setTimeout(function() {
-      setWidth(document.getElementById('right-col')!.clientWidth);
-      setHeight(document.getElementById('right-col')!.clientHeight);
+      props.setSize(
+        document.getElementById('right-col')!.clientWidth,
+        document.getElementById('right-col')!.clientHeight
+      );
     }, 300);
   });
 
   useEffect(() => {
-    setWidth(document.getElementById('right-col')!.clientWidth);
-    setHeight(document.getElementById('right-col')!.clientHeight);
-  });
+    props.setSize(
+      document.getElementById('right-col')!.clientWidth,
+      document.getElementById('right-col')!.clientHeight
+    );
+  }, []);
 
   const checkZenkaku = (codeEditor: CodeEditor) => {
     const zenkakuRanges = codeEditor
@@ -144,13 +150,13 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
         options: { inlineClassName: 'zenkakuClass' },
       })
     );
-    setDecoration(codeEditor.deltaDecorations(decoration, decos));
+    props.setDecoration(codeEditor.deltaDecorations(props.decoration, decos));
   };
 
   const codeOnChange = (new_code: string) => {
     props.setCode(new_code);
-    if (codeEditor) {
-      checkZenkaku(codeEditor);
+    if (props.codeEditor) {
+      checkZenkaku(props.codeEditor);
     }
     if (editorTimer) {
       clearTimeout(editorTimer);
@@ -162,21 +168,21 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
   };
 
   const editorDidMount = (editor: CodeEditor) => {
-    setCodeEditor(editor);
+    props.setCodeEditor(editor);
   };
 
   return (
     <div id="puppy-editor">
       <MonacoEditor
-        width={width}
-        height={height}
+        width={props.width}
+        height={props.height}
         language="python"
         value={props.code}
         options={editorOptions}
         onChange={codeOnChange}
         editorDidMount={editorDidMount}
       />
-      <EditorFooter setFontSize={setFontSize} fontSize={fontSize} />
+      <EditorFooter setFontSize={props.setFontSize} fontSize={props.fontSize} />
     </div>
   );
 };
