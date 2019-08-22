@@ -1,0 +1,12 @@
+{
+  "name": "build-client",
+  "description": "Build client for deploy to Heroku",
+  "version": "0.0.1",
+  "engines": {
+    "node": "10.3.0",
+    "npm": "6.x"
+  },
+  "scripts": {
+    "heroku-postbuild": "cd puppy/client && npm install --dev && npm run build"
+  }
+}

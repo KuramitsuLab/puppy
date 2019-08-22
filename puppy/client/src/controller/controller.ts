@@ -7,15 +7,31 @@ const path = location.pathname;
 const session = window.sessionStorage;
 let page: {} = null;
 
-const getPagePath = (shift: number) => {
-  const pages = page['list'];
+const getCourse = () => {
+  const path = location.pathname;
+  const pos = path.lastIndexOf('/');
+  if (pos > 0) {
+    return path.substring(0, pos);
+  }
+  return path;
+};
+
+const getProblem = () => {
+  return location.pathname;
+};
+
+const nextProblem = (shift: number) => {
+  const path = location.pathname;
+  const problems = page['list'];
   let index = 0;
-  for (let i = 0; i < pages.length; i += 1) {
-    if (pages[i] === path) {
+  for (let i = 0; i < problems.length; i += 1) {
+    console.log(`path ${problems[i]} ${path}`);
+    if (problems[i] === path) {
       index = i;
     }
   }
-  return pages[(index + pages.length + shift) % pages.length] || pages[0];
+  const pagepath = problems[(index + problems.length + shift) % problems.length] || problems[0];
+  location.pathname = pagepath.startsWith('/') ? pagepath : `${getCourse()}/${pagepath}`;
 };
 
 const showView = (mode: string) => {
@@ -38,7 +54,7 @@ const showView = (mode: string) => {
   session.setItem('viewmode', page['viewmode']);
 };
 
-const shiftView = (n: number) => {
+const nextView = (n: number) => {
   const viewmode = page['viewmode'];
   const viewlist: [string] = page['viewlist'];
   let index = 0;
@@ -65,86 +81,92 @@ const loadFile: (path: string) => Promise<string> = (path) => {
 
 /* setting */
 
+const onClick = (key: string, f: () => void) => {
+  const slides = document.getElementsByClassName(key);
+  for (let i = 0; i < slides.length; i += 1) {
+    slides[i]['onclick'] = f;
+  }
+};
+
 const initPage = () => {
-  const page_json = session.getItem('/settings/');
-  console.log(`${page_json}`);
+  const course = getCourse();
+  const page_json = session.getItem(`/settings/${course}`);
+  chooseColorScheme('pop');
   if (page_json) {
     page = JSON.parse(page_json);
+    loadPage(page);
   } else {
     loadFile(`/setting${path}`).then((s: string) => {
       page = JSON.parse(s);
-      session.setItem('/settings/', s);
+      session.setItem(`/settings/${course}`, s);
+      loadPage(page);
     }).catch((msg: string) => {
       console.log(`ERR ${msg}`);
+      location.pathname = '/';
+      return;
     });
   }
+  const doc = document.getElementById('name');
+  doc.innerHTML = course.substring(1);
+  // if (page['type'] === 'sumomo') {
+  //   const doc = document.getElementById('name');
+  //   doc.innerHTML = 'Sumomo';
+  // } else {
+  //   // const doc = document.getElementById('gallery');
+  //   // loadFile('/gallery').then((s: string) => {
+  //   //   doc.innerHTML = s;
+  //   // }).catch((msg: string) => {
+  //   //   doc.innerHTML = `ERR ${msg}`;
+  //   // });
+  // }
+  onClick('prev-problem', () => { nextProblem(-1); });
+  onClick('next-problem', () => {
+    showView('problem-view');
+    nextProblem(+1);
+  });
+  onClick('prev-veiw', () => { showView(nextView(-1)); });
+  onClick('next-veiw', () => { showView(nextView(+1)); });
+};
+
+const loadPage = (page: {}) => {
+  const problem = getProblem();
+  // if (page[problem]) {
+  //   const doc = document.getElementById('page-title');
+  //   doc.innerHTML = page[problem].title;
+  // }
   const doc = document.getElementById('problem');
-  loadFile(`/problem${path}`).then((s: string) => {
+  loadFile(`/problem${problem}`).then((s: string) => {
     doc.innerHTML = marked(s);
   }).catch((msg: string) => {
     doc.innerHTML = `ERR ${msg}`;
   });
-  const source = session.getItem(`/sample${path}`);
+  const source = session.getItem(`/sample${problem}`);
   if (source) {
     editor.setValue(source, -1);
   } else {
     loadFile(`/sample${path}`).then((s: string) => {
       editor.setValue(s, -1);
-      session.setItem(`/sample${path}`, s);
+      session.setItem(`/sample${problem}`, s);
     }).catch((msg: string) => {
       editor.setValue(`#ERR ${msg}`, -1);
     });
   }
-  if (page['type'] === 'sumomo') {
-    const doc = document.getElementById('name');
-    doc.innerHTML = 'Sumomo';
-  } else {
-    chooseColorScheme('pop');
-    const doc = document.getElementById('gallery');
-    loadFile('/gallery').then((s: string) => {
-      doc.innerHTML = s;
-    }).catch((msg: string) => {
-      doc.innerHTML = `ERR ${msg}`;
-    });
-  }
-  if (page[path]) {
-    const doc = document.getElementById('page-title');
-    doc.innerHTML = page[path].title;
-  }
   showView(session.getItem('viewmode') || page['viewmode']);
-
-  let slides = document.getElementsByClassName('next-view');
-  for (let i = 0; i < slides.length; i += 1) {
-    slides[i]['onclick'] = () => {
-      showView(shiftView(+1));
-    };
-  }
-  slides = document.getElementsByClassName('prev-view');
-  for (let i = 0; i < slides.length; i += 1) {
-    slides[i]['onclick'] = () => {
-      showView(shiftView(-1));
-    };
-  }
 };
+
+document.getElementById('prev-problem').onclick = () => nextProblem(-1);
+document.getElementById('next-problem').onclick = () => nextProblem(+1);
+document.getElementById('openbook').onclick = () => showView('problem-view');
 
 /* event */
 
 document.getElementById('base').onclick = () => {
-  session.removeItem('/settings/');
-  if (path.startsWith('/Puppy')) {
-    location.href = '/ITPP/01A';
-  }
-  else {
-    location.href = '/Puppy/Welcome';
-  }
-};
-
-document.getElementById('next-page').onclick = () => {
-  location.href = getPagePath(+1);
-};
-
-document.getElementById('prev-page').onclick = () => {
-  location.href = getPagePath(-1);
+  // if (path.startsWith('/Puppy')) {
+  //   location.href = '/ITPP/01A';
+  // }
+  // else {
+  //   location.href = '/Puppy/Welcome';
+  // }
 };
 
 const submitBuild: (path: string) => Promise<string> = (path) => {
@@ -191,9 +213,38 @@ const togglePlay = (t: number) => {
   playPanel.innerHTML = `<i class="fa fa-pause"></i> ${t | 0} `;
 };
 
+const intent = {
+  tick: [
+    (log: {}) => {
+      playPanel.innerHTML = `<i class="fa fa-pause"></i> ${log['tick'] | 0} `;
+    },
+  ],
+};
+
+const addIntent = (type: string, f: ({ }) => void) => {
+  if (!intent['type']) {
+    intent[type] = [f];
+  }
+  else {
+    intent[type].push(f);
+  }
+};
+
+const ftrace = (log: {}) => {
+  if (log['intent']) {
+    const fs = intent[log['intent']];
+    if (fs) {
+      for (let i = 0; i < fs.length; i += 1) {
+        fs(log);
+      }
+    }
+  }
+};
+
 initPuppy({
   canvas: 'puppy-screen',
   eachUpdate: togglePlay,
+  ftrace,
 });
 
 document.getElementById('play').onclick = () => {
@@ -289,7 +340,9 @@ document.getElementById('run').onclick = () => {
 /* editor */
 
 let timer = null;
+let liveMode = false;
 const editorPanel = document.getElementById('editor');
+const livePanel = document.getElementById('live-toggle');
 
 editor.on('change', (cm, obj) => {
   if (timer) {
@@ -298,12 +351,23 @@ editor.on('change', (cm, obj) => {
   }
   editorPanel.style.backgroundColor = 'rgba(255,255,255,0.7)';
   timer = setTimeout(() => {
-    if (page['type'] === 'puppy') {
+    if (liveMode && page['type'] === 'puppy') {
       transpile(editor.getValue(), false);
     }
     checkZenkaku();
   },                 1000);
 });
+
+livePanel.onclick = () => {
+  if (liveMode) {
+    liveMode = false;
+    livePanel.innerHTML = '<i class="fa fa-toggle-off" ></i>';
+  }
+  else {
+    liveMode = true;
+    livePanel.innerHTML = '<i class="fa fa-toggle-on" ></i>';
+  }
+};
 
 document.getElementById('font-plus').onclick = () => {
   fontPlus();

@@ -29,11 +29,14 @@ def index():
 
 @app.route('/<path:d>')
 def dist(d):
-    path = getRootPath() / 'p' / d  # / ('index.md')
-    if path.exists():
-        return render_template('index2.html', message=d)
-    return send_file(f'client/static/{d}')
-
+    try:
+        path = getRootPath() / 'p' / d  # / ('index.md')
+        if path.exists():
+            return render_template('index2.html', message=d)
+        return send_file(f'client/static/{d}')
+    except:
+        # とりあえず
+        return send_file('client/static/image/puppyLogo.png')
 # sumomo
 
 
@@ -129,7 +132,8 @@ def send_static_file(path1, path2):
 
 
 def main():
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)
 
 
 if __name__ == '__main__':

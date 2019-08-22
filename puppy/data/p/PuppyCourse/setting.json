@@ -1,0 +1,56 @@
+{
+  "type": "puppy",
+  "viewlist": [
+    "problem-view",
+    "puppy-view",
+    "image-view",
+    "terminal-view"
+  ],
+  "viewmode": "problem-view",
+  "list": [
+    "/PuppyCourse/Welcome",
+    "/PuppyCourse/Hello",
+    "/PuppyCourse/ManyHello",
+    "/PuppyCourse/Calc",
+    "/PuppyCourse/Var",
+    "/PuppyCourse/Input",
+    "/PuppyCourse/Dice",
+    "/PuppyCourse/DiceFunc",
+    "/PuppyCourse/IfStmt",
+    "/PuppyCourse/ForStmt",
+    "/PuppyCourse/Domino"
+  ],
+  "/PuppyCourse/Welcome": {
+    "title": "はじめに"
+  },
+  "/PuppyCourse/Hello": {
+    "title": "Hello World"
+  },
+  "/PuppyCourse/ManyHello": {
+    "title": "順序"
+  },
+  "/PuppyCourse/Calc": {
+    "title": "計算"
+  },
+  "/PuppyCourse/Var": {
+    "title": "変数"
+  },
+  "/PuppyCourse/Input": {
+    "title": "入力"
+  },
+  "/PuppyCourse/Dice": {
+    "title": "乱数"
+  },
+  "/Puppy/DiceFunc": {
+    "title": "関数"
+  },
+  "/Puppy/IfStmt": {
+    "title": "条件分岐"
+  },
+  "/Puppy/ForStmt": {
+    "title": "繰り返し"
+  },
+  "/Puppy/Domino": {
+    "title": "ドミノ倒し"
+  }
+}

@@ -1,0 +1,31 @@
+# 性質
+形,かたち,形状 {"property": "shape"}
+色,いろ       {"property": "color"}
+
+# color
+赤,赤い 　　{"color": "#ff0000"}
+青,青い 　　{"color": "#0000ff"}
+黒,黒い 　　{"color": "#000000"}
+白,白い 　　{"color": "#ffffff"}
+
+# restitution
+跳ねる,弾む {"restitution": 0.8}
+跳ねすぎ,弾みすぎ {"restitution": 2.0}
+よく跳ねる,よく弾む {"restitution": 1.5}
+少し跳ねる,少し弾む {"restitution": 0.4}
+跳ねない,弾まない   {"restitution": 0.0}
+
+# static
+動かない,固定された,固定の   {"isStatic": true}
+
+# shape, image
+円,サークル           {"shape": "Circle"}
+ボール,球,玉           {"shape": "Circle", "restitution": 1.5}
+サッカーボール<:ボール   {"image": "succerball.png"}
+野球<:球              {"image": "baseball.png"}
+
+四角,直方体           {"shape": "Rectangle"}
+ブロック　　　　　　　　 {"shape": "Rectangle", "isStatic": true}
+壁<:ブロック          {"width": 100, "height": 1.0}
+天井<:ブロック         {"x": 0.5, "y": 50,  "width": 1.0, "height": 100}
+床,地面<:ブロック      {"x": 0.5, "y": -50 , "width": 1.0, "height": 100}

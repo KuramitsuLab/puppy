@@ -3,9 +3,7 @@ from collections import namedtuple
 from pegpy.tpeg import grammar, generate, STDLOG
 import hashlib
 import puppytypes as ts
-
-# 文法を直したいときは
-# pegpy/grammar/puppy.tpeg を編集する
+import nobuai as nlp
 
 peg = grammar('puppy2.tpeg')
 parser = generate(peg)
@@ -15,24 +13,43 @@ mutable = False
 Symbol = namedtuple('Symbol', 'target local types')
 
 
-def pushenv(env, key, val):
-    p = env.get(key, None)
-    env[key] = val
-    return p
+class Env(object):
+    __slots__ = ['env', 'stacks']
 
+    def __init__(self, env):
+        self.env = env.env if isinstance(env, Env) else env
+        self.stacks = []
 
-def popenv(env, key, prev):
-    if prev == None:
-        del env[key]
-    else:
-        env[key] = prev
+    def __enter__(self):
+        return self
 
-# print(t.tag)
-# for label, subtree in t:
-#   print(label, subtree)
+    def __getitem__(self, key):
+        return self.env[key] if key in self.env else None
 
+    def __setitem__(self, key, value):
+        if not key.startswith('@@'):
+            self.stacks.append((key, self.env.get(key, None)))
+        self.env[key] = value
 
-def Source(env, t, out):
+    def set(self, key, value):
+        self.env[key] = value
+
+    def __delitem__(self, key):
+        del self.env[key]
+
+    def __contains__(self, key):
+        return key in self.env
+
+    def __exit__(self, ex_type, ex_value, trace):
+        #print("exit: ", ex_type, ex_value, trace)
+        for stack in self.stacks:
+            key, value = stack
+            if value is None:
+                del self.env[key]
+            else:
+                self.env[key] = value
+
+def Source(env: Env, t, out):
     for _, subtree in t:
         out.append(env['@indent'])
         conv(env, subtree, out)
@@ -40,15 +57,15 @@ def Source(env, t, out):
     return ts.Void
 
 
-def emitAutoYield(env, out):
-    if '@yield' in env and not '@local' in env:
-        out.append(f"; yield {env['@yield']};\n")
-        del env['@yield']
+def emitAutoYield(env: Env, out):
+    if '@@yield' in env and '@local' not in env:
+        out.append(f"; yield {env['@@yield']};\n")
+        del env['@@yield']
     else:
         out.append('\n')
 
 
-def ClassDecl(env, t, out):
+def ClassDecl(env: Env, t, out):
     name = t['name'].asString()
     argNum = 1
     if 'extends' in t:
@@ -67,7 +84,7 @@ def ClassDecl(env, t, out):
     return ts.Void
 
 
-def switchName(env, name):
+def switchName(env: Env, name):
     return localName(name) if '@local' in env else globalName(name)
 
 
@@ -79,7 +96,7 @@ def isGlobalName(name):
     return name.startwith('puppy.vars[')
 
 
-def emitDeclName(env, name, out):
+def emitDeclName(env: Env, name, out):
     if '@local' in env:
         jsname = localName(name)
         if name in env and env[name].target == jsname:
@@ -109,33 +126,33 @@ def localName(name):
     return name
 
 
-def FuncDecl(env, t, out):
+def FuncDecl(env: Env, t, out):
     name = t['name'].asString()
     jsname = emitDeclName(env, name, out)
-    lenv = env.copy()
-    types = [ts.Type()]
-    voidCheck = str(types[0])
-    out.append('(')
-    for _, p in t['params']:
-        pname = p['name'].asString()
-        if(len(types) > 1):
-            out.append(f',{pname}')
-        else:
-            out.append(pname)
-        ty = ts.parseOf(p['type'], pwarn) if 'type' in p else ts.Type()
-        types.append(ty)
-        lenv[pname] = Symbol(localName(pname), mutable, ty)
-    out.append(") => ")
-    env[name] = lenv[name] = Symbol(jsname, mutable, tuple(types))
-    lenv['@local'] = types[0]  # return type
-    conv(lenv, t['body'], out)
-    if voidCheck == str(types[0]):
-        types[0] = ts.Void
+    with Env(env) as lenv:
+        types = [ts.Type()]
+        voidCheck = str(types[0])
+        out.append('(')
+        for _, p in t['params']:
+            pname = p['name'].asString()
+            if(len(types) > 1):
+                out.append(f',{pname}')
+            else:
+                out.append(pname)
+            ty = ts.parseOf(p['type'], pwarn) if 'type' in p else ts.Type()
+            types.append(ty)
+            lenv[pname] = Symbol(localName(pname), mutable, ty)
+        out.append(") => ")
+        lenv['@local'] = types[0]  # return type
+        env[name] = Symbol(jsname, mutable, tuple(types))
+        conv(lenv, t['body'], out)
+        if voidCheck == str(types[0]):
+            types[0] = ts.Void
     return ts.Void
 
 
-def Return(env, t, out):
-    if not '@local' in env:
+def Return(env: Env, t, out):
+    if '@local' not in env:
         pwarn(env, t, 'ここで return文は使えません')
         return ts.Void
     out.append('return')
@@ -152,29 +169,29 @@ def Return(env, t, out):
     return ts.Void
 
 
-def FuncExpr(env, t, out):
-    lenv = env.copy()
-    types = [ts.Type()]
-    voidCheck = str(types[0])
-    out.append("(")
-    for _, p in t['params']:
-        pname = p.asString()
-        ty = ts.Type()
-        if(len(types) > 1):
-            out.append(f',{pname}')
-        else:
-            out.append(pname)
-        types.append(ty)
-        lenv[pname] = Symbol(localName(pname), mutable, ty)
-    out.append(") => ")
-    lenv['@local'] = types[0]  # return type
-    conv(lenv, t['body'], out)
-    if voidCheck == str(types[0]):
-        types[0] = ts.Void
+def FuncExpr(env: Env, t, out):
+    with Env(env) as lenv:
+        types = [ts.Type()]
+        voidCheck = str(types[0])
+        out.append("(")
+        for _, p in t['params']:
+            pname = p.asString()
+            ty = ts.Type()
+            if(len(types) > 1):
+                out.append(f',{pname}')
+            else:
+                out.append(pname)
+            types.append(ty)
+            lenv[pname] = Symbol(localName(pname), mutable, ty)
+        out.append(") => ")
+        lenv['@local'] = types[0]  # return type
+        conv(lenv, t['body'], out)
+        if voidCheck == str(types[0]):
+            types[0] = ts.Void
     return tuple(types)
 
 
-def Yield(env, t, out):
+def Yield(env: Env, t, out):
     if '@local' in env:
         pwarn(env, t, '関数内で yield 文は使えません')
         return
@@ -182,7 +199,7 @@ def Yield(env, t, out):
     return ts.Void
 
 
-def Continue(env, t, out):
+def Continue(env: Env, t, out):
     if '@inloop' in env:
         pwarn(env, t, 'continue は、for文内でのみ使えます')
         return
@@ -190,7 +207,7 @@ def Continue(env, t, out):
     return ts.Void
 
 
-def Break(env, t, out):
+def Break(env: Env, t, out):
     if '@inloop' in env:
         pwarn(env, t, 'break は、for文内でのみ使えます')
         return
@@ -198,43 +215,43 @@ def Break(env, t, out):
     return ts.Void
 
 
-def Pass(env, t, out):
+def Pass(env: Env, t, out):
     return ts.Void
 
 
-def TrueExpr(env, t, out):
+def TrueExpr(env: Env, t, out):
     out.append("true")
     return ts.Bool
 
 
-def FalseExpr(env, t, out):
+def FalseExpr(env: Env, t, out):
     out.append('false')
     return ts.Bool
 
 
-def Int(env, t, out):
+def Int(env: Env, t, out):
     out.append(t.asString())
     return ts.Int
 
 
-def Double(env, t, out):
+def Double(env: Env, t, out):
     out.append(t.asString())
     return ts.Float
 
 
-def String(env, t, out):
+def String(env: Env, t, out):
     v = t.asString()[1:-1]
     out.append(repr(v))
     return ts.String
 
 
-def Char(env, t, out):
+def Char(env: Env, t, out):
     v = t.asString()[1:-1]
     out.append(repr(v))
     return ts.String
 
 
-def List(env, t, out):
+def List(env: Env, t, out):
     ty = ts.Type()
     out.append('[')
     for _, sub in t:
@@ -244,7 +261,7 @@ def List(env, t, out):
     return ts.Type(f'list[{ty}]')
 
 
-def Tuple(env, t, out):
+def Tuple(env: Env, t, out):
     subs = t.subs()
     if len(subs) > 2:
         pwarn(env, t, 'リストは[ ]で囲みましょう')
@@ -263,7 +280,7 @@ def Tuple(env, t, out):
         return ts.Vec
 
 
-def Data(env, t, out):
+def Data(env: Env, t, out):
     out.append('{')
     for _, sub in t:
         conv(env, sub, out)
@@ -272,7 +289,7 @@ def Data(env, t, out):
     return ts.Object
 
 
-def KeyValue(env, t, out):
+def KeyValue(env: Env, t, out):
     conv(env, t['name'], out)
     out.append(': ')
     conv(env, t['value'], out)
@@ -319,7 +336,7 @@ OPSFMT = {
 }
 
 
-def Infix(env, t, out):
+def Infix(env: Env, t, out):
     op = t['name'].asString()
     if op in OPS:
         op = OPS[op]
@@ -347,7 +364,7 @@ OPS1 = {
 }
 
 
-def Unary(env, t, out):
+def Unary(env: Env, t, out):
     op = t['name'].asString()
     if op in OPS1:
         op = OPS1[op]
@@ -374,18 +391,42 @@ IMPORT_MATH = {
     'gcd': Symbol('puppy.gcd', const, ts.Math2FuncType),
 }
 
+IMPORT_RANDOM = {
+    'random': Symbol('Math.random', const, (ts.Int,)),
+}
+
 BUILDIN = {
     'math.': IMPORT_MATH,
+    'random.': IMPORT_RANDOM,
     'input': Symbol('await puppy.input', const, (ts.String, ts.String_)),
     'print': Symbol('puppy.print', const, (ts.Void, 'any', ts.EmptyOption)),
+
     # 返値, 引数.. None はなんでもいい
     'len': Symbol('puppy.len', const, (ts.Int, 'list|str')),
     # 可変長引数
     'range': Symbol('puppy.range', const, (ts.ListInt, ts.Int, ts.Int_, ts.Int_)),
     # append
     '.append': Symbol('puppy.append', const, (ts.Void, ts.ListA, ts.A)),
-    # クラス
+
+    # random
+    'int': Symbol('puppy.int', const, (ts.Int, 'bool|number|str')),
+    'float': Symbol('puppy.float', const, (ts.Float, 'bool|number|str')),
+    'str': Symbol('puppy.str', const, (ts.String, 'any')),
+    'random': Symbol('Math.random', const, (ts.Int,)),
+
+    # 物体メソッド
     '.setPosition': Symbol('puppy.setPosition', const, (ts.Void, ts.Matter, ts.Int, ts.Int)),
+    '.applyForce': Symbol('puppy.applyForce', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int, ts.Int)),
+    '.rotate': Symbol('puppy.rotate', const, (ts.Void, ts.Matter, ts.Int, ts.Int_, ts.Int_)),
+    '.scale': Symbol('puppy.scale', const, (ts.Void, ts.Matter, ts.Int, ts.Int, ts.Int_, ts.Int_)),
+    '.setAngle': Symbol('puppy.setAngle', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setAngularVelocity': Symbol('puppy.setAngularVelocity', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setDensity': Symbol('puppy.setDensity', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setMass': Symbol('puppy.setMass', const, (ts.Void, ts.Matter, ts.Int)),
+    '.setStatic': Symbol('puppy.setStatic', const, (ts.Void, ts.Matter, ts.Bool)),
+    '.setVelocity': Symbol('puppy.setVelocity', const, (ts.Void, ts.Matter, ts.Int)),
+
+    # クラス
     'World': Symbol('world', const, ts.MatterTypes),
     'Circle': Symbol('Circle', const, ts.MatterTypes),
     'Rectangle': Symbol('Rectangle', const, ts.MatterTypes),
@@ -398,7 +439,7 @@ BUILDIN = {
 }
 
 
-def Name(env, t, out):
+def Name(env: Env, t, out):
     name = t.asString()
     if name in env:
         var = env[name]
@@ -410,7 +451,7 @@ def Name(env, t, out):
         return ts.Type()
 
 
-def VarDecl(env, t, out):
+def VarDecl(env: Env, t, out):
     left = t['left']
     newvar = None
     ty = None
@@ -442,67 +483,82 @@ def VarDecl(env, t, out):
 
 
 KEYWORDS = {
+    'x': 'position.x', 'y': 'position.y',
     'width': 'width',
     'height': 'height',
-    'image': 'image',
-    'strokeStyle': 'strokeStyle',
-    'lineWidth': 'lineWidth',
-    'fillStyle': 'fillStyle',
     'restitution': 'restitution',
-    'angle': 'angle',
+    'angle': 'angle', 'inertia': 'inertia',
+    'mass': 'mass', 'density': 'density', 'area': 'area',
     'friction': 'friction', 'frictionStatic': 'frictionStatic',
     'airFriction': 'airFriction',
-    'torque': "torque",
+    'torque': 'torque',
     'stiffness': 'stiffness',
-    'isSensor': 'isSensor',
     'damping': 'damping',
-    'font': 'font',
-    'fontStyle': 'fontStyle',
-    'clicked': 'clicked',
     'isStatic': 'isStatic',
-    'collisionEnd': 'collisionEnd',
+    'isSensor': 'isSensor',
+    'clicked': 'clicked',
+    'move': 'move',
+    'opacity': 'opacity', 'alpha': 'opacity',
+    'image': 'image', 'texture': 'image',
+    'strokeStyle': 'strokeStyle',
+    'lineWidth': 'lineWidth',
+    'fillStyle': 'fillStyle', 'color': 'fillStyle',
+
+    'font': 'font',
+    'fontColor': 'fontColor',
+    'textAlign': 'textAlign',
+    'value': 'value',
+    'capture': 'capture',
 
     # 日本語名
     '名前': 'name',
-    '幅': 'width', '横幅': 'width', '縦': 'width',
-    '高さ': 'height', '横': 'height',
+    '幅': 'width', '横幅': 'width', '横': 'width',
+    '高さ': 'height', '縦': 'height',
     '傾き': 'angle',
-    '質量': 'mass', '密度': 'density', '体積': 'area', '容積': 'area',
+    '質量': 'mass', '密度': 'density', '管制': 'inertia',
+    '体積': 'area', '容積': 'area', '面積': 'area',
     '摩擦係数': 'friction', '静止摩擦係数': 'frictionStatic',
     '空気摩擦係数': 'airFriction',
+    '摩擦': 'friction', '静止摩擦': 'frictionStatic', '空気摩擦': 'airFriction',
     '反発係数': 'restitution', '跳ね返り係数': 'restitution', 'はねかえり係数': 'restitution',
     '回転力': "torque", 'トルク': "torque",
     '剛性': 'stiffness', 'ばね定数': 'stiffness',
     'センサー': 'isSensor',
     '減衰': 'damping',
     'フォント': 'font',
+    'フォント色': 'fontColor',
 }
 
 KEYWORDTYPES = {
-    'width': ts.Int,
-    'height': ts.Int,
+    'width': ts.Int, 'height': ts.Int,
+    'x': ts.Int, 'y': ts.Int,
     'image': ts.String,
-    'strokeStyle': ts.String,
+    'strokeStyle': 'number|str',
     'lineWidth': ts.Int,
-    'fillStyle': ts.String,
+    'fillStyle': 'number|str',
     'restitution': ts.Float,  # float と int は同じ
     'angle': ts.Float,
-    'friction': ts.Float,
-    'frictionStatic': ts.Float,
-    'airFriction': ts.Float,
-    'torque': ts.Float,
-    'stiffness': ts.Float,
+    'position': ts.Matter,
+    'mass': ts.Int, 'density': ts.Int, 'area': ts.Int,
+    'friction': ts.Float, 'frictionStatic': ts.Float, 'airFriction': ts.Float,
+    'torque': ts.Float, 'stiffness': ts.Float,
     'isSensor': ts.Bool,
+    'isStatic': ts.Bool,
     'damping': ts.Float,
-    'font': ts.String,
-    'fontColor': ts.String,
+    'in': (ts.Void, ts.Matter, ts.Matter),
+    'out': (ts.Void, ts.Matter, ts.Matter),
+    'over': (ts.Void, ts.Matter, ts.Matter),
     'clicked': (ts.Void, ts.Matter),
     'move': (ts.Void, ts.Matter, ts.Int),
-    'collisionEnd': (ts.Void, ts.Matter, ts.Matter)
+    'font': ts.String,
+    'fontColor': 'number|str',
+    'textAlign': ts.String,
+    'value': 'bool|number|str',
+    'capture': ('bool|number|str'),
 }
 
 
-def GetExpr(env, t, out):
+def GetExpr(env: Env, t, out):
     name = t['name'].asString()
     pkgname = t['recv'].asString() + '.'
     if pkgname in env:  # math.pi のような定数
@@ -524,10 +580,10 @@ def GetExpr(env, t, out):
     else:
         name = KEYWORDS[name]
         out.append(name)
-        return KEYWORDTYPES[name]
+        return ts.newType(KEYWORDTYPES[name])
 
 
-def IndexExpr(env, t, out):
+def IndexExpr(env: Env, t, out):
     ty = check('list|str', env, t['recv'], out)
     out.append('[')
     check(ts.Int, env, t['index'], out)
@@ -535,7 +591,7 @@ def IndexExpr(env, t, out):
     return ts.typeOfSeq(ty)
 
 
-def MethodExpr(env, t, out):
+def MethodExpr(env: Env, t, out):
     name = t['name'].asString()
     pkgname = t['recv'].asString() + '.'
     if pkgname in env:
@@ -568,7 +624,7 @@ def MethodExpr(env, t, out):
         return None
 
 
-def ApplyExpr(env, t, out):
+def ApplyExpr(env: Env, t, out):
     name = t['name'].asString()
     if name in env:
         vari = env[name]
@@ -576,38 +632,29 @@ def ApplyExpr(env, t, out):
         types = vari.types
         if name == 'world':
             set_World(env, t, types[-1])
-            return 'matter'
+            return ts.Matter
+    elif t['name'].tag == 'NLPSymbol':
+        name, types = checkNLPMatter(env, name, t)
     else:
-        _, types = guess_Matter(env, name, t)
+        perror(env, t['name'], f'タイプミス？ {name} 未定義な関数名です')
+        return ts.Type()  # To avoid error
 
     if ts.isMatterFunc(types):
-        outter = pushenv(env, '@funcname', name)
-        out.append(f'puppy.new_(puppy.vars["{name}"],')
-        args = [y for x, y in t.subs()]
-        emitArguments(env, t['name'], args, types, '', out)
-        env['@yield'] = trace(env, t)
-        env['@oid'] += 1
-        popenv(env, '@funcname', outter)
+        with Env(env) as env:
+            out.append(f'puppy.new_(puppy.vars["{name}"],')
+            args = [y for x, y in t.subs()]
+            emitArguments(env, t['name'], args, types, '', out)
+            env['@@yield'] = trace(env, t)
+            env['@@oid'] += 1
     else:
         out.append(name)
         out.append('(')
         args = [y for x, y in t.subs()]
         emitArguments(env, t['name'], args, types, '', out)
         if name == 'puppy.print':
-            env['@yield'] = trace(env, t)
-            env['@oid'] += 1
+            env['@@yield'] = trace(env, t)
+            env['@@oid'] += 1
     return types[0]
-
-
-def guess_Matter(env, name, t):
-    return ('Circle', ts.MatterTypes)
-
-
-def scope(env, key, val, f):
-    outer = pushenv(env, key, val)
-    res = f()
-    popenv(env, key, outer)
-    return res
 
 
 def emitArguments(env, t, args, types, prev, out):
@@ -643,9 +690,9 @@ def emitArguments(env, t, args, types, prev, out):
                 pwarn(env, sub, 'この引数は使われません')
         for k in types[tidx]:
             if k not in used_keys:
-                out.append(f"'{k}': {options[k]},")
+                emitOption(env, t, k, options[k], out, used_keys)
         out.append(f"'trace': {trace(env, t)},")
-        out.append(f"'oid': {env['@oid']},")
+        out.append(f"'oid': {env['@@oid']},")
         out.append('}')
     out.append(')')
 
@@ -661,46 +708,73 @@ def KeywordArgument(env, t, out, used_keys=None):
         if name != KEYWORDS[name]:
             pinfo(env, t, f'{name} => {KEYWORDS[name]}')
         name = KEYWORDS[name]
-    out2 = []
-    scope(env, '@key', name, lambda: check(
-        KEYWORDTYPES.get(name, 'any'), env, t['value'], out2))
-    value = ''.join(out2)
-    emitOption(env, t['name'], name, value, out, used_keys)
+    with Env(env) as env:
+        env['@target'] = name
+        if emitKey(env, t['name'], name, out, used_keys):
+            conv(env, t['value'], out)
+            out.append(',')
     return ts.Void
 
-
-def emitOption(env, t, key, value, out, used_keys):
-    if key in used_keys:
-        pwarn(env, t, f'{key}は重複！！．こちらは無視することにします')
-        return
-    used_keys[key] = key
-    out.append("'" + key + "': " + value + ',')
-    addLives(env, key, value, trace(env, t))
-
+def checkNLPMatter(env, name, t):
+    option = nlp.conv2(name, lambda x: pinfo(env, t, x))
+    if not 'shape' in option:
+        pwarn(env, t, 'はっきりと物体の形状を指定してください')
+        option['shape'] = 'Circle'
+        option['value'] = name
+        option['font'] = '36px'
+    return (option['shape'], (ts.Matter, ts.Int, ts.Int, option))
 
 def NLPSymbol(env, t, out, used_keys=None):
     phrase = t.asString()
-    if '@funcname' in env:
-        k = env.get('@key', '')
-        k, v = nobuKeyVal(env['@funcname'], k, phrase)
-        out.append(f"'{k}': {v},")
-        options = env.get('@options', ts.EmptyOption)
-        if k in options:
-            del options[k]
+    if '@target' in env:
+        option = nlp.conv2(f"{env['@target']}は{phrase}",
+                           lambda x: pinfo(env, t, x))
+        if len(option) == 1:
+            val = option[option.keys()[0]]
+            pinfo(env, t, f'{phrase}は{repr(val)}')
+            return emitValue(env, val, out)
+        else:
+            pwarn(env, t, f'「{phrase}」は解釈できません')
+            return emitUndefined(env, t, out)
+    else:
+        option = nlp.conv2(phrase, lambda x: pinfo(env, t, x))
+        if len(option) == 0:
+            pwarn(env, t, f'「{phrase}」は解釈できません')
+            return ts.Void
+        else:
+            for key in option:
+                emitOption(env, t, key, option[key], out, used_keys)
         return ts.Void
-    v = nlpExpr(env.get('@target', ''), phrase)
-    out.append(v)
+
+def emitKey(env, t, key, out, used_keys):
+    key = KEYWORDS[key] if key in KEYWORDS else key
+    if key in used_keys:
+        pwarn(env, t, f'{key}の重複！！．こちらは無視します')
+        return False
+    used_keys[key] = key
+    out.append("'" + key + "': ")
+    return True
+
+def emitOption(env, t, key, value, out, used_keys):
+    if emitKey(env, t, key, out, used_keys):
+        emitValue(env, value, out)
+        out.append(',')
+
+def emitValue(env, val, out):
+    if isinstance(val, str):
+        if (val.startswith("'") and val.endswith("'")) or (val.startswith('"') and val.endswith('"')):
+            out.append(val)
+        else:
+            out.append(repr(val))
+        return ts.String
+    if isinstance(val, bool):
+        out.append('true' if val else 'false')
+        return ts.Bool
+    out.append(str(val))
+    return ts.Int
 
 
-def nobuKeyVal(funcname, key='unknown', phrase='"?"'):
-    return (key, phrase)
-
-
-def nlpExpr(varname, phrase='"?"'):
-    return phrase
-
-
-def IfStmt(env, t, out):
+def IfStmt(env: Env, t, out):
     out.append('if (')
     check(ts.Bool, env, t['cond'], out)
     out.append(') ')
@@ -711,7 +785,7 @@ def IfStmt(env, t, out):
     return ts.Void
 
 
-def ForStmt(env, t, out):
+def ForStmt(env: Env, t, out):
     if(t['each'].tag == 'Name'):
         name = t['each'].asString()
     else:
@@ -722,32 +796,31 @@ def ForStmt(env, t, out):
                t['list'], out, msg='ここはリストでなければなりません')
     out.append(')')
     ty = ts.typeOfSeq(ty)
-    outer = pushenv(env, name, Symbol(localName(name), True, ty))
-    outer2 = pushenv(env, '@inloop', True)
-    conv(env, t['body'], out)
-    popenv(env, name, outer)
-    popenv(env, '@inloop', outer2)
+    with Env(env) as env:
+        env[name] = Symbol(localName(name), True, ty)
+        env['inloop'] = True
+        conv(env, t['body'], out)
     return ts.Void
 
 
 INDENT = '\t'
 
 
-def Block(env, t, out):
+def Block(env: Env, t, out):
     out.append('{\n')
     indent = env['@indent']
     nested = INDENT + indent
-    pushenv(env, '@indent', nested)
-    for _, subtree in t:
-        out.append(nested)
-        conv(env, subtree, out)
-        emitAutoYield(env, out)
-    popenv(env, '@indent', indent)
-    out.append(indent + '}\n')
+    with Env(env) as env:
+        env['@indent'] = nested
+        for _, subtree in t:
+            out.append(nested)
+            conv(env, subtree, out)
+            emitAutoYield(env, out)
+        out.append(indent + '}\n')
     return ts.Void
 
 
-def emitUndefined(env, t, out):
+def emitUndefined(env: Env, t, out):
     out.append('undefined')
     return ts.Type()
 
@@ -755,7 +828,7 @@ def emitUndefined(env, t, out):
 func = globals()
 
 
-def conv(env, t, out):
+def conv(env: Env, t, out):
     if t.tag in func:
         return func[t.tag](env, t, out)
     else:
@@ -781,7 +854,7 @@ def static_value(env, t):
 
 
 def set_World(env, t, options):
-    W = env['@world']
+    W = env['@@world']
     args = [y for x, y in t.subs()]
     start = 0
     if len(args) > 1 and args[1].tag != 'KeywordArgument':
@@ -819,21 +892,21 @@ def check(ret, env, t, out, msg=None):
 
 def perror(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@logs'].append(('error', pos, raw, col, msg))
+    env['@@logs'].append(('error', pos, raw, col, msg))
 
 
 def pwarn(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@logs'].append(('warning', pos, raw, col, msg))
+    env['@@logs'].append(('warning', pos, raw, col, msg))
 
 
 def pinfo(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@logs'].append(('information', pos, raw, col, msg))
+    env['@@logs'].append(('info', pos, raw, col, msg))
 
 
 def trace(env, t):
-    lines = env['@lines']
+    lines = env['@@lines']
     linenum = t.pos()[2]
     if not linenum in lines:
         lines.append(linenum)
@@ -843,18 +916,18 @@ def trace(env, t):
 def transpile(s, errors=[]):
     t = parser(s)
     # STDLOG.dump(t)  # debug
-    env = BUILDIN.copy()
-    env['@logs'] = errors
-    env['@lines'] = []
-    env['@lives'] = []
+    env = Env(BUILDIN.copy())
+    env['@@logs'] = errors
+    env['@@lines'] = []
+    env['@@lives'] = []
     env['@indent'] = ''
     if t.tag == 'err':
-        env['@world'] = {}
+        env['@@world'] = {}
         perror(env, t, '構文エラーです. 文法通り書けているか確認しましょう')
         return env, ''
     # start transpile
-    env['@world'] = WORLD.copy()
-    env['@oid'] = 1
+    env['@@world'] = WORLD.copy()
+    env['@@oid'] = 1
     out = []
     conv(env, t, out)
     return env, ''.join(out)
@@ -867,15 +940,16 @@ prev_code = ''
 
 
 def hasErrors(env):
-    for e in env['@logs']:
+    for e in env['@@logs']:
         if e[0] == 'error':
             return True
     return False
 
+
 def diffCode(prev, cur):
     prev = prev.split('\n')
     cur = cur.split('\n')
-    plen, clen = len(prev)-1, len(cur)-1 # 最後は空行
+    plen, clen = len(prev)-1, len(cur)-1  # 最後は空行
     print('@diff1', plen, clen)
     if plen >= clen:
         return ''
@@ -896,8 +970,9 @@ def diffCode(prev, cur):
     print('@diffcode', diffcode)
     return diffcode
 
+
 def addLives(env, key, value, _trace):
-    env['@lives'].append((env['@oid'], key, value, _trace))
+    env['@@lives'].append((env['@@oid'], key, value, _trace))
 
 
 def diffLives(prev, cur):
@@ -911,18 +986,18 @@ def diffLives(prev, cur):
                 lives.append(f'\t[{c[0]}, "{c[1]}", {c[2]}, {p[2]}],\n')
         else:
             lives.append(f'\t[{c[0]}, "{c[1]}", {c[2]}, null],\n')
-    print('@lives', lives)
+    print('@@lives', lives)
     if len(lives) > 1:
         lives = []
     return lives
 
 
 def puppyVMCode(env, main, diffcode, lives):
-    W = env['@world']
+    W = env['@@world']
     world = [f"     '{k}': {W[k]}," for k in W]
     world = '\n'.join(world)
     error = []
-    for e in env['@logs']:
+    for e in env['@@logs']:
         row = e[2]-2 if e[3] == -1 else e[2]-1
         error.append(f'''
         {{
@@ -931,7 +1006,7 @@ def puppyVMCode(env, main, diffcode, lives):
             'text': {repr(e[4])}
         }},''')
     error = '\n'.join(error)
-    lines = ','.join(map(str, env['@lines']))
+    lines = ','.join(map(str, env['@@lines']))
     lives = ''.join(lives)
     if diffcode != '':
         diffcode = f'  diff: function(puppy){{\n{diffcode}\n  }},'
@@ -962,11 +1037,13 @@ def makeCode(s, errors=[]):
     global prev_code, prev_lives
     env, code = transpile(s, errors)
     diffcode, lives = '', []
+    ''' disable live 
     if not hasErrors(env):
         diffcode = diffCode(prev_code, code)
-        lives = diffLives(prev_lives, env['@lives'])
+        lives = diffLives(prev_lives, env['@@lives'])
         prev_code = code
-        prev_lives = env['@lives']
+        prev_lives = env['@@lives']
+    '''
     code = puppyVMCode(env, code, diffcode, lives)
     print(code)
     return code
@@ -978,7 +1055,7 @@ def makeCode(s, errors=[]):
 
 
 if __name__ == "__main__":
-    source = '''range(1,2,3**2).append(1+2)\n'''
+    source = '''ガム(500,500,ぴょん,色は緑)\n'''
     if len(sys.argv) > 1:
         with open(sys.argv[1]) as f:
             source = f.read()
