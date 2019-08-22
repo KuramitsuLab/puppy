@@ -12,7 +12,7 @@ const mapStateToProps = (
 ) => ({
   course: state.course.course,
   puppy: state.puppy.puppy,
-  coursePath: ownProps.qs.course ? ownProps.qs.course : 'Puppy',
+  coursePath: ownProps.qs.course ? ownProps.qs.course : 'PuppyCourse',
   page: ownProps.hash !== '' ? parseInt(ownProps.hash.substr(1)) : 0,
   content: state.course.content,
   visible: state.course.visible,
