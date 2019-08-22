@@ -15,6 +15,14 @@ const Vertices = Matter.Vertices;
 const Detector = Matter['Detector'];
 const Common = Matter['Common'];
 
+export type ErrorShape = {
+  type: 'error' | 'info' | 'warning' | 'hint';
+  row: number;
+  col: number;
+  len: number;
+  text: string;
+};
+
 export type PuppyCode = {
   hash: string;
   world: any;
@@ -23,7 +31,7 @@ export type PuppyCode = {
   diff?: (puppy: Puppy) => void;
   lives: {}[];
   lines: number[];
-  errors: {}[];
+  errors: ErrorShape[];
 };
 
 export type PuppySettings = {

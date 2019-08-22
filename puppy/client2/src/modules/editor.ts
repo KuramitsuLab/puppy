@@ -1,6 +1,7 @@
 import { Action } from 'redux';
 import * as monacoEditor from 'monaco-editor';
 export type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
+import { ErrorShape } from '../vm/vm';
 
 enum EditorActionTypes {
   SET_SIZE = 'SET_SIZE',
@@ -8,6 +9,7 @@ enum EditorActionTypes {
   SET_CODEEDITOR = 'SET_CODEEDITOR',
   SET_FONTSIZE = 'SET_FONTSIZE',
   SET_DECORATION = 'SET_DECORATION',
+  SET_MARKER = 'SET_MARKER',
   SET_THEME = 'SETTHEME',
 }
 
@@ -85,6 +87,40 @@ export const setDecoration = (decoration: string[]): SetDecorationAction => ({
   },
 });
 
+interface SetMarkerAction extends Action {
+  type: EditorActionTypes.SET_MARKER;
+  payload: {
+    markers: monacoEditor.editor.IMarkerData[];
+  };
+}
+
+const type2severity = (type: 'error' | 'info' | 'warning' | 'hint') => {
+  switch (type) {
+    case 'error':
+      return monacoEditor.MarkerSeverity.Error;
+    case 'info':
+      return monacoEditor.MarkerSeverity.Info;
+    case 'warning':
+      return monacoEditor.MarkerSeverity.Warning;
+    case 'hint':
+      return monacoEditor.MarkerSeverity.Hint;
+  }
+};
+
+export const setMarker = (markers: ErrorShape[]): SetMarkerAction => ({
+  type: EditorActionTypes.SET_MARKER,
+  payload: {
+    markers: markers.map(marker => ({
+      severity: type2severity(marker.type),
+      startLineNumber: marker.row + 1,
+      startColumn: marker.col + 1,
+      endLineNumber: marker.row + 1,
+      endColumn: marker.col + marker.len + 1,
+      message: marker.text,
+    })),
+  },
+});
+
 interface SetThemeAction extends Action {
   type: EditorActionTypes.SET_THEME;
   payload: {
@@ -105,6 +141,7 @@ export type EditorActions =
   | SetCodeEditorAction
   | SetFontSizeAction
   | SetDecorationAction
+  | SetMarkerAction
   | SetThemeAction;
 
 export type EditorState = {
@@ -115,6 +152,7 @@ export type EditorState = {
   theme: string;
   fontSize: number;
   decoration: string[];
+  markers: monacoEditor.editor.IMarkerData[];
 };
 
 const initialState: EditorState = {
@@ -125,6 +163,7 @@ const initialState: EditorState = {
   theme: 'vs',
   fontSize: 30,
   decoration: [],
+  markers: [],
 };
 
 export const editorReducer = (state = initialState, action: EditorActions) => {
@@ -143,6 +182,17 @@ export const editorReducer = (state = initialState, action: EditorActions) => {
       return { ...state, fontSize: action.payload.value };
     case EditorActionTypes.SET_DECORATION:
       return { ...state, decoration: action.payload.decoration };
+    case EditorActionTypes.SET_MARKER:
+      monacoEditor.editor.setModelMarkers(
+        state.codeEditor!.getModel()!,
+        'puppy',
+        action.payload.markers
+      );
+      return {
+        ...state,
+        codeEditor: state.codeEditor,
+        markers: action.payload.markers,
+      };
     case EditorActionTypes.SET_THEME:
       return { ...state, theme: action.payload.theme };
     default:

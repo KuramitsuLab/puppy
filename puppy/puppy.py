@@ -503,7 +503,6 @@ KEYWORDS = {
     'strokeStyle': 'strokeStyle',
     'lineWidth': 'lineWidth',
     'fillStyle': 'fillStyle', 'color': 'fillStyle',
-
     'font': 'font',
     'fontColor': 'fontColor',
     'textAlign': 'textAlign',
@@ -892,17 +891,17 @@ def check(ret, env, t, out, msg=None):
 
 def perror(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@@logs'].append(('error', pos, raw, col, msg))
+    env['@@logs'].append(('error', pos, raw, col, msg, len(t.asString())))
 
 
 def pwarn(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@@logs'].append(('warning', pos, raw, col, msg))
+    env['@@logs'].append(('warning', pos, raw, col, msg, len(t.asString())))
 
 
 def pinfo(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@@logs'].append(('info', pos, raw, col, msg))
+    env['@@logs'].append(('info', pos, raw, col, msg, len(t.asString())))
 
 
 def trace(env, t):
@@ -1003,6 +1002,8 @@ def puppyVMCode(env, main, diffcode, lives):
         {{
             'type': '{e[0]}',
             'row': {row},
+            'col': {e[3]},
+            'len': {e[5]},
             'text': {repr(e[4])}
         }},''')
     error = '\n'.join(error)

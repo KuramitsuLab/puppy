@@ -1,7 +1,7 @@
-import { setTheme, setCode } from './editor';
+import { setTheme, setCode, setMarker } from './editor';
 import { CourseShape, setCourse, setContent } from './course';
 import { setPuppy } from './puppy';
-import { PuppyCode, Puppy, runPuppy } from '../vm/vm';
+import { PuppyCode, Puppy, runPuppy, ErrorShape } from '../vm/vm';
 import { ReduxActions } from '../store';
 
 const session = window.sessionStorage;
@@ -12,15 +12,16 @@ const checkError = (
   code: PuppyCode
 ) => {
   let error_count = 0;
-  const annos: any[] = [];
+  const annos: ErrorShape[] = [];
   // editor.getSession().clearAnnotations();
   for (const e of code.errors) {
-    if (e['type'] === 'error') {
+    if (e.type === 'error') {
       error_count += 1;
     }
     annos.push(e);
     // editor.getSession().setAnnotations(annos);
   }
+  dispatch(setMarker(annos));
   if (error_count === 0) {
     dispatch(setTheme('vs'));
     return false;
