@@ -1,8 +1,9 @@
 import { setTheme, setCode, setMarker } from './editor';
 import { CourseShape, setCourse, setContent } from './course';
 import { setPuppy } from './puppy';
+import { setPlaceholder, setShow } from './input';
 import { PuppyCode, Puppy, runPuppy, ErrorShape } from '../vm/vm';
-import { ReduxActions } from '../store';
+import store, { ReduxActions } from '../store';
 
 const session = window.sessionStorage;
 const path = location.pathname;
@@ -114,3 +115,15 @@ export const fetchSample = (dispatch: (action: ReduxActions) => void) => (
     dispatch(setCode(sample));
     trancepile(dispatch)(puppy, sample, false);
   });
+
+export const getInputValue = async (msg: string) => {
+  const awaitForClick = target => {
+    return new Promise(resolve => {
+      target.addEventListener('submit', resolve, { once: true });
+    });
+  };
+  store.dispatch(setShow(true));
+  store.dispatch(setPlaceholder(msg));
+  await awaitForClick(document.getElementById('puppy-input-form'));
+  return store.getState().input.value;
+};

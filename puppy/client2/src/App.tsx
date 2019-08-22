@@ -5,6 +5,7 @@ import Header from './containers/Header';
 import Editor from './containers/Editor';
 import PuppyScreen from './containers/PuppyScreen';
 import Course from './containers/Course';
+import Input from './containers/Input';
 import { QueryParams } from './index';
 
 type AppProps = { qs: QueryParams; hash: string };
@@ -14,6 +15,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
     <div className="App">
       <Container className="container">
         <Header />
+        <Input />
         <Row id="main-row">
           <Col id="left-col" xs={6}>
             <Course qs={props.qs} hash={props.hash} />

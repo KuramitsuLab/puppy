@@ -1,6 +1,7 @@
 import * as Matter from 'matter-js';
 import { myRender } from './render';
 import { initVars, setShapeProperty, Shape, PuppyConstructor } from './shape';
+import { getInputValue } from '../modules/operations';
 
 // const Bodies = Matter.Bodies;
 const Engine = Matter.Engine;
@@ -942,34 +943,8 @@ export class Puppy {
   };
 
   public async input(msg?: string) {
-    const overlay = document.getElementById('myOverlay');
-    const form = document.getElementById('input-form');
-    // const formMsg = document.getElementById('input-message');
-    const formText = document.getElementById('input-text') as HTMLInputElement;
     this.runner!.enabled = false;
-
-    const awaitForClick = target => {
-      return new Promise(resolve => {
-        // 処理A
-        const listener = resolve; // 処理B
-        target.addEventListener('submit', listener, { once: true }); // 処理C
-      });
-    };
-    const asyncInput = async () => {
-      let text = '';
-      form!.onsubmit = () => {
-        overlay!.style.display = 'none';
-        text = formText.value;
-        formText.value = '';
-        return false;
-      };
-      await awaitForClick(form);
-      return text;
-    };
-
-    formText.placeholder = msg ? msg : '';
-    overlay!.style.display = 'block';
-    const x = await asyncInput();
+    const x = await getInputValue(msg ? msg : '');
     this.runner!.enabled = true;
     this.waitForRun(0.5);
     console.log(`input ${x}`);
