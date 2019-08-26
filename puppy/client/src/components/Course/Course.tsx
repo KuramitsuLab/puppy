@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChevronRight,
   faChevronLeft,
+  faTimes,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Puppy } from '../../vm/vm';
@@ -21,6 +22,7 @@ type CourseProps = {
   page: number;
   content: string;
   visible: boolean;
+  setVisible: (visible: boolean) => void;
   setCode: (code: string) => void;
   setContent: (content: string) => void;
   setCourse: (course: CourseShape) => void;
@@ -58,6 +60,14 @@ const Course: React.FC<CourseProps> = (props: CourseProps) => {
     >
       <Card className="course-all">
         <Card.Header className="course-header">
+          <Row>
+            <button
+              className="close-button"
+              onClick={() => props.setVisible(false)}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+          </Row>
           <Row>
             <Col className="card-header-left" xs={6}>
               {props.course.list &&

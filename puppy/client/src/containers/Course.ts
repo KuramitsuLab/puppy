@@ -1,7 +1,12 @@
 import { connect } from 'react-redux';
 import { ReduxState, ReduxActions } from '../store';
 import Course from '../components/Course/Course';
-import { setContent, setCourse, CourseShape } from '../modules/course';
+import {
+  setContent,
+  setCourse,
+  CourseShape,
+  setVisible,
+} from '../modules/course';
 import { setCode } from '../modules/editor';
 import { fetchContent, fetchSample, fetchSetting } from '../modules/operations';
 
@@ -21,6 +26,7 @@ const mapDispathToProps = (dispatch: (action: ReduxActions) => void) => ({
   setContent: (content: string) => dispatch(setContent(content)),
   setCourse: (course: CourseShape) => dispatch(setCourse(course)),
   setCode: (code: string) => dispatch(setCode(code)),
+  setVisible: (visible: boolean) => dispatch(setVisible(visible)),
   fetchContent: fetchContent(dispatch),
   fetchSample: fetchSample(dispatch),
   fetchSetting: fetchSetting(dispatch),

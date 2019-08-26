@@ -28,3 +28,13 @@
 .card-header-right {
   text-align: right
 }
+
+.close-button {
+  border-radius: 50%; 
+  font-size: 1vh;
+  padding: 2px 7px 1px 7px;
+  margin: 0px 0px 10px 0px;
+  background: red;
+  color: white;
+  border: 0em;
+}
