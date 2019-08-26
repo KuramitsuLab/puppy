@@ -40,26 +40,26 @@ def dist(d):
 # sumomo
 
 
-@app.route('/api/setting/<path:d>')
+@app.route('/setting/<path:d>')
 def dist_settings(d):
     if '/' in d:
         d = d.split('/')[0]
-    path = getRootPath() / 'courses' / d / ('setting.json')
+    path = getRootPath() / 'p' / d / ('setting.json')
     return send_file(str(path))
 
 
-@app.route('/api/problem/<path:d>')
+@app.route('/problem/<path:d>')
 def dist_problem(d):
-    path = getRootPath() / 'courses' / d / ('index.md')
+    path = getRootPath() / 'p' / d / ('index.md')
     return send_file(str(path))
 
 
-@app.route('/api/sample/<path:d>')
+@app.route('/sample/<path:d>')
 def dist_sample(d):
     file = getRootPath() / 'u' / uid() / (d.replace('/', '-') + '.py')
     if file.exists():
         return send_file(str(file))
-    path = getRootPath() / 'courses' / d / ('sample.py')
+    path = getRootPath() / 'p' / d / ('sample.py')
     return send_file(str(path))
 
 
@@ -105,7 +105,7 @@ def dist_build(d):
     return send_file("output.txt")
 
 
-@app.route('/api/compile', methods=['POST'])
+@app.route('/compile', methods=['POST'])
 def transcompile():
     inputText = request.data
     return Response(makeCode(inputText.decode('utf-8'), []), mimetype='application/javascript')
