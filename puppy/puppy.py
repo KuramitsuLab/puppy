@@ -75,7 +75,7 @@ def ClassDecl(env: Env, t, out):
             f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
     else:
         out.append(f'puppy.vars["{name}"] = class')
-    env['@local'] = name
+    env['@class'] = name
     for i, (_, sub) in enumerate(t.subs()):
         if i < argNum:
             continue
@@ -103,6 +103,9 @@ def emitDeclName(env: Env, name, out):
             out.append(f'{jsname} = ')
         else:
             out.append(f'var {jsname} = ')
+    elif '@class' in env:
+        jsname = localName(name)
+        out.append(f'{jsname} = ')
     else:
         jsname = globalName(name)
         out.append(f'{jsname} = ')
@@ -461,6 +464,9 @@ def VarDecl(env: Env, t, out):
         elif '@local' in env:  # ローカルスコープなら
             newvar = localName(name)
             out.append(f'var {newvar}')
+        elif '@class' in env:
+            newvar = localName(name)
+            out.append(newvar)
         else:
             newvar = globalName(name)
             out.append(newvar)
@@ -497,7 +503,6 @@ KEYWORDS = {
     'strokeStyle': 'strokeStyle',
     'lineWidth': 'lineWidth',
     'fillStyle': 'fillStyle', 'color': 'fillStyle',
-
     'font': 'font',
     'fontColor': 'fontColor',
     'textAlign': 'textAlign',
@@ -886,17 +891,17 @@ def check(ret, env, t, out, msg=None):
 
 def perror(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@@logs'].append(('error', pos, raw, col, msg))
+    env['@@logs'].append(('error', pos, raw, col, msg, len(t.asString())))
 
 
 def pwarn(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@@logs'].append(('warning', pos, raw, col, msg))
+    env['@@logs'].append(('warning', pos, raw, col, msg, len(t.asString())))
 
 
 def pinfo(env, t, msg):
     _, pos, raw, col = t.pos()
-    env['@@logs'].append(('info', pos, raw, col, msg))
+    env['@@logs'].append(('info', pos, raw, col, msg, len(t.asString())))
 
 
 def trace(env, t):
@@ -997,6 +1002,8 @@ def puppyVMCode(env, main, diffcode, lives):
         {{
             'type': '{e[0]}',
             'row': {row},
+            'col': {e[3]},
+            'len': {e[5]},
             'text': {repr(e[4])}
         }},''')
     error = '\n'.join(error)

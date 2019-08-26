@@ -2,15 +2,18 @@
 <html>
 
 <head>
-  <title>Puppy: A Educational Simplification of Python with a Tangible Playground</title>
+  <title>Puppy: An Educational Simplification of Python with a Live Playground</title>
   <link rel="stylesheet" type="text/css" href="index.css">
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+  <script type="text/javascript" src="https://cdn.rawgit.com/pcooksey/bibtex-js/5ccf967/src/bibtex_js.js"></script>
+  <bibtex src="./bib/test.bib"></bibtex>
 </head>
 <body>
   <div class="all-contents">
     <div id="essay">
 
       <div class="header">
-        <h1>Puppy: A Educational Simplification of Python with a Tangible Playground</h1>
+        <h1>Puppy: An Educational Simplification of Python with a Live Playground</h1>
         <div class="authors">
           <div class='author'>
             <div class='name'>
@@ -21,6 +24,28 @@
             </div>
             <div class='e-mail'>
               <a href="tada-taku-jp@ynu.jp">tada-taku-jp@ynu.jp</a>
+            </div>
+          </div>
+          <div class='author'>
+            <div class='name'>
+              Yuka Akinobu
+            </div>
+            <div class='institution'>
+              Japan Women's University
+            </div>
+            <div id='hidden' class='e-mail'>
+              <a href="">hidden</a>
+            </div>
+          </div>
+          <div class='author'>
+            <div class='name'>
+              Makoto Sakane
+            </div>
+            <div class='institution'>
+              Japan Women's University
+            </div>
+            <div id='hidden' class='e-mail'>
+              <a href="">hidden</a>
             </div>
           </div>
           <div class='author'>
@@ -39,8 +64,239 @@
 
       <div class="body">
         <h3>Abstract</h3>
-        <p>A written 250 word abstract is required.</p>
+        <p>
+          A recent trend in introductory programming education in high schools is programming without coding such as block programming.
+          However, practical programming requires coding skills.
+          We consider that live programming can be the key technique to learn to the fun of coding for novice students.
+        </p>
+        <p>
+          Based on this idea, we have been developing a code-intensive programming environment, called Puppy.
+          Puppy is a Kid's version of Python that runs on an integrated environment of program execution on a physics engine.
+          Even a small amount of coding can express a rich program.
+          In addition, the programming environment helps to understand coding and programming execution using live programming technique.
+          This essay reports the initial development status of Puppy with several demonstrations.
+        </p>
         <h3>Introduction</h3>
+        <p>
+          A recent trend in introductory programming education in high schools is programming without coding.
+          As seen in Scratch<a href='#reference'>[1, 2]</a>, students can build programs using GUI-based block components and learn a concept of programming without annoying syntax errors.
+        </p>
+        <p>
+          But, how do they learn the fun of coding?
+        </p>
+        <p>
+          We consider that coding is an essence of programming.
+          Live programming can be a key technique to learn a fun of coding for novice students.
+          Based on this idea, we have been developing a code-intensive programming environment, called Puppy.
+        </p>
+        <p>
+          Puppy is a Kid’s version of Python, which is designed to restrict Python’s syntax and complex functions in order to obtain richer programming experience in a short amount of time.
+          Besides, Puppy has an integrated environment of program execution on a physics engine, where a rich motion of objects is simulated with a small amount of coding.
+        <p>
+          The idea behind live programming in Puppy is straightforward.
+          If a program execution reflects an intermediate result of coding, coding experience will be greatly improved for students.
+          Puppy introduces Live Focus, which highlights some changed program states resulting from code change.
+          Due to Live Focus, the students can learn an intuitive understanding of coding and program executions.
+        </p>
+        <p>
+          This essay reports the initial development status of Puppy with several demonstrations.
+          The essay proceeds as follows.
+          We introduce Puppy with demonstrations that Puppy runs on a live programming environment.
+          We then describe the implementation of the live programming environment.
+          Finally, we discuss several challenges and conclusion of this essay.
+        </p>
+        <h3>What is Puppy Like?</h3>
+        <p>
+          What is Puppy Like?
+          Let us start with a simple example of Puppy programs.
+        </p>
+        <p>
+          The <i>Rectangle</i> and <i>Circle</i> are basic classes that describe a shape of objects on Puppy.
+          Here, two objects are created with some physical properties.
+        </p>
+        <div class="listing-caption">Creating instances of a rectangle and a circle</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=True)
+Circle(500, 100, width=150, restitution=1.0)</pre>
+        <p>
+          The first two arguments represent an initial position of the object.
+          The <i>width</i> and <i>height</i> represent the size of the object.
+          The Puppy playground provides an editor on the right hand of the screen.
+          The left hand of the Puppy playground is a canvas, where the execution result of Puppy is shown.
+          Once, you type in the above code, puppy runs the code at the same time.
+        </p>
+        <video src='./video/demo1.mov' controls width="60%" height="auto"></video>
+        <div class="demo-caption">A bounding circle</div>
+        <p>
+          In the above demonstration, the rectangle object does not move, whereas the circle object is bounding due to a physics engine integrated with the Puppy playground.
+          As shown above, the circle follows the law of classical dynamics such as gravity and restitution.
+          Why the Puppy playground include the physics engine?
+          Toy robot programming (such as in LEGO Mindstorms) is a favorite theme since students are likely to understand the state change of programs through the movement of a robot in the real world.
+          Likewise, the Puppy Playground simulates the real world with a mapping of program behaviors.
+        </p>
+
+        <p>
+          Let’s go back to live programming in Puppy.
+          Puppy has a nice print function. You may add a statement <i>print(‘Hello World’)</i> into the last line.
+        </p>
+
+        <div class='listing-caption'>Appending a print function</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=True)
+Circle(500, 100, width=150, restitution=1.0)
+print('Hello World')</pre>
+        <p>
+          The Puppy playground displays “Hello World” as shown in the following video.
+        </p>
+        <video src='./video/demo2.mov' controls width="60%" height="auto"></video>
+        <div class='demo-caption'>Appending a print function</div>
+        <p>
+          The string of “Hello World” moves from the right to the left on the canvas. Even just printing a string makes a fun experience in Puppy.
+          In the above case, the program execution proceeds without stopping. Similarly, if you rewrite code slightly, the state of program is updated on live.
+          The following demonstration changes the restitution property in the editor.
+        </p>
+
+        <video src='./video/demo3.mov' controls width="60%" height="auto"></video>
+        <div class='demo-caption'>Live updating</div>
+        <p>
+          As you can see, the state of the program execution is updated in part by resulting from modified code.
+          We aim to remove redundant time waiting for confirm the modification results.
+          This will help students in understanding the relationship between code and the execution results.
+        </p>
+        <p>
+          Here is the last code in the above demonstration.
+        </p>
+        <div class='listing-caption'>The last code in the above demo</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=True, fillStyle='green')
+Circle(500, 100, width=150, restitution=1.5, image='bird.png')</pre>
+        <p>
+          In this code, two new properties <i>fillStyle</i> and <i>image</i> appear.
+          The Live Focus makes possible to try and check the properties easily.
+        </p>
+
+        <p>
+          The <i>collisionEnd</i> property is a hook point for event handling.
+          A function registered in this property is invoked by the event of the end time of object collision in the physics engine.
+          The following code is counting a number of collisions between a circle and another object.
+        </p>
+
+        <div class='listing-caption'>Counting a number of collisions</div>
+        <pre class="prettyprint">Rectangle(500, 950, width=1000, height=100, isStatic=True, fillStyle='green')
+C = Circle(500, 100, width=150, restitution=1.5, image='bird.png')
+L = Label(100, 100, value=0)
+def hit(obj1, obj2):
+  L.value = L.value + 1
+  print(L.value)
+C.collisionEnd = hit</pre>
+        <p>
+          The <i>Label</i> is another basic class for displaying a value in the specified location on the screen.
+          Here is a live version of counting a number of object collisions.
+        </p>
+        <video src='./video/demo4.mov' controls width="60%" height="auto"></video>
+        <div class='demo-caption'>Counting a number of collisions</div>
+        <!-- <p>
+          Puppy is an educational simplification of Python, while it is expressive enough to write a simple game.
+          Finally, we introduce a breaking blocks game written in Puppy.
+        </p>
+        
+        <div class='TODO'>ブロック崩しのデモ</div> -->
+
+        <h3>Inside Puppy</h3>
+        <p>
+          In this section, we illustrate the implementation of the Puppy playground.
+          The Puppy playground is implemented as a web application, thereby it makes possible to start writing a Puppy code easily without environment construction.
+        </p>
+        <p>
+          The Puppy playground has a source code editor.
+          A Puppy code written on the editor is sent to a transcompile server, and so the server responds with the javascript code translated from Puppy.
+          The javascript code consists of operations for Puppy Virtual Machine (Puppy VM).
+          Puppy VM executes the operations and then visualizes its result by the 2D physics engine javascript library called matter.js.
+          Puppy VM provides API to connect matter.js, thus it acts as a matter.js wrapper.
+          The following figure schematically represents Puppy VM.
+        </p>
+        
+        <img src='./image/PuppyVM.png' width="600" height="auto">
+        <div class="fig-caption">Puppy VM</div>
+        <p>
+          Matter.js draws 2D rigid bodies in a canvas HTML element.
+          To draw the body, a javascript object requires to be registered to matter.js.
+          Then, matter.js repeatedly draws and calculates the registered object.
+          Puppy VM provides the API of objects registration and changing parameters which registered objects have.
+          These operating objects API are called by the javascript code translated from Puppy.
+          A new instance of Puppy basic class is registered in matter.js through the <i>newObject</i> API.
+          When a user changes the parameter of the instance, the parameter of the javascript object registered in matter.js is also changed.
+          On the other hand, Puppy VM also provides the API to call from a user interface in the Puppy playground.
+          The <i>start</i> and <i>pause</i> API operate physics calculate.
+          For example, the Puppy playground has the button using the <i>start</i> API to run the physics engine.
+        </p>
+        <p>
+          Puppy VM has a feature to support live programming.
+          The <i>yield</i> feature realizes gradual execution.
+          A <i>yield</i> keyword is inserted in the javascript code translated from Puppy.
+          Puppy VM wait a few seconds after each the <i>yield</i> keyword.
+          Hence, the Puppy playground can visualize gradually changing of the program execution.
+        </p>
+
+        <h4>Live Focus</h4>
+        <p>
+          The Puppy playground introduces Live Focus, which supports coding to improve coding experience.
+          We will describe how to realize Live Focus.
+          An editor on the playground keep in to be observed, moreover, code deferences are calculated.
+          The code deferences are classified into the following three patterns.
+        </p>
+
+        <ol>
+          <li><p>Appending at the tail of a code.</p></li>
+          <li><p>Changing at the midway of a code.</p></li>
+          <li><p>Otherwise.</p></li>
+        </ol>
+
+        <p>
+          In the case of pattern 1, the appended code is continuously executed without stopping the program execution.
+          In the case of pattern 2, if the changed part is a parameter, the parameter is updated without stopping the program execution.
+          In the case of pattern 3, the program execution starts from the beginning.
+        </p>
+
+        <p>
+          Consequently, Live Focus highlights some changed program states resulting from code change.
+        </p>
+
+        <h3>Challenges and Conclusions</h3>
+        <p>
+          The challenge in live programming is the refinement of Live Focus.
+          For fluid coding, the restart of a program should be removed as many as possible.
+          We plan to support more code changes not required stopping the program execution.
+        </p>
+        <p>
+          Another challenge is the enhancement of coding supports.
+          In particular, the supports linked with the visualized execution result is desirable such as idea of <a href="http://worrydream.com/LearnableProgramming/">Learnable Programming</a>.
+          For instance, if a user mouse over the parameter of a rigid body, the playground explain by visual in the rigid body.
+        </p>
+        <p>
+          In this essay, we introduced Puppy with several demonstrations on a prototype implementation.
+          Puppy is simple, whereas it is expressive enough to learn programming.
+          In addition, the Puppy playground assists coding using live programming technique.
+          Finally, we described the implementation of Puppy Playground and how to realize live programming.
+          If you want more detail, please access to <a href="https://github.com/KuramitsuLab/puppy"> the Puppy repository</a> on Github.
+        </p>
+        <h3 id='reference'>Reference</h3>
+        <div class="bibtex_template">
+          <li>
+            <div class="if author" style="font-weight: bold;">
+              <span class="if year">
+                <span class="year"></span>,
+              </span>
+              <span class="author"></span>
+              <span class="if url" style="margin-left: 20px">
+                <a class="url" style="color:black; font-size:10px">(view online)</a>
+              </span>
+            </div>
+            <div style="margin-left: 10px; margin-bottom:5px;">
+              <span class="title"></span>
+            </div>
+          </li>
+        </div>
+        <ol>
+          <div id="bibtex_display" bibtexkey="Scratch"></div>
+        </ol>
       </div>
 
     </div>

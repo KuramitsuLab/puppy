@@ -1,0 +1,26 @@
+.App .container {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
+}
+
+.btn-primary:focus {
+  box-shadow: initial;
+}
+
+#main-row {
+  height: calc(100% - 56px);
+  width: 100%;
+  margin: 0 0 0 0;
+}
+
+#left-col {
+  height: 100%;
+  padding: 0px;
+}
+
+#right-col {
+  height: 100%;
+  padding: 0px;
+}

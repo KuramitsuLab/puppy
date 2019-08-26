@@ -1,0 +1,21 @@
+{
+  "title": "Puppy",
+  "list": [
+    {
+      "path": "/Welcome",
+      "title": "ようこそ"
+    },
+    {
+      "path": "/Hello",
+      "title": "HelloWorld"
+    },
+    {
+      "path": "/ManyHello",
+      "title": "たくさん表示しよう"
+    },
+    {
+      "path": "/Calc",
+      "title": "計算結果を表示してみよう"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+#puppy-course {
+  width: 100%;
+  max-height: 100%;
+  position: absolute;
+  padding: 10px 10px 10px 15px;
+}
+.course-all {
+  max-height: 75vh;
+}
+
+.course-header {
+  background: rgb(255,255,255);
+}
+
+.course-body {
+  background: rgba(255, 255, 255, 0.85);
+  overflow-y: scroll;
+}
+
+.course-all {
+  background: transparent;
+}
+
+.card-header-left {
+  text-align: left
+}
+
+.card-header-right {
+  text-align: right
+}
