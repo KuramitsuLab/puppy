@@ -19,24 +19,17 @@ def uid():
     return 'kkuramitsu'
 
 
-app = Flask(__name__, template_folder='client/static')
+app = Flask(__name__, template_folder='client/build', static_folder='client/build/static')
 
+
+@app.route('/<path:d>')
+def dist(d):
+    return send_file(f'client/build/{d}')
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
-@app.route('/<path:d>')
-def dist(d):
-    try:
-        path = getRootPath() / 'p' / d  # / ('index.md')
-        if path.exists():
-            return render_template('index2.html', message=d)
-        return send_file(f'client/static/{d}')
-    except:
-        # とりあえず
-        return send_file('client/static/image/puppyLogo.png')
 # sumomo
 
 
