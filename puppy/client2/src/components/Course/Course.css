@@ -1,11 +1,11 @@
 #puppy-course {
   width: 100%;
-  height: 100%;
+  max-height: 100%;
   position: absolute;
   padding: 10px 10px 10px 15px;
 }
 .course-all {
-  max-height: 90%;
+  max-height: 75vh;
 }
 
 .course-header {
