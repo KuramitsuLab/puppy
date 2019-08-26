@@ -1,15 +1,14 @@
 body {
   font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  font-size: 1.4em;
+  font-size: 1.6em;
   font-weight: 300;
   letter-spacing: .01em;
   line-height: 1.6;
-  counter-reset:fig demo listing;
 }
 
 .all-contents {
   margin: 0 auto;
-  max-width: 60rem;
+  max-width: 100rem;
 }
 
 #essay .body p {
@@ -22,7 +21,7 @@ body {
 
 .authors .author {
   display: inline-block;
-  margin: 1em 4em;
+  margin: 0 4em;
 }
 
 .authors .author .institution {
@@ -31,74 +30,4 @@ body {
 
 .authors .author .e-mail {
   font-size: 80%
-}
-
-.prettyprint ol.linenums > li {
-	list-style-type: decimal; 
-}
-
-pre.prettyprint {
-  white-space: pre;
-  overflow: auto;
-}
-
-.caption {
-  font-size: 80%;
-  margin: 2px 0px 0px 0px;
-}
-
-.caption:before {
-  content: "▼ ";
-}
-
-.fig-caption {
-  font-size: 80%;
-  margin: 2px 0px 0px 0px;
-}
-
-.fig-caption:before {
-  counter-increment:fig;
-  content: "▲ Figure " counter(fig) ": ";
-}
-
-.listing-caption {
-  font-size: 80%;
-  margin: 2px 0px 0px 0px;
-}
-
-.listing-caption:before {
-  counter-increment:listing;
-  content: "▼ Listing " counter(listing) ": ";
-}
-
-.demo-caption {
-  font-size: 80%;
-  margin: 2px 0px 0px 0px;
-}
-
-.demo-caption:before {
-  counter-increment:demo;
-  content: "▲ Demo " counter(demo) ": ";
-}
-
-.TODO {
-  color: blue
-}
-
-.TODO:before {
-  content: "TODO : ";
-  font-weight: bold;
-}
-
-.FIXME {
-  color: red
-}
-
-.FIXME:before {
-  content: "FIXME : ";
-  font-weight: bold;
-}
-
-#hidden {
-  visibility: hidden;
 }
