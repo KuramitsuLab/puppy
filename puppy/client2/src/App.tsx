@@ -11,6 +11,8 @@ import { QueryParams } from './index';
 type AppProps = { qs: QueryParams; hash: string };
 
 const App: React.FC<AppProps> = (props: AppProps) => {
+  const coursePath = props.qs.course ? props.qs.course : 'PuppyCourse';
+  const page = props.hash !== '' ? parseInt(props.hash.substr(1)) : 0;
   return (
     <div className="App">
       <Container className="container">
@@ -18,11 +20,11 @@ const App: React.FC<AppProps> = (props: AppProps) => {
         <Input />
         <Row id="main-row">
           <Col id="left-col" xs={6}>
-            <Course qs={props.qs} hash={props.hash} />
+            <Course coursePath={coursePath} page={page} />
             <PuppyScreen />
           </Col>
           <Col id="right-col" xs={6}>
-            <Editor />
+            <Editor coursePath={coursePath} page={page} />
           </Col>
         </Row>
       </Container>

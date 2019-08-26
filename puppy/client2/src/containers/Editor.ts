@@ -11,7 +11,10 @@ import {
   CodeEditor,
 } from '../modules/editor';
 
-const mapStateToProps = (state: ReduxState) => ({
+const mapStateToProps = (
+  state: ReduxState,
+  ownProps: { coursePath: string; page: number }
+) => ({
   width: state.editor.width,
   height: state.editor.height,
   codeEditor: state.editor.codeEditor,
@@ -20,6 +23,8 @@ const mapStateToProps = (state: ReduxState) => ({
   fontSize: state.editor.fontSize,
   code: state.editor.code,
   puppy: state.puppy.puppy,
+  coursePath: ownProps.coursePath,
+  page: ownProps.page,
 });
 
 const mapDispatchToProps = (dispatch: (action: ReduxActions) => void) => ({

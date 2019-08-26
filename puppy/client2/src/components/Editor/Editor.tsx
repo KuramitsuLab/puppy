@@ -61,6 +61,8 @@ export type EditorProps = {
   theme: string;
   code: string;
   puppy: Puppy | null;
+  coursePath: string;
+  page: number;
   setCode: (code: string) => void;
   setSize: (width: number, height: number) => void;
   setCodeEditor: (codeEditor: CodeEditor | null) => void;
@@ -120,6 +122,10 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
     }
     editorTimer = setTimeout(() => {
       props.trancepile(props.puppy, new_code, false);
+      window.sessionStorage.setItem(
+        `/api/sample/${props.coursePath}/${props.page}`,
+        new_code
+      );
     }, 1000);
   };
 

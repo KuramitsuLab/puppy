@@ -25,21 +25,24 @@ type CourseProps = {
   setContent: (content: string) => void;
   setCourse: (course: CourseShape) => void;
   fetchContent: (coursePath: string, path: string) => void;
-  fetchSample: (puppy: Puppy | null, coursePath: string, path: string) => void;
+  fetchSample: (
+    puppy: Puppy | null,
+    coursePath: string,
+    page: number,
+    path: string
+  ) => void;
   fetchSetting: (coursePath: string) => void;
 };
 
 const Course: React.FC<CourseProps> = (props: CourseProps) => {
   useEffect(() => {
     if (props.course.list.length !== 0) {
-      props.fetchContent(
-        props.coursePath,
-        props.course.list[props.page % props.course.list.length].path
-      );
+      props.fetchContent(props.coursePath, props.course.list[props.page].path);
       props.fetchSample(
         props.puppy,
         props.coursePath,
-        props.course.list[props.page % props.course.list.length].path
+        props.page,
+        props.course.list[props.page].path
       );
     }
   }, [props.page, props.coursePath, props.course]);

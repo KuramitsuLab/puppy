@@ -1,19 +1,18 @@
 import { connect } from 'react-redux';
 import { ReduxState, ReduxActions } from '../store';
 import Course from '../components/Course/Course';
-import { QueryParams } from '../index';
 import { setContent, setCourse, CourseShape } from '../modules/course';
 import { setCode } from '../modules/editor';
 import { fetchContent, fetchSample, fetchSetting } from '../modules/operations';
 
 const mapStateToProps = (
   state: ReduxState,
-  ownProps: { qs: QueryParams; hash: string }
+  ownProps: { coursePath: string; page: number }
 ) => ({
   course: state.course.course,
   puppy: state.puppy.puppy,
-  coursePath: ownProps.qs.course ? ownProps.qs.course : 'PuppyCourse',
-  page: ownProps.hash !== '' ? parseInt(ownProps.hash.substr(1)) : 0,
+  coursePath: ownProps.coursePath,
+  page: ownProps.page,
   content: state.course.content,
   visible: state.course.visible,
 });

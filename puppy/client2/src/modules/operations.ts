@@ -5,9 +5,6 @@ import { setPlaceholder, setShow } from './input';
 import { PuppyCode, Puppy, runPuppy, ErrorShape } from '../vm/vm';
 import store, { ReduxActions } from '../store';
 
-const session = window.sessionStorage;
-const path = location.pathname;
-
 const checkError = (
   dispatch: (action: ReduxActions) => void,
   code: PuppyCode
@@ -54,7 +51,6 @@ export const trancepile = (dispatch: (action: ReduxActions) => void) => (
       try {
         const code = Function(js)(); // Eval javascript code
         if (!checkError(dispatch, code)) {
-          session.setItem(`/sample${path}`, source);
           dispatch(setPuppy(runPuppy(puppy!, code, alwaysRun)));
         }
       } catch (e) {
@@ -109,12 +105,22 @@ export const fetchContent = (dispatch: (action: ReduxActions) => void) => (
 export const fetchSample = (dispatch: (action: ReduxActions) => void) => (
   puppy: Puppy | null,
   coursePath: string,
+  page: number,
   path: string
-): Promise<void> =>
-  loadFile(`/api/sample/${coursePath}/${path}`).then((sample: string) => {
+): void => {
+  const sample = window.sessionStorage.getItem(
+    `/api/sample/${coursePath}/${page}`
+  );
+  if (sample) {
     dispatch(setCode(sample));
     trancepile(dispatch)(puppy, sample, false);
-  });
+  } else {
+    loadFile(`/api/sample/${coursePath}/${path}`).then((sample: string) => {
+      dispatch(setCode(sample));
+      trancepile(dispatch)(puppy, sample, false);
+    });
+  }
+};
 
 export const getInputValue = async (msg: string) => {
   const awaitForClick = target => {
