@@ -1,9 +1,0 @@
-A = Rectangle(500, 1000, width = 1000, isStatic = True)
-
-class Blocks(Rectangle):
-    width = 80
-    height = 50
-
-for x in [100, 200, 300, 400]:
-    for y in [100, 200, 300, 400]:
-        Blocks(x,y)
