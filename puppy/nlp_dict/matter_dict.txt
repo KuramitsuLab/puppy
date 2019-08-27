@@ -11,6 +11,7 @@
 # restitution
 跳ねる,弾む {"restitution": 0.8}
 跳ねすぎ,弾みすぎ {"restitution": 2.0}
+めっちゃ跳ねる  {"restitution": 1.5}
 よく跳ねる,よく弾む {"restitution": 1.5}
 少し跳ねる,少し弾む {"restitution": 0.4}
 跳ねない,弾まない   {"restitution": 0.0}
@@ -21,8 +22,12 @@
 # shape, image
 円,サークル           {"shape": "Circle"}
 ボール,球,玉           {"shape": "Circle", "restitution": 1.5}
-サッカーボール<:ボール   {"image": "succerball.png"}
+サッカーボール<:ボール   {"image": "soccerball.png"}
 野球<:球              {"image": "baseball.png"}
+スズメ,雀,すずめ<:球              {"image": "bird.png"}
+りんご,リンゴ,アップル<:球              {"image": "apple.png"}
+猫,ねこ,ネコ {"image": "cat.png"}
+
 
 四角,直方体           {"shape": "Rectangle"}
 ブロック　　　　　　　　 {"shape": "Rectangle", "isStatic": true}

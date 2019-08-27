@@ -50,7 +50,7 @@ class Env(object):
                 self.env[key] = value
 
 def Source(env: Env, t, out):
-    for _, subtree in t:
+    for subtree in t:
         out.append(env['@indent'])
         conv(env, subtree, out)
         emitAutoYield(env, out)
@@ -66,17 +66,17 @@ def emitAutoYield(env: Env, out):
 
 
 def ClassDecl(env: Env, t, out):
-    name = t['name'].asString()
+    name = str(t['name'])
     argNum = 1
     if 'extends' in t:
-        extends = t["extends"].asString()
+        extends = str(t["extends"])
         argNum += 1
         out.append(
             f'puppy.vars["{name}"] = class extends puppy.vars["{extends}"] ')
     else:
         out.append(f'puppy.vars["{name}"] = class')
     env['@local'] = name
-    for i, (_, sub) in enumerate(t.subs()):
+    for i, sub in enumerate(t):
         if i < argNum:
             continue
         print(sub)
@@ -124,14 +124,14 @@ def localName(name):
 
 
 def FuncDecl(env: Env, t, out):
-    name = t['name'].asString()
+    name = str(t['name'])
     jsname = emitDeclName(env, name, out)
     with Env(env) as lenv:
         types = [ts.Type()]
         voidCheck = str(types[0])
         out.append('(')
-        for _, p in t['params']:
-            pname = p['name'].asString()
+        for p in t['params']:
+            pname = str(p['name'])
             if(len(types) > 1):
                 out.append(f',{pname}')
             else:
@@ -171,8 +171,8 @@ def FuncExpr(env: Env, t, out):
         types = [ts.Type()]
         voidCheck = str(types[0])
         out.append("(")
-        for _, p in t['params']:
-            pname = p.asString()
+        for p in t['params']:
+            pname = str(p)
             ty = ts.Type()
             if(len(types) > 1):
                 out.append(f',{pname}')
@@ -227,23 +227,23 @@ def FalseExpr(env: Env, t, out):
 
 
 def Int(env: Env, t, out):
-    out.append(t.asString())
+    out.append(str(t))
     return ts.Int
 
 
 def Double(env: Env, t, out):
-    out.append(t.asString())
+    out.append(str(t))
     return ts.Float
 
 
 def String(env: Env, t, out):
-    v = t.asString()[1:-1]
+    v = str(t)[1:-1]
     out.append(repr(v))
     return ts.String
 
 
 def Char(env: Env, t, out):
-    v = t.asString()[1:-1]
+    v = str(t)[1:-1]
     out.append(repr(v))
     return ts.String
 
@@ -251,7 +251,7 @@ def Char(env: Env, t, out):
 def List(env: Env, t, out):
     ty = ts.Type()
     out.append('[')
-    for _, sub in t:
+    for sub in t:
         ty = check(ty, env, sub, out, '全ての要素を同じ型に揃えてください')
         out.append(',')
     out.append(']')
@@ -279,7 +279,7 @@ def Tuple(env: Env, t, out):
 
 def Data(env: Env, t, out):
     out.append('{')
-    for _, sub in t:
+    for sub in t:
         conv(env, sub, out)
         out.append(',')
     out.append('}')
@@ -334,7 +334,7 @@ OPSFMT = {
 
 
 def Infix(env: Env, t, out):
-    op = t['name'].asString()
+    op = str(t['name'])
     if op in OPS:
         op = OPS[op]
     else:
@@ -362,7 +362,7 @@ OPS1 = {
 
 
 def Unary(env: Env, t, out):
-    op = t['name'].asString()
+    op = str(t['name'])
     if op in OPS1:
         op = OPS1[op]
     else:
@@ -437,7 +437,7 @@ BUILDIN = {
 
 
 def Name(env: Env, t, out):
-    name = t.asString()
+    name = str(t)
     if name in env:
         var = env[name]
         out.append(var.target)
@@ -453,7 +453,7 @@ def VarDecl(env: Env, t, out):
     newvar = None
     ty = None
     if left.tag == 'Name':
-        name = left.asString()
+        name = str(left)
         if name in env:
             vari = env[name]
             ty = vari.types
@@ -553,8 +553,8 @@ KEYWORDTYPES = {
 
 
 def GetExpr(env: Env, t, out):
-    name = t['name'].asString()
-    pkgname = t['recv'].asString() + '.'
+    name = str(t['name'])
+    pkgname = str(t['recv']) + '.'
     if pkgname in env:  # math.pi のような定数
         penv = env[pkgname]
         if name in penv:
@@ -586,8 +586,8 @@ def IndexExpr(env: Env, t, out):
 
 
 def MethodExpr(env: Env, t, out):
-    name = t['name'].asString()
-    pkgname = t['recv'].asString() + '.'
+    name = str(t['name'])
+    pkgname = str(t['recv']) + '.'
     if pkgname in env:
         penv = env[pkgname]
         if name in penv:
@@ -596,7 +596,7 @@ def MethodExpr(env: Env, t, out):
             types = vari.types
             out.append(name)
             out.append('(')
-            args = [name] + [y for x, y in t['params'].subs()]
+            args = [name] + [x for x in t['params']]
             emitArguments(env, t['name'], args, types, '', out)
             return types[0]
         else:
@@ -609,7 +609,7 @@ def MethodExpr(env: Env, t, out):
         types = vari.types
         out.append(vari.target)
         out.append('(')
-        args = [name, t['recv']] + [y for x, y in t['params'].subs()]
+        args = [name, t['recv']] + [x for x in t['params']]
         emitArguments(env, t['name'], args, types, '', out)
         return types[0]
     else:
@@ -619,7 +619,7 @@ def MethodExpr(env: Env, t, out):
 
 
 def ApplyExpr(env: Env, t, out):
-    name = t['name'].asString()
+    name = str(t['name'])
     if name in env:
         vari = env[name]
         name = vari.target
@@ -636,14 +636,14 @@ def ApplyExpr(env: Env, t, out):
     if ts.isMatterFunc(types):
         with Env(env) as env:
             out.append(f'puppy.new_(puppy.vars["{name}"],')
-            args = [y for x, y in t.subs()]
+            args = [x for x in t]
             emitArguments(env, t['name'], args, types, '', out)
             env['@@yield'] = trace(env, t)
             env['@@oid'] += 1
     else:
         out.append(name)
         out.append('(')
-        args = [y for x, y in t.subs()]
+        args = [x for x in t]
         emitArguments(env, t['name'], args, types, '', out)
         if name == 'puppy.print':
             env['@@yield'] = trace(env, t)
@@ -695,7 +695,7 @@ def KeywordArgument(env, t, out, used_keys=None):
     if used_keys is None:
         pwarn(env, t, 'キーワード引数は物体のオプションのみ使えます')
         return conv(env, t['value'], out)
-    name = t['name'].asString()
+    name = str(t['name'])
     if not name in KEYWORDS:
         pwarn(env, t['name'], f'{name}？ タイプミスしてませんか？')
     else:
@@ -719,7 +719,7 @@ def checkNLPMatter(env, name, t):
     return (option['shape'], (ts.Matter, ts.Int, ts.Int, option))
 
 def NLPSymbol(env, t, out, used_keys=None):
-    phrase = t.asString()
+    phrase = str(t)
     if '@target' in env:
         option = nlp.conv2(f"{env['@target']}は{phrase}",
                            lambda x: pinfo(env, t, x))
@@ -781,7 +781,7 @@ def IfStmt(env: Env, t, out):
 
 def ForStmt(env: Env, t, out):
     if(t['each'].tag == 'Name'):
-        name = t['each'].asString()
+        name = str(t['each'])
     else:
         perror(env, t['each'], '変数名が欲しいところです')
         return ts.Void
@@ -806,7 +806,7 @@ def Block(env: Env, t, out):
     nested = INDENT + indent
     with Env(env) as env:
         env['@indent'] = nested
-        for _, subtree in t:
+        for subtree in t:
             out.append(nested)
             conv(env, subtree, out)
             emitAutoYield(env, out)
@@ -827,7 +827,7 @@ def conv(env: Env, t, out):
         return func[t.tag](env, t, out)
     else:
         perror(env, t, f'未実装のコード{t.tag}です。')
-        print('@Debug[conv]', t.asString(), t)
+        print('@Debug[conv]', str(t), t)
         out.append('undefined')
         return ts.Type()
 
@@ -849,7 +849,7 @@ def static_value(env, t):
 
 def set_World(env, t, options):
     W = env['@@world']
-    args = [y for x, y in t.subs()]
+    args = [x for x in t]
     start = 0
     if len(args) > 1 and args[1].tag != 'KeywordArgument':
         W['width'] = static_value(env, args[1])
@@ -861,7 +861,7 @@ def set_World(env, t, options):
         W[k] = options[k]
     for arg in args[start:]:
         if arg.tag == 'KeywordArgument':
-            k = arg['name'].asString()
+            k = str(arg['name'])
             v = static_value(env, arg['value'])
             W[k] = v
 
@@ -871,14 +871,14 @@ def set_World(env, t, options):
 def check(ret, env, t, out, msg=None):
     vat = conv(env, t, out)
     if ret is None or vat is None:
-        print('@DEBUG[check]', t.asString(), ret, vat)
+        print('@DEBUG[check]', str(t), ret, vat)
         return vat
     if not ts.matchType(ret, vat):
         print('@TypeError', ts.strType(ret), ts.strType(vat))
         if msg != None:
             perror(env, t, msg)
         else:
-            val = t.asString()
+            val = str(t)
             perror(env, t, f'型エラー: {val}のところは{ts.msg(ret)}')
             #raise StopIteration()
     return vat
