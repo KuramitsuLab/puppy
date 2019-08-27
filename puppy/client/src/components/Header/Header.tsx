@@ -12,7 +12,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
       <Navbar bg="white" variant="light" expand="lg">
         <Navbar.Brand href="#home">
           <img
-            src="./image/puppyLogo.png"
+            src="./image/logo.png"
             width="25"
             height="25"
             className="d-inline-block align-top"
