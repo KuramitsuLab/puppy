@@ -10,7 +10,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
   return (
     <div className="Header" id="puppy-header">
       <Navbar bg="white" variant="light" expand="lg">
-        <Navbar.Brand href="#home">
+        <Navbar.Brand href="/">
           <img
             src="./image/logo.png"
             width="25"
