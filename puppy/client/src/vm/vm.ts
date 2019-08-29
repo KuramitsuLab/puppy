@@ -1,7 +1,7 @@
 import * as Matter from 'matter-js';
 import { myRender } from './render';
 import { initVars, setShapeProperty, Shape, PuppyConstructor } from './shape';
-import { getInputValue } from '../modules/operations';
+import { getInputValue, getDiffStartLineNumber } from '../modules/operations';
 import { chooseColorScheme } from './color';
 
 // const Bodies = Matter.Bodies;
@@ -29,7 +29,7 @@ export type PuppyCode = {
   hash: string;
   world: any;
   bodies: any[];
-  main: (puppy: Puppy) => IterableIterator<void>;
+  main: (puppy: Puppy) => IterableIterator<number>;
   diff?: (puppy: Puppy) => void;
   lives: {}[];
   lines: number[];
@@ -193,7 +193,7 @@ export class Puppy {
         }
       }
     });
-    this.runner = Runner.create({});
+    this.runner = Runner.create({ isFixed: false });
     // render
     const canvas = document.getElementById(this.settings.canvas);
     let render_width = canvas!.clientWidth;
@@ -339,8 +339,16 @@ export class Puppy {
   }
 
   public async execute_main() {
-    for await (const _ of this.code.main(this)) {
-      await this.wait(0.5);
+    const diffStartLineNumber = getDiffStartLineNumber();
+    for await (const lineNumber of this.code.main(this)) {
+      if (lineNumber < diffStartLineNumber) {
+        for (let i = 0; i < 30; i += 1) {
+          this.engine! = Engine.update(this.engine!, undefined, undefined);
+        }
+      } else {
+        await this.wait(0.5);
+      }
+
       await this.waitForRun(1);
     }
     // editor に依存するためNG

@@ -133,3 +133,6 @@ export const getInputValue = async (msg: string) => {
   await awaitForClick(document.getElementById('puppy-input-form'));
   return store.getState().input.value;
 };
+
+export const getDiffStartLineNumber = () =>
+  store.getState().editor.diffStartLineNumber;

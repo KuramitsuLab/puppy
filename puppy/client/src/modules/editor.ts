@@ -11,6 +11,7 @@ enum EditorActionTypes {
   SET_DECORATION = 'SET_DECORATION',
   SET_MARKER = 'SET_MARKER',
   SET_THEME = 'SETTHEME',
+  SET_DIFFSTARTLINENUMBER = 'SET_DIFFSTARTLINENUMBER',
 }
 
 interface SetSizeAction extends Action {
@@ -135,6 +136,20 @@ export const setTheme = (theme: string): SetThemeAction => ({
   },
 });
 
+interface SetDiffStartLineNumber extends Action {
+  type: EditorActionTypes.SET_DIFFSTARTLINENUMBER;
+  payload: {
+    startLineNumber: number;
+  };
+}
+
+export const setDiffStartLineNumber = (startLineNumber: number) => ({
+  type: EditorActionTypes.SET_DIFFSTARTLINENUMBER,
+  payload: {
+    startLineNumber,
+  },
+});
+
 export type EditorActions =
   | SetCodeAction
   | SetSizeAction
@@ -142,7 +157,8 @@ export type EditorActions =
   | SetFontSizeAction
   | SetDecorationAction
   | SetMarkerAction
-  | SetThemeAction;
+  | SetThemeAction
+  | SetDiffStartLineNumber;
 
 export type EditorState = {
   width: number;
@@ -153,6 +169,7 @@ export type EditorState = {
   fontSize: number;
   decoration: string[];
   markers: monacoEditor.editor.IMarkerData[];
+  diffStartLineNumber: number;
 };
 
 const initialState: EditorState = {
@@ -164,6 +181,7 @@ const initialState: EditorState = {
   fontSize: 30,
   decoration: [],
   markers: [],
+  diffStartLineNumber: 0,
 };
 
 export const editorReducer = (state = initialState, action: EditorActions) => {
@@ -195,6 +213,8 @@ export const editorReducer = (state = initialState, action: EditorActions) => {
       };
     case EditorActionTypes.SET_THEME:
       return { ...state, theme: action.payload.theme };
+    case EditorActionTypes.SET_DIFFSTARTLINENUMBER:
+      return { ...state, diffStartLineNumber: action.payload.startLineNumber };
     default:
       return state;
   }
