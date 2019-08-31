@@ -3,8 +3,10 @@
 import os
 from subprocess import STDOUT, check_output
 from pathlib import Path
-from flask import Flask, render_template, send_file, request, Response
+from flask import Flask, render_template, send_file, request, Response, jsonify
 from puppy import makeCode
+from flask_cors import CORS
+import json
 
 
 def getRootPath(subdir='data'):
@@ -20,6 +22,7 @@ def uid():
 
 
 app = Flask(__name__, template_folder='client/build', static_folder='client/build/static')
+CORS(app)
 
 
 @app.route('/<path:d>')
@@ -31,6 +34,16 @@ def index():
     return render_template('index.html')
 
 # sumomo
+
+@app.route('/api/courses/')
+def get_cources():
+    course_path = Path('data/courses')
+    courses = {}
+    for path in [str(x).split('/')[2] if x.is_dir() else None for x in course_path.iterdir()]:
+        with open(f'data/courses/{path}/setting.json') as f:
+            df = json.load(f)
+            courses[path] = df
+    return jsonify(courses)
 
 
 @app.route('/api/setting/<path:d>')
