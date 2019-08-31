@@ -8,6 +8,7 @@ import {
   setCodeEditor,
   setDecoration,
   setFontSize,
+  setDiffStartLineNumber,
   CodeEditor,
 } from '../modules/editor';
 
@@ -34,6 +35,8 @@ const mapDispatchToProps = (dispatch: (action: ReduxActions) => void) => ({
     dispatch(setCodeEditor(codeEditor)),
   setDecoration: (decoration: string[]) => dispatch(setDecoration(decoration)),
   setFontSize: (fontSize: number) => dispatch(setFontSize(fontSize)),
+  setDiffStartLineNumber: (LineNumber: number) =>
+    dispatch(setDiffStartLineNumber(LineNumber)),
   trancepile: trancepile(dispatch),
 });
 

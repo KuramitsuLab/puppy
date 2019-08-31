@@ -1,5 +1,5 @@
 import { setTheme, setCode, setMarker } from './editor';
-import { CourseShape, setCourse, setContent } from './course';
+import { CourseShape, setCourse, setContent, setCources } from './course';
 import { setPuppy } from './puppy';
 import { setPlaceholder, setShow } from './input';
 import { PuppyCode, Puppy, runPuppy, ErrorShape } from '../vm/vm';
@@ -132,4 +132,22 @@ export const getInputValue = async (msg: string) => {
   store.dispatch(setPlaceholder(msg));
   await awaitForClick(document.getElementById('puppy-input-form'));
   return store.getState().input.value;
+};
+
+export const getDiffStartLineNumber = () =>
+  store.getState().editor.diffStartLineNumber;
+
+export const fetchCourses = (
+  dispatch: (action: ReduxActions) => void
+) => (): void => {
+  fetch('/api/courses')
+    .then((res: Response) => {
+      if (res.ok) {
+        return res.json();
+      }
+      throw new Error(res.statusText);
+    })
+    .then((json: { [path: string]: CourseShape }) => {
+      dispatch(setCources(json));
+    });
 };

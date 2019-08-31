@@ -68,6 +68,7 @@ export type EditorProps = {
   setCodeEditor: (codeEditor: CodeEditor | null) => void;
   setDecoration: (decoration: string[]) => void;
   setFontSize: (fontSize: number) => void;
+  setDiffStartLineNumber: (startLineNumber: number) => void;
   trancepile: (puppy: Puppy | null, code: string, alwaysRun: boolean) => void;
 };
 
@@ -130,6 +131,21 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
   };
 
   const editorDidMount = (editor: CodeEditor) => {
+    editor.onDidChangeModelContent(e => {
+      let startNumber = null as number | null;
+      e.changes.map(change => {
+        if (change.text !== '' && change.text !== '\n') {
+          // ignore whitespace and enter
+          startNumber =
+            startNumber === null
+              ? change.range.startLineNumber
+              : Math.min(startNumber, change.range.startLineNumber);
+        }
+      });
+      if (startNumber !== null) {
+        props.setDiffStartLineNumber(startNumber);
+      }
+    });
     props.setCodeEditor(editor);
   };
 
