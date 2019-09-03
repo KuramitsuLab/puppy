@@ -13,3 +13,7 @@
 .zenkakuClass {
 	background: lightcoral;
 }
+
+.code-highlight {
+  background: lightgreen;
+}

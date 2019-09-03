@@ -35,7 +35,7 @@ const mapDispatchToProps = (dispatch: (action: ReduxActions) => void) => ({
     dispatch(setCodeEditor(codeEditor)),
   setDecoration: (decoration: string[]) => dispatch(setDecoration(decoration)),
   setFontSize: (fontSize: number) => dispatch(setFontSize(fontSize)),
-  setDiffStartLineNumber: (LineNumber: number) =>
+  setDiffStartLineNumber: (LineNumber: number | null) =>
     dispatch(setDiffStartLineNumber(LineNumber)),
   trancepile: trancepile(dispatch),
 });

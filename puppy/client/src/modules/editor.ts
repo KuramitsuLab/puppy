@@ -139,11 +139,11 @@ export const setTheme = (theme: string): SetThemeAction => ({
 interface SetDiffStartLineNumber extends Action {
   type: EditorActionTypes.SET_DIFFSTARTLINENUMBER;
   payload: {
-    startLineNumber: number;
+    startLineNumber: number | null;
   };
 }
 
-export const setDiffStartLineNumber = (startLineNumber: number) => ({
+export const setDiffStartLineNumber = (startLineNumber: number | null) => ({
   type: EditorActionTypes.SET_DIFFSTARTLINENUMBER,
   payload: {
     startLineNumber,
@@ -169,7 +169,7 @@ export type EditorState = {
   fontSize: number;
   decoration: string[];
   markers: monacoEditor.editor.IMarkerData[];
-  diffStartLineNumber: number;
+  diffStartLineNumber: number | null;
 };
 
 const initialState: EditorState = {
@@ -181,7 +181,7 @@ const initialState: EditorState = {
   fontSize: 30,
   decoration: [],
   markers: [],
-  diffStartLineNumber: 0,
+  diffStartLineNumber: null,
 };
 
 export const editorReducer = (state = initialState, action: EditorActions) => {

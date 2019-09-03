@@ -1,9 +1,11 @@
-import { setTheme, setCode, setMarker } from './editor';
+import { setTheme, setCode, setMarker, setDecoration } from './editor';
 import { CourseShape, setCourse, setContent, setCources } from './course';
 import { setPuppy } from './puppy';
 import { setPlaceholder, setShow } from './input';
 import { PuppyCode, Puppy, runPuppy, ErrorShape } from '../vm/vm';
 import store, { ReduxActions } from '../store';
+
+import { Range } from 'monaco-editor';
 
 const checkError = (
   dispatch: (action: ReduxActions) => void,
@@ -134,8 +136,31 @@ export const getInputValue = async (msg: string) => {
   return store.getState().input.value;
 };
 
-export const getDiffStartLineNumber = () =>
-  store.getState().editor.diffStartLineNumber;
+export const getDiffStartLineNumber = () => {
+  const num = store.getState().editor.diffStartLineNumber;
+  return num === null ? 0 : num;
+};
+
+export const setCodeHighlight = (startLineNum: number, endLineNum: number) => {
+  const codeEditor = store.getState().editor.codeEditor!;
+  const decoration = store.getState().editor.decoration;
+  store.dispatch(
+    setDecoration(
+      codeEditor.deltaDecorations(decoration, [
+        {
+          range: new Range(startLineNum, 1, endLineNum, 1),
+          options: { isWholeLine: true, className: 'code-highlight' },
+        },
+      ])
+    )
+  );
+};
+
+export const resetCodeHighlight = () => {
+  const codeEditor = store.getState().editor.codeEditor!;
+  const decoration = store.getState().editor.decoration;
+  store.dispatch(setDecoration(codeEditor.deltaDecorations(decoration, [])));
+};
 
 export const fetchCourses = (
   dispatch: (action: ReduxActions) => void

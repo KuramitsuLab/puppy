@@ -1,7 +1,12 @@
 import * as Matter from 'matter-js';
 import { myRender } from './render';
 import { initVars, setShapeProperty, Shape, PuppyConstructor } from './shape';
-import { getInputValue, getDiffStartLineNumber } from '../modules/operations';
+import {
+  getInputValue,
+  getDiffStartLineNumber,
+  setCodeHighlight,
+  resetCodeHighlight,
+} from '../modules/operations';
 import { chooseColorScheme } from './color';
 
 // const Bodies = Matter.Bodies;
@@ -341,6 +346,7 @@ export class Puppy {
   public async execute_main(delay = 500) {
     const diffStartLineNumber = getDiffStartLineNumber();
     for await (const lineNumber of this.code.main(this)) {
+      setCodeHighlight(lineNumber, lineNumber);
       if (lineNumber < diffStartLineNumber) {
         for (let i = 0; i < delay / this.runner!.delta; i += 1) {
           this.engine = Engine.update(this.engine!, undefined, undefined);
@@ -348,9 +354,9 @@ export class Puppy {
       } else {
         await this.wait(delay);
       }
-
       await this.waitForRun(1000);
     }
+    resetCodeHighlight();
     // editor に依存するためNG
     // let prevline = 0;
     // const lines: [string] = editor.getSession().getDocument().getAllLines();
