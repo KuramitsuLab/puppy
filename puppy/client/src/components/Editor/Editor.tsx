@@ -112,7 +112,23 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
     props.setDecoration(codeEditor.deltaDecorations(props.decoration, decos));
   };
 
-  const codeOnChange = (new_code: string) => {
+  const codeOnChange = (
+    new_code: string,
+    event: monacoEditor.editor.IModelContentChangedEvent
+  ) => {
+    let startNumber = null as number | null;
+    event.changes.map(change => {
+      if (change.text !== '' && change.text !== '\n') {
+        // ignore whitespace and enter
+        startNumber =
+          startNumber === null
+            ? change.range.startLineNumber
+            : Math.min(startNumber, change.range.startLineNumber);
+      }
+    });
+    if (startNumber !== null) {
+      props.setDiffStartLineNumber(startNumber);
+    }
     props.setCode(new_code);
     if (props.codeEditor) {
       checkZenkaku(props.codeEditor);
@@ -131,21 +147,6 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
   };
 
   const editorDidMount = (editor: CodeEditor) => {
-    editor.onDidChangeModelContent(e => {
-      let startNumber = null as number | null;
-      e.changes.map(change => {
-        if (change.text !== '' && change.text !== '\n') {
-          // ignore whitespace and enter
-          startNumber =
-            startNumber === null
-              ? change.range.startLineNumber
-              : Math.min(startNumber, change.range.startLineNumber);
-        }
-      });
-      if (startNumber !== null) {
-        props.setDiffStartLineNumber(startNumber);
-      }
-    });
     props.setCodeEditor(editor);
   };
 
