@@ -1,6 +1,6 @@
 import sys
 from collections import namedtuple
-from pegpy.tpeg import grammar, generate, STDLOG
+from pegpy.tpeg import grammar, generate
 import hashlib
 import puppytypes as ts
 import nobuai as nlp
