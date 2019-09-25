@@ -6,6 +6,7 @@ import Editor from './containers/Editor';
 import PuppyScreen from './containers/PuppyScreen';
 import Course from './containers/Course';
 import Input from './containers/Input';
+import Version from './containers/Version';
 import { QueryParams } from './index';
 
 type AppProps = { qs: QueryParams; hash: string };
@@ -18,6 +19,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
       <Container className="container">
         <Header />
         <Input />
+        <Version />
         <Row id="main-row">
           <Col id="left-col" xs={6}>
             <Course coursePath={coursePath} page={page} />
