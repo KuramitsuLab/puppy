@@ -1,7 +1,7 @@
 import { Action } from 'redux';
 import * as monacoEditor from 'monaco-editor';
 export type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
-import { ErrorShape } from '../vm/vm';
+import { ErrorLog } from '../vm/vm';
 
 enum EditorActionTypes {
   SET_SIZE = 'SET_SIZE',
@@ -108,16 +108,20 @@ const type2severity = (type: 'error' | 'info' | 'warning' | 'hint') => {
   }
 };
 
-export const setMarker = (markers: ErrorShape[]): SetMarkerAction => ({
+export const setMarker = (markers: ErrorLog[]): SetMarkerAction => ({
   type: EditorActionTypes.SET_MARKER,
   payload: {
     markers: markers.map(marker => ({
-      severity: type2severity(marker.type),
-      startLineNumber: marker.row + 1,
-      startColumn: marker.col + 1,
-      endLineNumber: marker.row + 1,
-      endColumn: marker.col + marker.len + 1,
-      message: marker.text,
+      severity: type2severity(marker.type as
+        | 'error'
+        | 'info'
+        | 'warning'
+        | 'hint'),
+      startLineNumber: marker.row! + 1,
+      startColumn: marker.col!,
+      endLineNumber: marker.row! + 1,
+      endColumn: marker.col! + marker.len!,
+      message: marker.key,
     })),
   },
 });

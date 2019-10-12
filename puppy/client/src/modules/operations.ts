@@ -2,8 +2,9 @@ import { setTheme, setCode, setMarker, setDecoration } from './editor';
 import { CourseShape, setCourse, setContent, setCources } from './course';
 import { setPuppy } from './puppy';
 import { setPlaceholder, setShow } from './input';
-import { PuppyCode, Puppy, runPuppy, ErrorShape } from '../vm/vm';
+import { PuppyCode, Puppy, runPuppy, ErrorLog } from '../vm/vm';
 import store, { ReduxActions } from '../store';
+import { compile } from '../puppy-transpiler/puppy';
 
 import { Range } from 'monaco-editor';
 
@@ -12,7 +13,7 @@ const checkError = (
   code: PuppyCode
 ) => {
   let error_count = 0;
-  const annos: ErrorShape[] = [];
+  const annos: ErrorLog[] = [];
   // editor.getSession().clearAnnotations();
   for (const e of code.errors) {
     if (e.type === 'error') {
@@ -31,41 +32,77 @@ const checkError = (
   return true;
 };
 
+let new_puppy: Puppy | null = null;
+
 export const trancepile = (dispatch: (action: ReduxActions) => void) => (
   puppy: Puppy | null,
   source: string,
-  alwaysRun: boolean
-) =>
-  fetch('/api/compile', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/text; charset=utf-8',
-    },
-    body: source,
-  })
-    .then((res: Response) => {
-      if (res.ok) {
-        return res.text();
-      }
-      throw new Error(res.statusText);
-    })
-    .then((js: string) => {
-      try {
-        const code = Function(js)(); // Eval javascript code
-        if (!checkError(dispatch, code)) {
-          dispatch(setPuppy(runPuppy(puppy!, code, alwaysRun)));
-        }
-      } catch (e) {
-        // alert(`トランスパイルにしっぱいしています ${e}`);
-        // editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
-        console.log(js);
-        console.log(`FAIL TO TRANSCOMPILE ${e}`);
-        console.log(e);
-      }
-    })
-    .catch((msg: string) => {
-      alert(`Puppy is down!! ${msg}`);
-    });
+  alwaysRun: boolean,
+  waitStart = false,
+  _isLive = false
+): Puppy | null => {
+  const code = compile({ source }) as PuppyCode; // Eval javascript code
+  console.log(code);
+  if (!checkError(dispatch, code)) {
+    // if (isLive && puppy && puppy!.getCode().hash === code.hash) {
+    //   return puppy;
+    // }
+    if (new_puppy) {
+      new_puppy.dispose();
+    }
+    new_puppy = runPuppy(puppy!, code, alwaysRun, waitStart);
+    dispatch(setPuppy(new_puppy));
+  }
+  return new_puppy;
+};
+
+// export const trancepile = (dispatch: (action: ReduxActions) => void) => (
+//   puppy: Puppy | null,
+//   source: string,
+//   alwaysRun: boolean,
+//   waitStart = false,
+//   isLive = false
+// ): Promise<Puppy | null> =>
+//   fetch('/api/compile', {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/text; charset=utf-8',
+//     },
+//     body: source,
+//   })
+//     .then((res: Response) => {
+//       if (res.ok) {
+//         return res.text();
+//       }
+//       throw new Error(res.statusText);
+//     })
+//     .then((js: string) => {
+//       try {
+//         const code = Function(js)(); // Eval javascript code
+//         if (!checkError(dispatch, code)) {
+//           if (isLive && puppy && puppy!.getCode().hash === code.hash) {
+//             return puppy;
+//           }
+//           if (new_puppy) {
+//             new_puppy.dispose();
+//           }
+//           new_puppy = runPuppy(puppy!, code, alwaysRun, waitStart);
+//           dispatch(setPuppy(new_puppy));
+//         }
+//         return new_puppy;
+//       } catch (e) {
+//         // alert(`トランスパイルにしっぱいしています ${e}`);
+//         // editorPanel.style.backgroundColor = 'rgba(244,244,254,0.7)';
+//         console.log(js);
+//         console.log(`FAIL TO TRANSCOMPILE ${e}`);
+//         console.log(e);
+//         return null;
+//       }
+//     })
+//     .catch((msg: string) => {
+//       alert(`Puppy is down!! ${msg}`);
+//       return null;
+//     });
 
 const loadFile: (path: string) => Promise<string> = path => {
   return fetch(path, {
@@ -135,6 +172,8 @@ export const getInputValue = async (msg: string) => {
   await awaitForClick(document.getElementById('puppy-input-form'));
   return store.getState().input.value;
 };
+
+export const getIsLive = () => store.getState().puppy.isLive;
 
 export const getDiffStartLineNumber = () => {
   const num = store.getState().editor.diffStartLineNumber;

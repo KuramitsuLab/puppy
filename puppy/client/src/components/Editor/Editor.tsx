@@ -4,9 +4,9 @@ import * as monacoEditor from 'monaco-editor';
 import './Editor.css';
 import { Puppy } from '../../vm/vm';
 
-import { Button } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faMinus, faPlay } from '@fortawesome/free-solid-svg-icons';
 
 import { CodeEditor } from '../../modules/editor';
 
@@ -29,6 +29,8 @@ const zenkaku =
 type EditorFooterProps = {
   setFontSize: (fontSize: number) => void;
   fontSize: number;
+  setIsLive: (isLive: boolean) => void;
+  isLive: boolean;
 };
 
 const EditorFooter: React.FC<EditorFooterProps> = (
@@ -42,6 +44,14 @@ const EditorFooter: React.FC<EditorFooterProps> = (
   };
   return (
     <div id="editor-footer">
+      <Button onClick={() => props.setIsLive(!props.isLive)}>
+        {props.isLive ? (
+          <Spinner animation="grow" variant="light" size="sm" />
+        ) : (
+          <FontAwesomeIcon icon={faPlay} />
+        )}
+        {' LIVE'}
+      </Button>
       <Button onClick={fontPlus}>
         <FontAwesomeIcon icon={faPlus} />
       </Button>
@@ -60,7 +70,9 @@ export type EditorProps = {
   fontSize: number;
   theme: string;
   code: string;
+  diffStartLineNumber: number | null;
   puppy: Puppy | null;
+  isLive: boolean;
   coursePath: string;
   page: number;
   setCode: (code: string) => void;
@@ -68,12 +80,20 @@ export type EditorProps = {
   setCodeEditor: (codeEditor: CodeEditor | null) => void;
   setDecoration: (decoration: string[]) => void;
   setFontSize: (fontSize: number) => void;
-  setDiffStartLineNumber: (startLineNumber: number) => void;
-  trancepile: (puppy: Puppy | null, code: string, alwaysRun: boolean) => void;
+  setDiffStartLineNumber: (startLineNumber: number | null) => void;
+  setIsLive: (isLive: boolean) => void;
+  trancepile: (
+    puppy: Puppy | null,
+    code: string,
+    alwaysRun: boolean,
+    waitStart?: boolean,
+    isLive?: boolean
+  ) => Puppy | null;
 };
 
 let resizeTimer: NodeJS.Timeout;
-let editorTimer: NodeJS.Timeout | null;
+let trancepileTimer: NodeJS.Timeout | null;
+let startTimer: NodeJS.Timeout | null;
 
 const Editor: React.FC<EditorProps> = (props: EditorProps) => {
   const editorOptions = {
@@ -116,15 +136,12 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
     new_code: string,
     event: monacoEditor.editor.IModelContentChangedEvent
   ) => {
-    let startNumber = null as number | null;
+    let startNumber = props.diffStartLineNumber;
     event.changes.map(change => {
-      if (change.text !== '' && change.text !== '\n') {
-        // ignore whitespace and enter
-        startNumber =
-          startNumber === null
-            ? change.range.startLineNumber
-            : Math.min(startNumber, change.range.startLineNumber);
-      }
+      startNumber =
+        startNumber === null
+          ? change.range.startLineNumber
+          : Math.min(startNumber, change.range.startLineNumber);
     });
     if (startNumber !== null) {
       props.setDiffStartLineNumber(startNumber);
@@ -133,18 +150,41 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
     if (props.codeEditor) {
       checkZenkaku(props.codeEditor);
     }
-    if (editorTimer) {
-      clearTimeout(editorTimer);
-      editorTimer = null;
+    if (props.isLive) {
+      if (trancepileTimer) {
+        clearTimeout(trancepileTimer);
+        trancepileTimer = null;
+      }
+      // trancepileTimer = setTimeout(() => {
+      //   props.trancepile(props.puppy, new_code, false);
+      //   window.sessionStorage.setItem(
+      //     `/api/sample/${props.coursePath}/${props.page}`,
+      //     new_code
+      //   );
+      // }, 1500);
+      trancepileTimer = setTimeout(() => {
+        (puppy => {
+          if (startTimer) {
+            clearTimeout(startTimer);
+            startTimer = null;
+          }
+          startTimer = setTimeout(() => {
+            if (puppy) {
+              puppy.start();
+            }
+            props.setDiffStartLineNumber(null);
+          }, 1500);
+        })(props.trancepile(props.puppy, new_code, false, true, true));
+        window.sessionStorage.setItem(
+          `/api/sample/${props.coursePath}/${props.page}`,
+          new_code
+        );
+      }, 100);
     }
-    editorTimer = setTimeout(() => {
-      props.trancepile(props.puppy, new_code, false);
-      window.sessionStorage.setItem(
-        `/api/sample/${props.coursePath}/${props.page}`,
-        new_code
-      );
-    }, 1000);
   };
+  const hoge: string = 'piyo';
+
+  hoge.startsWith('hoge');
 
   const editorDidMount = (editor: CodeEditor) => {
     props.setCodeEditor(editor);
@@ -162,7 +202,12 @@ const Editor: React.FC<EditorProps> = (props: EditorProps) => {
         onChange={codeOnChange}
         editorDidMount={editorDidMount}
       />
-      <EditorFooter setFontSize={props.setFontSize} fontSize={props.fontSize} />
+      <EditorFooter
+        setFontSize={props.setFontSize}
+        fontSize={props.fontSize}
+        setIsLive={props.setIsLive}
+        isLive={props.isLive}
+      />
     </div>
   );
 };

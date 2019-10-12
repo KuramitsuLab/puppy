@@ -4,6 +4,7 @@ import { Puppy } from '../vm/vm';
 enum PuppyActionTypes {
   SET_SIZE = 'SET_SIZE',
   SET_PUPPY = 'SET_PUPPY',
+  SET_ISLIVE = 'SET_ISLIVE',
 }
 
 interface SetSizeAction extends Action {
@@ -36,18 +37,34 @@ export const setPuppy = (puppy: Puppy | null) => ({
   },
 });
 
-export type PuppyActions = SetSizeAction | SetPuppyAction;
+interface SetIsLiveAction extends Action {
+  type: PuppyActionTypes.SET_ISLIVE;
+  payload: {
+    isLive: boolean;
+  };
+}
+
+export const setIsLive = (isLive: boolean) => ({
+  type: PuppyActionTypes.SET_ISLIVE,
+  payload: {
+    isLive,
+  },
+});
+
+export type PuppyActions = SetSizeAction | SetPuppyAction | SetIsLiveAction;
 
 export type PuppyState = {
   width: number;
   height: number;
   puppy: Puppy | null;
+  isLive: boolean;
 };
 
 const initialState: PuppyState = {
   width: 500,
   height: 500,
   puppy: null,
+  isLive: true,
 };
 
 export const puppyReducer = (state = initialState, action: PuppyActions) => {
@@ -57,12 +74,14 @@ export const puppyReducer = (state = initialState, action: PuppyActions) => {
         state.puppy.resize(action.payload.width, action.payload.height);
       }
       return {
-        puppy: state.puppy,
+        ...state,
         width: action.payload.width,
         height: action.payload.height,
       };
     case PuppyActionTypes.SET_PUPPY:
       return { ...state, puppy: action.payload.puppy };
+    case PuppyActionTypes.SET_ISLIVE:
+      return { ...state, isLive: action.payload.isLive };
     default:
       return state;
   }
