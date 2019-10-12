@@ -67,7 +67,7 @@
     "react-bootstrap": "^1.0.0-beta.10",
     "react-dev-utils": "^9.0.1",
     "react-dom": "^16.8.6",
-    "react-monaco-editor": "^0.28.0",
+    "react-monaco-editor": "^0.31.0",
     "react-redux": "^7.1.0",
     "react-router-dom": "^5.0.1",
     "redux": "^4.0.4",

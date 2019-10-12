@@ -4,10 +4,12 @@
   text-align: right;
   bottom: 12px;
   padding: 0 5px 0 0;
+  pointer-events: none;
 }
 
 #puppy-footer button {
   margin: 0 2px 0 2px;
+  pointer-events: auto;
 }
 
 #puppy-screen {

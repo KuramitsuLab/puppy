@@ -4,12 +4,18 @@
   text-align: right;
   bottom: 12px;
   padding: 0 20px 0 0;
+  pointer-events: none;
 }
 
 #editor-footer button {
   margin: 0 2px 0 2px;
+  pointer-events: auto;
 }
 
 .zenkakuClass {
 	background: lightcoral;
+}
+
+.code-highlight {
+  background: lightgreen;
 }

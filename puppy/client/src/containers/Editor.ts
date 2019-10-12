@@ -11,6 +11,7 @@ import {
   setDiffStartLineNumber,
   CodeEditor,
 } from '../modules/editor';
+import { setIsLive } from '../modules/puppy';
 
 const mapStateToProps = (
   state: ReduxState,
@@ -23,7 +24,9 @@ const mapStateToProps = (
   theme: state.editor.theme,
   fontSize: state.editor.fontSize,
   code: state.editor.code,
+  diffStartLineNumber: state.editor.diffStartLineNumber,
   puppy: state.puppy.puppy,
+  isLive: state.puppy.isLive,
   coursePath: ownProps.coursePath,
   page: ownProps.page,
 });
@@ -35,8 +38,9 @@ const mapDispatchToProps = (dispatch: (action: ReduxActions) => void) => ({
     dispatch(setCodeEditor(codeEditor)),
   setDecoration: (decoration: string[]) => dispatch(setDecoration(decoration)),
   setFontSize: (fontSize: number) => dispatch(setFontSize(fontSize)),
-  setDiffStartLineNumber: (LineNumber: number) =>
+  setDiffStartLineNumber: (LineNumber: number | null) =>
     dispatch(setDiffStartLineNumber(LineNumber)),
+  setIsLive: (isLive: boolean) => dispatch(setIsLive(isLive)),
   trancepile: trancepile(dispatch),
 });
 

@@ -1,7 +1,13 @@
 import * as Matter from 'matter-js';
 import { myRender } from './render';
-import { initVars, setShapeProperty, Shape, PuppyConstructor } from './shape';
-import { getInputValue, getDiffStartLineNumber } from '../modules/operations';
+import { initVars, Shape, PuppyConstructor } from './shape';
+import {
+  getInputValue,
+  getDiffStartLineNumber,
+  setCodeHighlight,
+  resetCodeHighlight,
+  getIsLive,
+} from '../modules/operations';
 import { chooseColorScheme } from './color';
 
 // const Bodies = Matter.Bodies;
@@ -17,24 +23,78 @@ const Vertices = Matter.Vertices;
 const Detector = Matter['Detector'];
 const Common = Matter['Common'];
 
-export type ErrorShape = {
-  type: 'error' | 'info' | 'warning' | 'hint';
-  row: number;
-  col: number;
-  len: number;
-  text: string;
+export type PuppyCode = {
+  world: any;
+  main: (puppy: any) => IterableIterator<number>;
+  errors: ErrorLog[];
+  code: string;
 };
 
-export type PuppyCode = {
-  hash: string;
-  world: any;
-  bodies: any[];
-  main: (puppy: Puppy) => IterableIterator<number>;
-  diff?: (puppy: Puppy) => void;
-  lives: {}[];
-  lines: number[];
-  errors: ErrorShape[];
+// export type ErrorShape = {
+//   type: 'error' | 'info' | 'warning' | 'hint';
+//   row: number;
+//   col: number;
+//   len: number;
+//   text: string;
+// };
+
+export type ErrorLog = {
+  type?: string;
+  key: string;
+  pos?: number;
+  row?: number;
+  col?: number;
+  len?: number;
+  subject?: string;
+  code?: string;
+  request?: Type;
+  given?: Type;
 };
+
+class Type {
+  public isOptional: boolean;
+  public constructor(isOptional: boolean) {
+    this.isOptional = isOptional;
+  }
+
+  public toString() {
+    return '?';
+  }
+
+  public rtype(): Type {
+    return this;
+  }
+  public psize() {
+    return 0;
+  }
+  public ptype(_index: number): Type {
+    return this;
+  }
+
+  // public equals(ty: Type, update: boolean): boolean {
+  //   return false;
+  // }
+
+  public accept(_ty: Type, _update: boolean): boolean {
+    return false;
+  }
+
+  public realType(): Type {
+    return this;
+  }
+
+  public isPattern() {
+    return false;
+  }
+
+  public hasAlpha(): boolean {
+    return false;
+  }
+
+  public toVarType(_map: any): Type {
+    return this;
+  }
+}
 
 export type PuppySettings = {
   canvas: string;
@@ -66,8 +126,12 @@ type PuppyWorld = {
 // (Puppy, {}) -> (number, number, number) -> any
 export class Puppy {
   private settings: PuppySettings;
-  public code: PuppyCode;
+  public code: any;
   public world: PuppyWorld | null;
+
+  public interval: number;
+  public waitRestart: boolean;
+  public isExecuting: boolean;
 
   private runner: Matter.Runner | null;
   private engine: Matter.Engine | null;
@@ -79,10 +143,13 @@ export class Puppy {
   private vars: {};
 
   // new puppy
-  public constructor(settings: PuppySettings, code: PuppyCode) {
+  public constructor(settings: PuppySettings, code: any, waitStart = false) {
     this.settings = settings;
     this.code = code;
     this.world = null;
+    this.interval = 500;
+    this.waitRestart = waitStart;
+    this.isExecuting = false;
     this.runner = null;
     this.engine = null;
     this.render = null;
@@ -333,24 +400,28 @@ export class Puppy {
   }
 
   public async waitForRun(interval) {
-    while (!this.runner!.enabled) {
+    while (this.waitRestart) {
       await this.wait(interval);
     }
+    this.runner!.enabled = true;
   }
 
-  public async execute_main(delay = 500) {
+  public async execute_main() {
     const diffStartLineNumber = getDiffStartLineNumber();
+    this.isExecuting = true;
     for await (const lineNumber of this.code.main(this)) {
-      if (lineNumber < diffStartLineNumber) {
-        for (let i = 0; i < delay / this.runner!.delta; i += 1) {
+      if (lineNumber < diffStartLineNumber && getIsLive()) {
+        for (let i = 0; i < this.interval / this.runner!.delta; i += 1) {
           this.engine = Engine.update(this.engine!, undefined, undefined);
         }
       } else {
-        await this.wait(delay);
+        setCodeHighlight(lineNumber, lineNumber);
+        await this.waitForRun(1000);
+        await this.wait(this.interval);
       }
-
-      await this.waitForRun(1000);
     }
+    this.isExecuting = false;
+    resetCodeHighlight();
     // editor に依存するためNG
     // let prevline = 0;
     // const lines: [string] = editor.getSession().getDocument().getAllLines();
@@ -385,43 +456,52 @@ export class Puppy {
     this.initCode();
     this.dispose();
     this.startCode();
-    this.runner!.enabled = true;
+    this.runner!.enabled = !this.waitRestart;
     this.execute_main();
   }
 
-  public updateLiveCode(code: PuppyCode) {
-    this.code = code;
-    if (this.runner!.enabled) {
-      if (code.diff) {
-        this.initCode();
-        console.log(`live diff now ${code.diff}`);
-        code.diff(this);
-        return true;
-      }
-      if (code.lives && code.lives.length > 0) {
-        this.initCode();
-        const bodies = Matter.Composite.allBodies(this.engine!.world);
-        for (const body of bodies) {
-          for (const live of code.lives) {
-            if (body['oid'] === live[0]) {
-              console.log(body);
-              console.log(live);
-              const name = live[1];
-              console.log(`change ${name} ${body[name]} ${live[2]} ${live[3]}`);
-              // if (body[name] === live[3] || live[3] == null) {
-              setShapeProperty(this, body as Shape, name, live[2]);
-              // }
-            }
-          }
-        }
-        return true;
-      }
-    }
-    return false;
-  }
+  // public updateLiveCode(code: PuppyCode) {
+  //   this.code = code;
+  //   if (this.runner!.enabled) {
+  //     if (code.diff) {
+  //       this.initCode();
+  //       console.log(`live diff now ${code.diff}`);
+  //       code.diff(this);
+  //       return true;
+  //     }
+  //     if (code.lives && code.lives.length > 0) {
+  //       this.initCode();
+  //       const bodies = Matter.Composite.allBodies(this.engine!.world);
+  //       for (const body of bodies) {
+  //         for (const live of code.lives) {
+  //           if (body['oid'] === live[0]) {
+  //             console.log(body);
+  //             console.log(live);
+  //             const name = live[1];
+  //             console.log(`change ${name} ${body[name]} ${live[2]} ${live[3]}`);
+  //             // if (body[name] === live[3] || live[3] == null) {
+  //             setShapeProperty(this, body as Shape, name, live[2]);
+  //             // }
+  //           }
+  //         }
+  //       }
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
 
   public pause() {
+    this.waitRestart = true;
     this.runner!.enabled = false;
+  }
+
+  public start() {
+    if (this.isExecuting) {
+      this.waitRestart = false;
+    } else {
+      this.runner!.enabled = true;
+    }
   }
 
   public getTimeStamp() {
@@ -448,6 +528,47 @@ export class Puppy {
     const body: Matter.Body = cons(this, options);
     World.add(this.engine!.world, [body]);
     return body;
+  };
+
+  public Circle = (x: number, y: number, options: Shape) => {
+    return this.new_(this.vars['Circle'], x, y, options);
+  };
+
+  public Rectangle = (x: number, y: number, options: Shape) => {
+    return this.new_(this.vars['Rectangle'], x, y, options);
+  };
+
+  public Polygon = (x: number, y: number, options: Shape) => {
+    return this.new_(this.vars['Polygon'], x, y, options);
+  };
+
+  public Label = (x: number, y: number, options: Shape) => {
+    return this.new_(this.vars['Label'], x, y, options);
+  };
+
+  public World = (x: number, y: number, options: Partial<PuppyWorld>) => {
+    if (this.engine && this.world) {
+      this.world.viewWidth = x;
+      this.world.viewHeight = y;
+      const pos = this.world.view.min;
+      this.world.view = {
+        min: pos,
+        max: { x: pos.x + x, y: pos.y + y },
+      };
+      this.resize(this.render!.options.width!, this.render!.options.height!);
+      Render['lookAt'](this.render, this.world!.view);
+      Object.keys(options).map((key: string) => {
+        if (this.world && key in this.world) {
+          if (key == 'background') {
+            this.render!.options['background'] = options['background'];
+          }
+          this.world[key] = options[key];
+        }
+        if (this.engine && key in this.engine.world) {
+          this.engine.world[key] = options[key];
+        }
+      });
+    }
   };
 
   public async input(msg?: string) {
@@ -739,18 +860,23 @@ export const initPuppy = (settings?: PuppySettings) => {
   }
 };
 
-export const runPuppy = (puppy: Puppy, code: PuppyCode, alwaysRun: boolean) => {
+export const runPuppy = (
+  puppy: Puppy | null,
+  code: PuppyCode,
+  alwaysRun: boolean,
+  waitStart = false
+) => {
   if (puppy != null) {
     if (!alwaysRun && code) {
-      if (puppy.getCode().hash === code.hash) {
-        return puppy;
-      }
+      // if (puppy.getCode().hash === code.hash) {
+      //   return puppy;
+      // }
       if (puppy.isRunning()) {
         // console.log(`lives ${code.lives}`);
         // console.log(`diff ${code.diff}`);
-        if (puppy.updateLiveCode(code)) {
-          return puppy;
-        }
+        // if (puppy.updateLiveCode(code)) {
+        //   return puppy;
+        // }
       }
     }
   }
@@ -758,7 +884,7 @@ export const runPuppy = (puppy: Puppy, code: PuppyCode, alwaysRun: boolean) => {
     if (puppy != null) {
       puppy.dispose();
     }
-    const newpuppy = new Puppy(puppy_settings, code);
+    const newpuppy = new Puppy(puppy_settings, code, waitStart);
     newpuppy.runCode();
     return newpuppy;
   }

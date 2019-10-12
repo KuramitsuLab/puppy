@@ -1,7 +1,7 @@
 import { Action } from 'redux';
 import * as monacoEditor from 'monaco-editor';
 export type CodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
-import { ErrorShape } from '../vm/vm';
+import { ErrorLog } from '../vm/vm';
 
 enum EditorActionTypes {
   SET_SIZE = 'SET_SIZE',
@@ -108,16 +108,20 @@ const type2severity = (type: 'error' | 'info' | 'warning' | 'hint') => {
   }
 };
 
-export const setMarker = (markers: ErrorShape[]): SetMarkerAction => ({
+export const setMarker = (markers: ErrorLog[]): SetMarkerAction => ({
   type: EditorActionTypes.SET_MARKER,
   payload: {
     markers: markers.map(marker => ({
-      severity: type2severity(marker.type),
-      startLineNumber: marker.row + 1,
-      startColumn: marker.col + 1,
-      endLineNumber: marker.row + 1,
-      endColumn: marker.col + marker.len + 1,
-      message: marker.text,
+      severity: type2severity(marker.type as
+        | 'error'
+        | 'info'
+        | 'warning'
+        | 'hint'),
+      startLineNumber: marker.row! + 1,
+      startColumn: marker.col!,
+      endLineNumber: marker.row! + 1,
+      endColumn: marker.col! + marker.len!,
+      message: marker.key,
     })),
   },
 });
@@ -139,11 +143,11 @@ export const setTheme = (theme: string): SetThemeAction => ({
 interface SetDiffStartLineNumber extends Action {
   type: EditorActionTypes.SET_DIFFSTARTLINENUMBER;
   payload: {
-    startLineNumber: number;
+    startLineNumber: number | null;
   };
 }
 
-export const setDiffStartLineNumber = (startLineNumber: number) => ({
+export const setDiffStartLineNumber = (startLineNumber: number | null) => ({
   type: EditorActionTypes.SET_DIFFSTARTLINENUMBER,
   payload: {
     startLineNumber,
@@ -169,7 +173,7 @@ export type EditorState = {
   fontSize: number;
   decoration: string[];
   markers: monacoEditor.editor.IMarkerData[];
-  diffStartLineNumber: number;
+  diffStartLineNumber: number | null;
 };
 
 const initialState: EditorState = {
@@ -181,7 +185,7 @@ const initialState: EditorState = {
   fontSize: 30,
   decoration: [],
   markers: [],
-  diffStartLineNumber: 0,
+  diffStartLineNumber: null,
 };
 
 export const editorReducer = (state = initialState, action: EditorActions) => {
