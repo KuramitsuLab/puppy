@@ -7,6 +7,7 @@ export type HeaderProps = {
   course: CourseShape;
   courses: { [path: string]: CourseShape };
   fetchCourses: () => void;
+  setShow: (show: boolean) => void;
 };
 
 const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
@@ -16,7 +17,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
   return (
     <div className="Header" id="puppy-header">
       <Navbar bg="white" variant="light" expand="lg">
-        <Navbar.Brand href="/">
+        <Navbar.Brand onClick={() => props.setShow(true)}>
           <img
             src="./image/logo.png"
             width="25"

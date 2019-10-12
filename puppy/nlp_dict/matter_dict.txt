@@ -23,11 +23,20 @@
 円,サークル           {"shape": "Circle"}
 ボール,球,玉           {"shape": "Circle", "restitution": 1.5}
 サッカーボール<:ボール   {"image": "soccerball.png"}
+ソフトボール<:ボール   {"image": "softball.png"}
+バレーボール<:ボール   {"image": "volleyball.png"}
 野球<:球              {"image": "baseball.png"}
 スズメ,雀,すずめ<:球              {"image": "bird.png"}
 りんご,リンゴ,アップル<:球              {"image": "apple.png"}
 猫,ねこ,ネコ {"image": "cat.png"}
-
+牛,うし,ウシ {"image": "cow.png"}
+旗,はた,ハタ {"image": "flag.png"}
+葡萄,ぶどう,ブドウ {"image": "grape.png"}
+檸檬,れもん,レモン {"image": "lemon.png"}
+おれんじ,オレンジ,蜜柑,みかん,ミカン {"image": "orange.png"}
+桃,もも,モモ {"image": "peach.png"}
+ぺんぎん,ペンギン {"image": "penguin.png"}
+うさぎ,ウサギ {"image": "cat.png"}
 
 四角,直方体           {"shape": "Rectangle"}
 ブロック　　　　　　　　 {"shape": "Rectangle", "isStatic": true}
